@@ -1,6 +1,6 @@
 # Prompt Otimization for Better Explanations in Recommender Systems
 
-This project has the main objective to use prompt otimization techniques to generate explanations for recommender systems 
+This project has the main objective to use prompt otimization techniques to generate explanations for recommender systems. 
 
 ## 📋 Reproduction
 
