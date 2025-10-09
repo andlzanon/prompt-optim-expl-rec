@@ -28,13 +28,13 @@ We will develop our code on the dev branch, that represents a paper we are devel
 
 Therefore, to develop a feature use the following steps:
 
-1. Create a branch from dev
+1. Create a branch from develop
 
-Switch to the dev branch and pull the latest changes:
+Switch to the develop branch and pull the latest changes:
 
-    git checkout dev
+    git checkout develop
 
-    git pull origin dev
+    git pull origin develop
 
 
 Create a new branch from dev for your changes:
