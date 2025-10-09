@@ -39,8 +39,9 @@ Switch to the dev branch and pull the latest changes:
 
 Create a new branch from dev for your changes:
 
-    git checkout -b my-new-feature
+    git checkout -b <id>_my-new-feature
 
+where ```<id>``` is the id of the GitHub Issue.
 
 Use a descriptive branch name
 
