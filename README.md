@@ -32,14 +32,14 @@ Therefore, to develop a feature use the following steps:
 
 Switch to the dev branch and pull the latest changes:
 
-```git checkout dev```
+    git checkout dev
 
-```git pull origin dev```
+    git pull origin dev
 
 
 Create a new branch from dev for your changes:
 
-```git checkout -b my-new-feature```
+    git checkout -b my-new-feature
 
 
 Use a descriptive branch name
@@ -48,12 +48,12 @@ Use a descriptive branch name
 
 Edit, add, or remove files as needed. Stage and commit your changes:
 
-```git add .```
+    git add .
 
-```git commit -m "Add: short description of your change"```
+    git commit -m "Add: short description of your change"
 
 3. Push your branch to your fork
-```git push origin my-new-feature```
+    git push origin my-new-feature
 
 4. Open a Pull Request
 
