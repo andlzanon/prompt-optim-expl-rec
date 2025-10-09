@@ -75,8 +75,8 @@ The maintainers will review your PR. Once approved, it will be merged into dev.
 
 Keep your branch up-to-date with dev:
 
-git fetch origin
-git merge origin/dev
+    git fetch origin
+    git merge origin/dev
 
 Make small, focused commits with clear messages.
 
