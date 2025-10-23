@@ -103,12 +103,6 @@ def calc_recall_at_k(test_df, all_predictions, TOP_K):
 
 def do_recommendations(algorithm_name):
 
-    # available algorithms:
-
-        # bprmf
-        # item knn
-
-
     # -----------------------------
     # System Info
     # -----------------------------
@@ -137,9 +131,9 @@ def do_recommendations(algorithm_name):
 
 
     match algorithm_name:
-        case "bprmf":
+        case "bpr":
             print(f"Running: {algorithm_name}")
-            bprmf_recs(TOP_K, NUM_FACTORS, NUM_EPOCHS, train_df, test_df)
+            bpr_recs(TOP_K, NUM_FACTORS, NUM_EPOCHS, train_df, test_df)
 
         case "svd":
             print(f"Running: {algorithm_name}")
@@ -151,37 +145,21 @@ def do_recommendations(algorithm_name):
 
         # case "all":
 
-        #     output_file_path = datasets_path + f"/recommendation/recommendation_lists/recs_bprmf.csv"
 
-        #     print("RUNNING ALL: ")
-        #     print(f"Started to train: bprmf")
-        #     BprMF(train_file=train_file_path, test_file=test_file_path, output_file=output_file_path).compute()
-        #     print()
-
-        #     output_file_path = datasets_path + f"/recommendation/recommendation_lists/recs_item_knn.csv"
-        #     print(f"Started to train: item_knn")
-        #     ItemKNN(train_file=train_file_path, test_file=test_file_path, output_file=output_file_path).compute()
-        #     print()
-
-        #     print(f"\nRecs successfully saved!")
-        #     print(f"Recs file_path: {datasets_path}/recommendation_files/")
-        #     return
 
         case _:
             print("Algorithm not found!")
             print("PLEASE, ENTER A VALID ALGORITHM")
             return
 
-    # print(f"\nRecs successfully saved!")
-    # print(f"Recs file_path: {output_file_path}")
     return
 
 
 
 
-def bprmf_recs(TOP_K, NUM_FACTORS, NUM_EPOCHS, train_df, test_df):
+def bpr_recs(TOP_K, NUM_FACTORS, NUM_EPOCHS, train_df, test_df):
     """
-    Train and evaluate a BPR-MF model using Cornac.
+    Train and evaluate a BPR model using Cornac.
 
     Parameters
     ----------
@@ -296,11 +274,6 @@ def bprmf_recs(TOP_K, NUM_FACTORS, NUM_EPOCHS, train_df, test_df):
 
 
 
-
-
-# Assuming you already have:
-# calc_map_at_k(), calc_ndcg_at_k(), calc_precision_at_k(), calc_recall_at_k()
-# and compute_ranking_predictions() defined elsewhere
 
 def svd_recs(TOP_K, train_df, test_df):
     """
@@ -417,8 +390,115 @@ def svd_recs(TOP_K, train_df, test_df):
 
 
 
+
+# def ncf_recs(TOP_K, train_df, test_df):
+    """
     
-do_recommendations(algorithm_name="bprmf")
+    """
+
+    # # ----------------------------------------------------
+    # # Setup
+    # # ----------------------------------------------------
+    # algorithm = "ncf"
+    # print(f"\nRunning model: {algorithm.upper()}")
+
+    # # ----------------------------------------------------
+    # # Prepare Surprise Dataset
+    # # ----------------------------------------------------
+    # reader = Reader(rating_scale=(train_df["rating"].min(), train_df["rating"].max()))
+    # train_surprise = Dataset.load_from_df(train_df[["userId", "movieId", "rating"]], reader)
+    # train_surprise = train_surprise.build_full_trainset()
+
+    # # ----------------------------------------------------
+    # # Initialize Model
+    # # ----------------------------------------------------
+    # svd = SVD(
+    #     random_state=0,
+    #     n_factors=200,
+    #     n_epochs=30,
+    #     verbose=True
+    # )
+
+    # # ----------------------------------------------------
+    # # Training
+    # # ----------------------------------------------------
+    # with Timer() as t_train:
+    #     svd.fit(train_surprise)
+    # print(f"✅ Training completed in {t_train.interval:.2f} seconds.\n")
+
+    # # ----------------------------------------------------
+    # # Generate Predictions
+    # # ----------------------------------------------------
+    # with Timer() as t_pred:
+    #     all_predictions = compute_ranking_predictions(
+    #         svd,
+    #         train_df,
+    #         usercol="userId",
+    #         itemcol="movieId",
+    #         remove_seen=True
+    #     )
+    # print(f"✅ Prediction completed in {t_pred.interval:.2f} seconds.\n")
+
+    # # Keep top-K predictions per user
+    # all_predictions = (
+    #     all_predictions
+    #     .sort_values(["userId", "prediction"], ascending=[True, False])
+    #     .groupby("userId")
+    #     .head(TOP_K)
+    #     .reset_index(drop=True)
+    # )
+
+    # # ----------------------------------------------------
+    # # Evaluation
+    # # ----------------------------------------------------
+    # eval_map = calc_map_at_k(test_df, all_predictions, TOP_K)
+    # eval_ndcg = calc_ndcg_at_k(test_df, all_predictions, TOP_K)
+    # eval_precision = calc_precision_at_k(test_df, all_predictions, TOP_K)
+    # eval_recall = calc_recall_at_k(test_df, all_predictions, TOP_K)
+
+    # # ----------------------------------------------------
+    # # Display Results
+    # # ----------------------------------------------------
+    # print(
+    #     f"Model Evaluation Results:",
+    #     f"Top K:\t\t {TOP_K}",
+    #     f"MAP:\t\t {eval_map:.4f}",
+    #     f"NDCG:\t\t {eval_ndcg:.4f}",
+    #     f"Precision@K:\t {eval_precision:.4f}",
+    #     f"Recall@K:\t {eval_recall:.4f}",
+    #     sep="\n"
+    # )
+
+    # # ----------------------------------------------------
+    # # Save Results
+    # # ----------------------------------------------------
+    # metrics = {
+    #     "MAP": eval_map,
+    #     "NDCG": eval_ndcg,
+    #     "Precision@K": eval_precision,
+    #     "Recall@K": eval_recall,
+    # }
+
+    # results_df = pd.DataFrame(list(metrics.items()), columns=["Metric", "Value"])
+    # results_df.to_csv(
+    #     f"datasets/recommendation_files/recommendation_metrics/{algorithm}_metrics.csv",
+    #     index=False
+    # )
+
+    # all_predictions.to_csv(
+    #     f"datasets/recommendation_files/recommendation_lists/{algorithm}_recs.csv",
+    #     index=False
+    # )
+
+    # print(f"✅ Metrics saved to 'datasets/recommendation_files/recommendation_metrics/{algorithm}_metrics.csv'")
+    # print(f"✅ Predictions saved to 'datasets/recommendation_files/recommendation_lists/{algorithm}_recs.csv'\n")
+
+    # return
+
+
+
+    
+do_recommendations(algorithm_name="bpr")
 # do_recommendations(algorithm_name="svd")
 # do_recommendations(algorithm_name="item_knn")
 # do_recommendations(algorithm_name="all")
