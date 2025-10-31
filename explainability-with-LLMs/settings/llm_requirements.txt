@@ -1,0 +1,10 @@
+transformers==4.44.2
+pandas==2.2.2
+torch==2.3.1
+accelerate==0.31.0
+pyarrow==16.1.0
+fastparquet==2024.5.0
+datasets==2.20.0
+peft==0.11.1
+scikit-learn==1.5.1
+bitsandbytes==0.45.3

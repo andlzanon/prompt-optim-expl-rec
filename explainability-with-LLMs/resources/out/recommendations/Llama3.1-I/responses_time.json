@@ -1,0 +1,20 @@
+{
+    "args": {
+        "scenario": "miscalibrated",
+        "datain": "resources/data/",
+        "seed": 2025,
+        "llm_method": "Llama3.1-I",
+        "out": "resources/outLLM/prompt_below_10_recommendations/miscalibrated/",
+        "prompt_dir": "resources/prompt_below_10_recommendations/miscalibrated/prompt.json",
+        "type_prompt": "optimized_automated_prompt",
+        "machine": "icarus",
+        "inputdir": "resources/data/",
+        "outputdir": "resources/outLLM/prompt_below_10_recommendations/miscalibrated//Llama3.1-I/miscalibrated/optimized_automated_prompt",
+        "outfilename": "resources/outLLM/prompt_below_10_recommendations/miscalibrated//Llama3.1-I/miscalibrated/optimized_automated_prompt/responses",
+        "start_cls_time": "05-07-2025 03:05:20"
+    },
+    "time_to_recommend": 44692.952500104904,
+    "time_to_recommend_avg": 8.450170637191322,
+    "system_prompt": "Recommend Movie Titles Based on User Behavior\n\nRespond with a numbered list of recommended movie titles and release years.\n\nThe format for the response is:\n\n1. title (release year)\n2. title (release year)\n3. title (release year)\n...\n\nInclude the exact movie title and release year for each item.\n\nThe response must be a standalone numbered list of movie titles and dates. Provide only this list - do not include any additional text or information.",
+    "user_prompt": "I need exactly 10 movies or TV shows (based on the MOVIELENS 1M dataset) and your recommendations must be based on cast members. Follow this strict format and do not include any explanations, duplicates, or corrections in your response:\n1. title (release year)\n2. title (release year)\n3. title (release year)\n..."
+}
