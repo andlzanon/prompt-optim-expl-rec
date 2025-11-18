@@ -1,0 +1,2 @@
+*.csv filter=lfs diff=lfs merge=lfs -text
+datasets/recommendation_files/recommendation_lists/ncf/*.csv filter=lfs diff=lfs merge=lfs -text
