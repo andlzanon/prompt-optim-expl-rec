@@ -1,12 +1,16 @@
 import pandas as pd
 from pathlib import Path
 
-from algorithms import user_knn_recs, item_knn_recs, ncf_recs, bprmf_recs
+from algorithms import user_knn_recs, item_knn_recs, bprmf_opt_recs, final_ncf_recs
 
 current_path = Path.cwd()
 parent_path = current_path.parent
 TRAIN_PATH = parent_path / "datasets" / "train_test_oficial" / "train.dat"
 TEST_PATH = parent_path / "datasets" / "train_test_oficial" / "test.dat"
+
+TRAIN_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "train.dat"
+VALIDATION_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "validation.dat"
+TEST_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "test.dat"
 
 
 def generate_recommendations(algorithm_name, k_vector):
@@ -30,17 +34,11 @@ def generate_recommendations(algorithm_name, k_vector):
             case "itemknn":
                 item_knn_recs(k_value, TRAIN_PATH, TEST_PATH, output_recs_path, output_metrics_path)
 
-            case "ncf":
-                NUM_FACTORS = 200
-                NUM_EPOCHS = 100
-                BATCH_SIZE = 256
-                ncf_recs(k_value, NUM_EPOCHS, BATCH_SIZE, TRAIN_PATH, TEST_PATH, output_recs_path, output_metrics_path)
+            case "final_ncf":
+                final_ncf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
 
             case "bprmf":
-                NUM_FACTORS=10
-                NUM_EPOCHS=30
-                LEARN_RATE=0.05
-                bprmf_recs(k_value, NUM_FACTORS, NUM_EPOCHS, LEARN_RATE, TRAIN_PATH, TEST_PATH, output_recs_path, output_metrics_path)
+                bprmf_opt_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
 
             # case "all":
 

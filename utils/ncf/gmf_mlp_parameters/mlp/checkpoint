@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\Users\\Henrique\\Desktop\\USP\\IC\\IC2\\prompt_expl_llm_2025.2\\prompt-optim-expl-rec/utils/ncf/gmf_mlp_parameters/mlp\\model.ckpt"
+all_model_checkpoint_paths: "C:\\Users\\Henrique\\Desktop\\USP\\IC\\IC2\\prompt_expl_llm_2025.2\\prompt-optim-expl-rec/utils/ncf/gmf_mlp_parameters/mlp\\model.ckpt"
