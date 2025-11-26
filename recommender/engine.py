@@ -29,10 +29,10 @@ def generate_recommendations(algorithm_name, k_vector):
 
         match algorithm_name:
             case "userknn":
-                user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, output_recs_path, output_metrics_path)
+                user_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
 
             case "itemknn":
-                item_knn_recs(k_value, TRAIN_PATH, TEST_PATH, output_recs_path, output_metrics_path)
+                item_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
 
             case "final_ncf":
                 final_ncf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
