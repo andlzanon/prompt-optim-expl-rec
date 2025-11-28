@@ -1,10 +1,11 @@
 import pandas as pd
 from pathlib import Path
 
-from algorithms import user_knn_recs, item_knn_recs, bprmf_opt_recs, final_ncf_recs
+from algorithms import default_user_knn_recs, optimized_user_knn_recs, default_bprmf_recs, optimized_bprmf_recs, default_item_knn_recs, optimized_item_knn_recs, default_ncf_recs, optimized_ncf_recs
 
 current_path = Path.cwd()
 parent_path = current_path.parent
+
 TRAIN_PATH = parent_path / "datasets" / "train_test_oficial" / "train.dat"
 TEST_PATH = parent_path / "datasets" / "train_test_oficial" / "test.dat"
 
@@ -24,21 +25,30 @@ def generate_recommendations(algorithm_name, k_vector):
 
     for k_value in k_vector:
 
-        output_recs_path = f"{parent_path}/datasets/recommendation_files/recommendation_lists/{algorithm_name}/{algorithm_name}_K={k_value}_recs.csv"
-        output_metrics_path = f"{parent_path}/datasets/recommendation_files/recommendation_metrics/{algorithm_name}/{algorithm_name}_K={k_value}_metrics.csv"
+        default_recs_output_path = f"{parent_path}/datasets/recommendation_files/recommendation_lists/{algorithm_name}/params_default/K={k_value}/default_{algorithm_name}_K={k_value}_recs.csv"
+        default_metrics_output_path = f"{parent_path}/datasets/recommendation_files/recommendation_metrics/{algorithm_name}/params_default/K={k_value}/default_{algorithm_name}_K={k_value}_metrics.csv"
+        default_parameters_output_path = f"{parent_path}/datasets/recommendation_files/recommendation_metrics/{algorithm_name}/params_default/K={k_value}/default_{algorithm_name}_K={k_value}_params.csv"
+
+        optimized_recs_output_path = f"{parent_path}/datasets/recommendation_files/recommendation_lists/{algorithm_name}/params_optimized/K={k_value}/optimized_{algorithm_name}_K={k_value}_recs.csv"
+        optimized_metrics_output_path = f"{parent_path}/datasets/recommendation_files/recommendation_metrics/{algorithm_name}/params_optimized/K={k_value}/optimized_{algorithm_name}_K={k_value}_metrics.csv"
+        optimized_parameters_output_path = f"{parent_path}/datasets/recommendation_files/recommendation_metrics/{algorithm_name}/params_optimized/K={k_value}/optimized_{algorithm_name}_K={k_value}_params.csv"
 
         match algorithm_name:
-            case "userknn":
-                user_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
+            case "user_knn":
+                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                optimized_user_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
-            case "itemknn":
-                item_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
+            case "item_knn":
+                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                optimized_bprmf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "final_ncf":
-                final_ncf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
+                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                optimized_ncf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "bprmf":
-                bprmf_opt_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, output_recs_path, output_metrics_path)
+                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                optimized_bprmf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             # case "all":
 
