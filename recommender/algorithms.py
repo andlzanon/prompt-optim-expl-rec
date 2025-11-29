@@ -114,12 +114,10 @@ def default_user_knn_recs(TOP_K, train_path, test_path, recs_output_path, metric
 
     # 5. Evaluation on Test Set
     # Instantiate the evaluation class
-    evaluator = ItemRecommendationEvaluation(
+    metrics_dict = ItemRecommendationEvaluation(
         sep=",",
         n_ranks=[TOP_K]
-    )
-    # Perform evaluation by comparing generated recommendations with the ground truth test set
-    metrics_dict = evaluator.evaluate_with_files(recs_output_path, test_path)
+    ).evaluate_with_files(recs_output_path, test_path)
 
     # 6. Save Results and Parameters
     
@@ -213,7 +211,7 @@ def optimized_user_knn_recs(TOP_K, train_path, validation_path, test_path, outpu
         direction="maximize",
         sampler=optuna.samplers.TPESampler(seed=42)
     )
-    num_trials = 70
+    num_trials = 40
     study.optimize(objective, n_trials=num_trials)
 
     best_params_dict = study.best_params
@@ -305,7 +303,7 @@ def default_item_knn_recs(TOP_K, train_path, test_path, recs_output_path, metric
         int: Always returns 0 (success code).
     """
 
-    train_df = pd.read_csv(train_path, names=[["userID", "itemID", "rating", "timestamp"]])
+    train_df = pd.read_csv(train_path, names=["userID", "itemID", "rating", "timestamp"])
 
     sim_metric= "cosine"
 
@@ -407,9 +405,9 @@ def optimized_item_knn_recs(TOP_K, train_path, validation_path, test_path, outpu
             os.remove(output_recs_opt_path)
 
         # Hyperparameter search space
-        suggested_k_neighbors = trial.suggest_int("k_neighbors", 1, 80)
+        suggested_k_neighbors = trial.suggest_int("k_neighbors", 1, 120)
         suggested_similarity_metric = trial.suggest_categorical(
-            "similarity_metric", ["cosine", "hamming", "jaccard", "euclidean", "dice"]
+            "similarity_metric", ["cosine", "jaccard"]
         )
 
         # Build and run the model using trial parameters
@@ -434,11 +432,14 @@ def optimized_item_knn_recs(TOP_K, train_path, validation_path, test_path, outpu
         direction="maximize",
         sampler=optuna.samplers.TPESampler(seed=42)
     )
-    study.optimize(objective, n_trials=20)
 
-    print("\nPARAMS USED:", study.best_params, "\n")
+    num_trials = 50
+    study.optimize(objective, n_trials=num_trials)
 
     best_params_dict = study.best_params
+    best_params_dict["trials"] = num_trials
+
+    print_params(best_params_dict)
 
     # Train final model with best hyperparameters
     final_model = build_item_model(

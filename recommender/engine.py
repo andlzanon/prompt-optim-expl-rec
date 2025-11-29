@@ -39,15 +39,15 @@ def generate_recommendations(algorithm_name, k_vector):
                 optimized_user_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "item_knn":
-                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
-                optimized_bprmf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
+                default_item_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                optimized_item_knn_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "final_ncf":
-                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                default_ncf_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
                 optimized_ncf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "bprmf":
-                default_user_knn_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                default_bprmf_recs(k_value, TRAIN_PATH, TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
                 optimized_bprmf_recs(k_value, TRAIN_PATH_VALID, VALIDATION_PATH_VALID, TEST_PATH_VALID, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             # case "all":
