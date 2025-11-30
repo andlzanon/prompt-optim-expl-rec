@@ -6,12 +6,12 @@ from algorithms import default_user_knn_recs, optimized_user_knn_recs, default_b
 current_path = Path.cwd()
 parent_path = current_path.parent
 
-TRAIN_PATH = parent_path / "datasets" / "train_test_oficial" / "train.dat"
-TEST_PATH = parent_path / "datasets" / "train_test_oficial" / "test.dat"
+TRAIN_PATH = parent_path / "datasets" / "train_test_oficial" / "train.csv"
+TEST_PATH = parent_path / "datasets" / "train_test_oficial" / "test.csv"
 
-TRAIN_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "train.dat"
-VALIDATION_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "validation.dat"
-TEST_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "test.dat"
+TRAIN_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "train.csv"
+VALIDATION_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "validation.csv"
+TEST_PATH_VALID = parent_path / "datasets" / "train_validation_test_oficial" / "test.csv"
 
 
 def generate_recommendations(algorithm_name, k_vector):
