@@ -16,16 +16,23 @@ import sys
 
 
 
-# k_values = [1, 5, 10, 20, 50, 100, 200]
-k_values = [50, 100, 200]
+# k_values = [5]
+k_values = [1, 5, 10, 20, 50, 100, 200]
+# k_values = [50, 100, 200]
 # k_values = [1]
 
 
 # generate_recommendations(algorithm_name="user_knn", k_vector=k_values)
-generate_recommendations(algorithm_name="item_knn",  k_vector=k_values)
-# generate_recommendations(algorithm_name="final_ncf",  k_vector=k_values)
+# generate_recommendations(algorithm_name="item_knn",  k_vector=k_values)
+# generate_recommendations(algorithm_name="ncf",  k_vector=k_values)
 # generate_recommendations(algorithm_name="bprmf", k_vector=k_values)
+generate_recommendations(algorithm_name="teste",  k_vector=k_values)
 
 # generate_recommendations(algorithm_name="all",  k_vector=k_values)
 
 # userknn itemknn ncf neumf bprmf
+
+
+# generate_recommendations(algorithm_name="user_knn_default", k_vector=k_values)
+# generate_recommendations(algorithm_name="user_knn_opt", k_vector=k_values)
+# generate_recommendations(algorithm_name="item_knn_default",  k_vector=k_values)
