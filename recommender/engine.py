@@ -42,7 +42,7 @@ def generate_recommendations(algorithm_name, k_vector):
                 optimized_item_knn_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "ncf":
-                default_ncf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
+                # default_ncf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
 
 
 
@@ -50,7 +50,7 @@ def generate_recommendations(algorithm_name, k_vector):
 
 
 
-                # optimized_ncf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
+                optimized_ncf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
 
             case "bprmf":
                 default_bprmf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
