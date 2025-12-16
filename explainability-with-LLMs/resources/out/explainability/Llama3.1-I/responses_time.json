@@ -1,0 +1,16 @@
+{
+    "args": {
+        "datain": "resources/data",
+        "inputdir_recommendation": "resources/out/recommendations/Llama3.1-I/responses.csv",
+        "seed": 2025,
+        "llm_method": "Llama3.1-I",
+        "out": "resources/out/explainability/Llama3.1-I",
+        "machine": "icarus",
+        "inputdir": "resources/data",
+        "outputdir": "resources/out/explainability/Llama3.1-I",
+        "outfilename": "resources/out/explainability/Llama3.1-I/responses",
+        "start_time": "30-10-2025 01:04:06"
+    },
+    "time_to_explain": 206.58707094192505,
+    "time_to_explain_avg": 20.658707094192504
+}
