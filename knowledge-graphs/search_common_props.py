@@ -2,9 +2,6 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 
-
-
-
 def get_train_set(train_path: str, cols_used: list) -> pd.DataFrame:
     train_set = pd.read_csv(train_path, header=None)
     train_set.columns = cols_used
@@ -20,7 +17,6 @@ def get_prop_set(props_wikidata_path, prop_cols) -> pd.DataFrame:
     return prop_set
 
 def get_output_rec_set(output_rec_path: str, cols_used: list) -> pd.DataFrame:
-    # output_cols = ['user_id', 'item_id', 'score']
     output_cols = ['user_id', 'movie_id', 'score']
     output_rec_set = pd.read_csv(output_rec_path, header=None)
     output_rec_set.columns = output_cols
@@ -88,79 +84,118 @@ def debug_path(graph, hm_node, rm_node):
 
 
 
+def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: pd.DataFrame, train_set: pd.DataFrame, output_rec_set: pd.DataFrame, movie_set: pd.DataFrame, cols_used: list):
 
+    """
+    Generate explanation paths between a user's interacted items and recommended items
+    using a property-based graph, and store the results in a CSV file.
 
+    Parameters
+    ----------
+    graph : nx.Graph
+        A NetworkX graph where:
+        - Item nodes are prefixed with 'I'
+        - Property nodes represent shared attributes between items
 
+    ID_user : int
+        The user identifier used to retrieve interactions and recommendations.
 
+    prop_set : pd.DataFrame
+        DataFrame containing item-to-property relationships.
+        The index must correspond to item IDs and include a column named 'obj'
+        representing property nodes.
 
+    train_set : pd.DataFrame
+        User-item interaction dataset indexed by user ID.
+        Must contain item IDs and timestamps.
 
+    output_rec_set : pd.DataFrame
+        Recommendation dataset indexed by user ID.
+        Must contain recommended item IDs ordered by relevance score.
 
+    movie_set : pd.DataFrame
+        DataFrame mapping item IDs to movie titles.
+        Must contain columns ['movieId', 'title'].
 
-def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: pd.DataFrame, train_set: pd.DataFrame, output_rec_set: pd.DataFrame, movie_set: pd.DataFrame, cols_used: list) -> pd.DataFrame:
+    cols_used : list
+        List of column names used in the datasets.
+        Expected structure:
+        - cols_used[1]: item ID column
+        - cols_used[-1]: timestamp column
+
+    Output
+    ------
+    CSV file
+        A CSV file is saved to:
+        'user_props/{ID_user}_user_id.csv'
+
+        The file contains the following columns:
+        - interacted_item_id
+        - recommended_item_id
+        - common_props
+        - interacted_item_name
+        - recommended_item_name
+
+    Returns
+    -------
+    None
+        The function writes results to disk and does not return a value.
+
+    Notes
+    -----
+    - Only simple paths with a maximum length of 2 are considered:
+      interacted_item -> property -> recommended_item
+    - If no path exists between an interacted and recommended item,
+      it is silently ignored.
+    - The function assumes that the graph and DataFrames are already
+      preprocessed and consistent.
+    """
+
 
     # Ordenação decrescente por timestamp
-    # items_interacted = train_set.loc[ID_user].sort_values(by=cols_used[-1], ascending=False) !!!!!!PERGUNTAR!!!!!!!!
-    # faz sentido colocar nessa ordem decrescente do mais novo para o mais velho???
-
-    items_interacted = train_set.loc[ID_user].sort_values(by=cols_used[1], ascending=True)
+    items_interacted = train_set.loc[ID_user].sort_values(by=cols_used[-1], ascending=False)
 
     try:
         items_interacted = items_interacted[cols_used[1]].to_list()
     except AttributeError:
         items_interacted = list(train_set.loc[ID_user][cols_used[1]])[:-1]
 
-
-    # items_recommended = list(items_recommended[output_cols[1]])
-
-    # items_recommended = output_rec_set.loc[ID_user].sort_values(by=cols_used[1], ascending=True)
-    # items_recommended = list(items_recommended[cols_used[1]])
-
     # Ordenação pelo score da lista de recomendados!!
     items_recommended = list(output_rec_set.loc[ID_user][cols_used[1]])
 
 
-    # sem_path_dist = pd.DataFrame(columns=['historic', 'recommended', 'path', 'path_s'])
     interacted_codes = ['I' + str(i) for i in items_interacted]
     recommended_codes = ['I' + str(i) for i in items_recommended]
     interacted_props = list(set(prop_set.loc[prop_set.index.isin(items_interacted)]['obj']))
     subgraph = graph.subgraph(interacted_codes + recommended_codes + interacted_props)
 
-    print("interagidos")
-    print(interacted_codes)
-    print()
+    # print("interagidos")
+    # print(interacted_codes)
+    # print()
 
-    print("recomendados")
-    print(recommended_codes)
+    # print("recomendados")
+    # print(recommended_codes)
 
     rows = []
 
 
-    for hm in items_interacted:
-        hm_node = 'I' + str(hm)
-        for rm in items_recommended:
-            rm_node = 'I' + str(rm)
+    for rm in items_recommended:
+        rm_node = 'I' + str(rm)
+        for im in items_interacted:
+            im_node = 'I' + str(im)
 
             # debug_path(subgraph, hm_node, rm_node)
-            print(f"train_item {hm_node}")
+            print(f"interacted_item {im_node}")
             print(f"recommended_item {rm_node}")
             try:
-                paths = nx.all_simple_paths(subgraph, source=hm_node, target=rm_node, cutoff=2)
+                paths = nx.all_simple_paths(subgraph, source=im_node, target=rm_node, cutoff=2)
                 paths_s = [p for p in paths]
-                # print(paths_s)
                 for p in paths_s:
-                    # rows.append({
-                    #     "interacted_itemId": p[0],
-                    #     "recommended_itemId": p[2],
-                    #     "common_props": p[1]
-                    # })
                     rows.append({
-                        "interacted_item_id": hm,
+                        "interacted_item_id": im,
                         "recommended_item_id": rm,
                         "common_props": p[1]
                     })
-
-                    # print(p[0], p[2], p[1])
-                # print()
 
             except (nx.exception.NetworkXNoPath, ValueError):
                 print("Sem Caminho")
@@ -186,9 +221,9 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
     ).rename(columns={"title": "recommended_item_name"}).drop(columns="movieId")
 
 
-    df.to_csv(f"teste_props/{ID_user}_user_id.csv", index=False)
+    df.to_csv(f"user_props/{ID_user}_user_id.csv", index=False)
 
-    return df
+    return
 
 
 
@@ -215,13 +250,9 @@ def main():
 
     for user_id, _ in train_set.groupby("user_id"):
         print(f"USUÁRIO {user_id}")
-        # caminhos = semantic_path_distance(prop_set, graph, items_historic, items_recommended)
         user_interacted_recommended_paths(graph, user_id, prop_set, train_set, output_rec_set, movie_set, cols_used)
         print()
         print()
-
-        if(user_id == 220):
-            break
 
 
 if __name__ == "__main__":
