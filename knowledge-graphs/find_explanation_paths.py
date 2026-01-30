@@ -84,7 +84,7 @@ def debug_path(graph, hm_node, rm_node):
 
 
 
-def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: pd.DataFrame, train_set: pd.DataFrame, output_rec_set: pd.DataFrame, movie_set: pd.DataFrame, cols_used: list):
+def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: int, prop_set: pd.DataFrame, train_set: pd.DataFrame, recs_set: pd.DataFrame, movie_set: pd.DataFrame, cols_used: list):
 
     """
     Generate explanation paths between a user's interacted items and recommended items
@@ -92,6 +92,14 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
 
     Parameters
     ----------
+
+    algorithm : str
+        A string which can be:
+        - bprmf
+        - item_knn
+        - ncf
+        - user_knn
+
     graph : nx.Graph
         A NetworkX graph where:
         - Item nodes are prefixed with 'I'
@@ -127,7 +135,7 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
     ------
     CSV file
         A CSV file is saved to:
-        'user_props/{ID_user}_user_id.csv'
+        "../datasets/explanation_paths/{algorithm}-opt/{algorithm}_{ID_user}_user_id.csv"
 
         The file contains the following columns:
         - interacted_item_id
@@ -151,6 +159,7 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
       preprocessed and consistent.
     """
 
+    output_path = f"../datasets/explanation_paths/{algorithm}-opt/{algorithm}_{ID_user}_user_id.csv"
 
     # Ordenação decrescente por timestamp
     items_interacted = train_set.loc[ID_user].sort_values(by=cols_used[-1], ascending=False)
@@ -161,7 +170,7 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
         items_interacted = list(train_set.loc[ID_user][cols_used[1]])[:-1]
 
     # Ordenação pelo score da lista de recomendados!!
-    items_recommended = list(output_rec_set.loc[ID_user][cols_used[1]])
+    items_recommended = list(recs_set.loc[ID_user][cols_used[1]])
 
 
     interacted_codes = ['I' + str(i) for i in items_interacted]
@@ -191,6 +200,8 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
                 paths = nx.all_simple_paths(subgraph, source=im_node, target=rm_node, cutoff=2)
                 paths_s = [p for p in paths]
                 for p in paths_s:
+                    print(p)
+                    print()
                     rows.append({
                         "interacted_item_id": im,
                         "recommended_item_id": rm,
@@ -221,7 +232,19 @@ def user_interacted_recommended_paths(graph: nx.Graph, ID_user: int, prop_set: p
     ).rename(columns={"title": "recommended_item_name"}).drop(columns="movieId")
 
 
-    df.to_csv(f"user_props/{ID_user}_user_id.csv", index=False)
+    df.to_csv(output_path, index=False)
+
+    return
+
+
+def create_explanation_paths_file(algorithm, graph, prop_set, train_set, recs_set, movie_set, cols_used):
+
+    for user_id, _ in train_set.groupby("user_id"):
+
+        print(f"USUÁRIO {user_id}")
+        user_interacted_recommended_paths(algorithm, graph, user_id, prop_set, train_set, recs_set, movie_set, cols_used)
+        print()
+        print()
 
     return
 
@@ -235,24 +258,24 @@ def main():
 
     props_wikidata_path = "props_wikidata_movielens_small.csv"
     train_path = "../datasets/train_test_oficial/train.csv"
-    output_rec_path = "../datasets/recommendation_files/recommendation_lists/ncf/params_optimized/K=20/optimized_ncf_K=20_recs.csv"
     movies_path = "../datasets/ml-latest-small/movies.csv"
     cols_used = ['user_id', 'movie_id', 'interaction', 'timestamp']
     prop_cols = ['movieId', 'title', 'prop', 'obj']
     
-
     train_set = get_train_set(train_path, cols_used)
     prop_set = get_prop_set(props_wikidata_path, prop_cols)
-    output_rec_set = get_output_rec_set(output_rec_path, cols_used)
     movie_set = get_movie_set(movies_path)
     graph = build_graph(train_set, prop_set)
-    
 
-    for user_id, _ in train_set.groupby("user_id"):
-        print(f"USUÁRIO {user_id}")
-        user_interacted_recommended_paths(graph, user_id, prop_set, train_set, output_rec_set, movie_set, cols_used)
-        print()
-        print()
+    # algs_list = ["bprmf", "item_knn", "ncf", "user_knn"]
+    algs_list = ["user_knn"]
+    
+    for algorithm in algs_list:
+
+        recs_path = f"../datasets/recommendation_files/recommendation_lists/{algorithm}/params_optimized/K=20/optimized_{algorithm}_K=20_recs.csv"
+        recs_set = get_output_rec_set(recs_path, cols_used)
+
+        create_explanation_paths_file(algorithm, graph, prop_set, train_set, recs_set, movie_set, cols_used)
 
 
 if __name__ == "__main__":
