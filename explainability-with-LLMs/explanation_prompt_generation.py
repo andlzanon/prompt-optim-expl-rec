@@ -189,7 +189,7 @@ def gerar_prompt(user_id: int, num_recs: int, num_props_per_rec: int, user_train
       by extending the `mode` parameter logic.
     """
 
-    user_props_PATH = f"../knowledge-graphs/user_props/{user_id}_user_id.csv"
+    user_props_PATH = f"../datasets/explanation_paths/user_knn-opt/{user_id}_user_id.csv"
     user_props_set = pd.read_csv(user_props_PATH)
 
     all_recs = user_props_set['recommended_item_id'].drop_duplicates()
@@ -225,7 +225,7 @@ def main():
     movies_set = pd.read_csv(movie_PATH)
 
     # Mutable parameters
-    user_id = 1
+    user_id = 100
     num_recs = 4
     num_props_per_rec = 3
     mode="random"
