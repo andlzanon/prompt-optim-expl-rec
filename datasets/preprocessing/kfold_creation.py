@@ -7,7 +7,7 @@ def cross_validation_train_validation(rs: int):
     :param rs: random state integer arbitrary number
     :return: folders created on the dataset repository
     """
-    SplitDatabase(input_file="../train_test_oficial/train.csv",
+    SplitDatabase(input_file="../recommender_train_test_oficial/train.csv",
                   dir_folds="../", as_binary=True, binary_col=2,
                   sep_read=',', sep_write=',', n_splits=5).k_fold_cross_validation(random_state=rs)
 

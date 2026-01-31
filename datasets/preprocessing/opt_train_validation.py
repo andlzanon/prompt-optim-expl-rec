@@ -2,9 +2,9 @@ import pandas as pd
 from recommenders.datasets.python_splitters import python_stratified_split
 
 # Paths
-full_dataset_path = "../train_test_oficial/train.csv"
-opt_train_path = "../train_validation/opt_train.csv"
-opt_validation_path = "../train_validation/opt_validation.csv"
+full_dataset_path = "../recommender_train_test_oficial/train.csv"
+opt_train_path = "../recommender_train_validation/opt_train.csv"
+opt_validation_path = "../recommender_train_validation/opt_validation.csv"
 
 # Load full training dataset
 full_df = pd.read_csv(
