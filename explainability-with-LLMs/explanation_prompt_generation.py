@@ -122,7 +122,7 @@ def gerar_texto(df_list: list, user_train_set: pd.DataFrame, interactions_flag: 
 
     return text
 
-def gerar_prompt(user_id: int, num_recs: int, num_props_per_rec: int, user_train_set: pd.DataFrame, mode: str ='random') -> str | None:
+def gerar_prompt(user_id: int, num_recs: int, num_props_per_rec: int, user_train_set: pd.DataFrame, algorithm: str, mode: str ='random') -> str | None:
 
     """
     Generate a textual prompt containing explanation paths for a given user.
@@ -169,6 +169,9 @@ def gerar_prompt(user_id: int, num_recs: int, num_props_per_rec: int, user_train
         DataFrame containing the user's interaction history.
         Used to contextualize the generated prompt.
 
+    algorithm : str
+        String to determine from which algorithm the system is gonna get the explanation_paths
+        
     mode : str, optional (default='random')
         Strategy used to select explanation paths.
         Currently supported:
@@ -189,7 +192,7 @@ def gerar_prompt(user_id: int, num_recs: int, num_props_per_rec: int, user_train
       by extending the `mode` parameter logic.
     """
 
-    user_props_PATH = f"../datasets/explanation_paths/user_knn-opt/{user_id}_user_id.csv"
+    user_props_PATH = f"../datasets/explanation_paths/{algorithm}-opt/{algorithm}_{user_id}_user_id.csv"
     user_props_set = pd.read_csv(user_props_PATH)
 
     all_recs = user_props_set['recommended_item_id'].drop_duplicates()
@@ -217,7 +220,7 @@ def gerar_prompt(user_id: int, num_recs: int, num_props_per_rec: int, user_train
 def main():
 
     # Getting the train set to get the interactions of all users
-    train_PATH = "../datasets/train_test_oficial/train.csv"
+    train_PATH = "../datasets/recommender_train_test_oficial/train.csv"
     movie_PATH = "../datasets/ml-latest-small/movies.csv"
 
     train_set = pd.read_csv(train_PATH, names=['user_id', 'item_id', 'relevance', 'timestamp'])
@@ -225,10 +228,15 @@ def main():
     movies_set = pd.read_csv(movie_PATH)
 
     # Mutable parameters
-    user_id = 100
-    num_recs = 4
-    num_props_per_rec = 3
+    user_id = 1
+    num_recs = 20
+    num_props_per_rec = 5
     mode="random"
+    # algorithm = "user_knn"
+    # algorithm = "item_knn"
+    # algorithm = "bprmf"
+    algorithm = "ncf"
+
     user_train_set = train_set[train_set['user_id'] == user_id]
     user_train_set = user_train_set.merge(
         movies_set[['movieId', 'title']],
@@ -237,7 +245,7 @@ def main():
         how='left'
     ).drop(columns='movieId')
 
-    prompt = gerar_prompt(user_id, num_recs, num_props_per_rec, user_train_set, mode)
+    prompt = gerar_prompt(user_id, num_recs, num_props_per_rec, user_train_set, algorithm, mode)
 
     print("\n\n\n\n")
     print("PROMPT:\n")
