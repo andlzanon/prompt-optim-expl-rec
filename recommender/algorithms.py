@@ -361,7 +361,7 @@ def optimized_item_knn_recs(
     on the test set using the best hyperparameters.
     """
 
-    OPT_DIR = "../datasets/train_validation"
+    OPT_DIR = "../datasets/recommender_train_validation"
 
     # Temporary file for Optuna trials
     OPT_recs_output_path = "utils/user_item_knn/item_knn_parcial_recs.csv"
@@ -679,7 +679,7 @@ def optimized_ncf_recs(
     # -----------------------------------------------------------
     # Paths and configuration
     # -----------------------------------------------------------
-    OPT_DIR = "../datasets/train_validation"
+    OPT_DIR = "../datasets/recommender_train_validation"
 
     OPT_train_path = f"{OPT_DIR}/opt_train.csv"
     OPT_validation_path = f"{OPT_DIR}/opt_validation.csv"
@@ -1102,7 +1102,7 @@ def optimized_bprmf_recs(
     """
 
     # Directory containing train/validation split for optimization
-    OPT_DIR = "../datasets/train_validation"
+    OPT_DIR = "../datasets/recommender_train_validation"
 
     # Temporary recommendation file used during optimization
     output_recs_opt_path = "utils/bprmf/bprmf_parcial_recs.csv"

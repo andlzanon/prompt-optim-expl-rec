@@ -121,7 +121,7 @@ def transform_recs_in_list(movies_path: str) -> int:
 # Script execution
 # ======================
 
-TRAIN_CSV_PATH = "../train_test_oficial/train.csv"
+TRAIN_CSV_PATH = "../recommender_train_test_oficial/train.csv"
 MOVIES_PATH = "../ml-latest-small/movies.csv"
 RATING_PATH = "../ml-latest-small/ratings.csv"
 DESTINATION_PATH = "train_llm.csv"
