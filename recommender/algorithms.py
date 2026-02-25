@@ -81,24 +81,23 @@ def default_user_knn_recs(
         "k_neighbors": k_neighbors
     }
 
-    def build_userknn_model(output_file):
-        """
-        Builds a UserKNN model with default settings.
-        """
-        return UserKNN(
-            train_file=FINAL_train_path,
-            test_file=FINAL_test_path,
-            output_file=output_file,
-            sep=",",
-            output_sep=",",
-            rank_length=TOP_K
-        )
-
     print(f"\nGenerating recommendations: USER_KNN | TOP_K={TOP_K}\n")
     print_params(params_dict)
 
-    # Train model and generate recommendations
-    final_model = build_userknn_model(FINAL_recs_output_path)
+    """
+        Builds a UserKNN model with default settings.
+    """
+
+    final_model = UserKNN(
+        train_file=FINAL_train_path,
+        test_file=FINAL_test_path,
+        output_file=FINAL_recs_output_path,
+        sep=",",
+        output_sep=",",
+        # k_neighbors=k_neighbors,
+        # similarity_metric=sim_metric,
+        rank_length=TOP_K
+    )
     final_model.compute(verbose=True)
 
     # Evaluate on test set
@@ -141,16 +140,18 @@ def optimized_user_knn_recs(
     Optimizes and trains a UserKNN model using Optuna, then evaluates and saves the results.
     """
 
-    OPT_DIR = "../datasets/recommender_train_validation"
-    OPT_recs_output_path = f"utils/user_item_knn/user_knn_parcial_recs.csv"
+    OPT_DIR = "../datasets/train_validation"
     metric_key = f"NDCG@{TOP_K}"
 
-    def evaluate_user_knn(k, sim_metric):
+    def evaluate_user_knn(k, sim_metric, trial):
+
         """
         Evaluates the UserKNN model with the given hyperparameters (k_neighbors, similarity_metric).
         """
         OPT_train_path = f"{OPT_DIR}/opt_train.csv"
         OPT_validation_path = f"{OPT_DIR}/opt_validation.csv"
+        OPT_recs_output_path = f"utils/user_item_knn/user_knn_trial_{trial.number}.csv"
+        # testetestetestetestetestetestetesteteste
 
         delete_file(OPT_recs_output_path)
 
@@ -180,12 +181,12 @@ def optimized_user_knn_recs(
         """
         Objective function for Optuna optimization, defining the hyperparameter search space.
         """
-        suggested_k_neighbors = trial.suggest_int("k_neighbors", 1, 100)
+        suggested_k_neighbors = trial.suggest_int("k_neighbors", 1, 200, step=5)
         suggested_similarity_metric = trial.suggest_categorical(
             "similarity_metric", ["jaccard", "cosine"]
         )
 
-        score = evaluate_user_knn(suggested_k_neighbors, suggested_similarity_metric)
+        score = evaluate_user_knn(suggested_k_neighbors, suggested_similarity_metric, trial)
 
         return score
 
@@ -204,6 +205,13 @@ def optimized_user_knn_recs(
 
     print_params(best_params_dict)
 
+    print()
+    print("alaoalladslads")
+    print(best_params_dict["k_neighbors"])
+    print(best_params_dict["similarity_metric"])
+    print("adslwadoaw")
+    print()
+
     # Train the final model with the best hyperparameters
     FINAL_model = UserKNN(
         train_file=FINAL_train_path,
@@ -211,7 +219,9 @@ def optimized_user_knn_recs(
         output_file=FINAL_recs_output_path,
         sep=',',
         output_sep=',',
+        # k_neighbors=83,
         k_neighbors=best_params_dict["k_neighbors"],
+        # similarity_metric="cosine",
         similarity_metric=best_params_dict["similarity_metric"],
         rank_length=TOP_K
     )
