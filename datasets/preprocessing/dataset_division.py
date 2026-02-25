@@ -3,8 +3,8 @@ from recommenders.datasets.python_splitters import python_stratified_split
 
 # Paths
 ml_ratings_path = "../ml-latest-small/ratings.csv"
-train_path = "../train_test_oficial/train.csv"
-test_path = "../train_test_oficial/test.csv"
+train_path = "../recommender_train_test_oficial/train.csv"
+test_path = "../recommender_train_test_oficial/test.csv"
 
 # Load ratings data
 ratings_df = pd.read_csv(ml_ratings_path)
