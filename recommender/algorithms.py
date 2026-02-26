@@ -140,7 +140,7 @@ def optimized_user_knn_recs(
     Optimizes and trains a UserKNN model using Optuna, then evaluates and saves the results.
     """
 
-    OPT_DIR = "../datasets/train_validation"
+    OPT_DIR = "../datasets/recommender_train_validation"
     metric_key = f"NDCG@{TOP_K}"
 
     def evaluate_user_knn(k, sim_metric, trial):
@@ -151,7 +151,6 @@ def optimized_user_knn_recs(
         OPT_train_path = f"{OPT_DIR}/opt_train.csv"
         OPT_validation_path = f"{OPT_DIR}/opt_validation.csv"
         OPT_recs_output_path = f"utils/user_item_knn/user_knn_trial_{trial.number}.csv"
-        # testetestetestetestetestetestetesteteste
 
         delete_file(OPT_recs_output_path)
 
