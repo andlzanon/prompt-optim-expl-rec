@@ -256,7 +256,7 @@ def create_explanation_paths_file(algorithm, graph, prop_set, train_set, recs_se
 
 def main():
 
-    props_wikidata_path = "props_wikidata_movielens_small.csv"
+    props_wikidata_path = "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
     train_path = "../datasets/recommender_train_test_oficial/train.csv"
     movies_path = "../datasets/ml-latest-small/movies.csv"
     cols_used = ['user_id', 'movie_id', 'interaction', 'timestamp']
@@ -267,8 +267,8 @@ def main():
     movie_set = get_movie_set(movies_path)
     graph = build_graph(train_set, prop_set)
 
-    # algs_list = ["bprmf", "item_knn", "ncf", "user_knn"]
-    algs_list = ["user_knn"]
+    algs_list = ["bprmf", "item_knn", "ncf", "user_knn"]
+    # algs_list = ["user_knn"]
     
     for algorithm in algs_list:
 
