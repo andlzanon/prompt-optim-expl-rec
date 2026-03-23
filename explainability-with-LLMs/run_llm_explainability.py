@@ -1,49 +1,57 @@
-import time
-import pandas as pd
-import os
-
 from src.utils.args import args_llm
 from src.llm.llm_for_explainability import LLM
-from src.utils.geral import prepare_explainability_inputs, save_file
+from src.utils.geral import prepare_explainability_inputs, save_metadata_json, save_explanations_csv
 
-if __name__ == '__main__':
+import time
+
+if __name__ == "__main__":
+    """
+    Entry-point script for the LLM-based explainability generation workflow.
+
+    This script parses runtime arguments, prepares the interaction data used to
+    construct prompts, loads the configured LLM wrapper, generates one explanation
+    path selection per recommendation, and persists both the explanations and the
+    run metadata to disk.
+    """
 
     args, info = args_llm()
-    
-    # Load data
-    data = prepare_explainability_inputs(args)
-    user_movies_dict_train = data["user_movies_dict_train"]
-    user_movies_dict_train = dict(list(user_movies_dict_train.items())[:10])
-    df_recommendations = data["df_recommendations"]
-    users = list(user_movies_dict_train.keys())
 
-    # Create model
-    llm = LLM(llm_method = args.llm_method, seed=args.seed)
+    # Load the interaction data and the users that will be processed.
+    interactions_df, users = prepare_explainability_inputs(args)
+
+    # Optional debug slice for running the pipeline on only a subset of users.
+    # interactions_df = interactions_df[interactions_df["userId"].isin(users[:20])].reset_index(drop=True)
+    # users = interactions_df["userId"].unique().tolist()
+
+    # Initialize and load the LLM wrapper before generating explanations.
+    llm = LLM(llm_method=args.llm_method, seed=args.seed)
     llm.set_model()
-        
-    # Generate explainability
-    print("Explainability!")
+
+    # Measure the end-to-end time spent generating explanation selections.
     start_time = time.time()
-    user_explanations = llm.generate_explanations(users, df_recommendations, user_movies_dict_train)
+
+    user_explanations = llm.generate_explanations(
+        users=users,
+        interactions_df=interactions_df,
+        explanation_paths_prefix=args.explanation_paths_prefix,
+        num_recommendations=args.num_recommendations,
+        num_paths_per_recommendation=args.num_paths_per_recommendation,
+        include_user_history=args.include_user_history 
+    )
+
     end_time = time.time()
 
-    # Save data
-    info["time_to_explain"] = end_time - start_time
-    info["time_to_explain_avg"] = (end_time - start_time) / len(user_movies_dict_train)
-    # info["system_prompt"] = llm.system_prompt
-    # info["user_prompt"] = llm.user
+    # Record summary metadata about the run for later inspection.
+    info["time_to_explain"] = float(end_time - start_time)
+    info["system_prompt"] = llm.system_prompt
+    info["n_users"] = len(users)
 
-    save_file(args.outfilename + '_time', info)
+    # Persist metadata and generated explanations as separate artifacts.
+    output_json = args.outfilename + "_metadata.json"
+    save_metadata_json(output_json, info)
 
-    output_csv = args.outfilename + '.csv'
-    if not os.path.exists(output_csv):
-        pd.DataFrame(columns=["userId", "explanation"]).to_csv(output_csv, index=False)
+    output_csv = args.outfilename + ".csv"
+    save_explanations_csv(output_csv, user_explanations)
 
-    for user_id, explanation in user_explanations.items():
-        df_temp = pd.DataFrame([{
-            "userId": user_id,
-            "explanation": explanation
-        }])
-        df_temp.to_csv(output_csv, mode="a", header=False, index=False)
-
-    print(f"Explanations saved to {output_csv} and metadata saved to JSON.")
+    print(f"\nExplanations saved to {output_csv}")
+    print(f"Metadata saved to {output_json}")

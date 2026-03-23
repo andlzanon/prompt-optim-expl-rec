@@ -1,10 +1,16 @@
 echo "Installing Python venv..."
-sudo apt install -y python3-venv
+sudo apt update
+sudo apt install -y python3.10-venv
 
 echo "Creating virtual environment (.venv)..."
 python3.10 -m venv .venv
 
-printf "\nexport LLMWORKDIR=$(dirname \"$PWD\")" >> .venv/bin/activate
+echo "Appending LLMWORKDIR to activate..."
+cat >> .venv/bin/activate <<'EOF'
+
+# Project-specific env var
+export LLMWORKDIR="$(dirname "$PWD")"
+EOF
 
 echo "Activating virtual environment..."
 source .venv/bin/activate
@@ -14,5 +20,3 @@ pip install --upgrade pip wheel setuptools
 
 echo "Installing requirements..."
 pip install -r llm_requirements.txt
-
-# deactivate

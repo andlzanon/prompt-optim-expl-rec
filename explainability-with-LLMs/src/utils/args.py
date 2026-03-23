@@ -1,47 +1,450 @@
+from __future__ import annotations
+
+from src.representation import available_representations
 from src.utils.geral import check_if_out_file_exists
+
 from datetime import datetime
-import os, torch, numpy, random, socket, argparse
+from typing import Tuple, Dict, Any
+import numpy as np
+import os, torch, random, socket, argparse
 
-def args_llm():
-    parser = argparse.ArgumentParser(description='LLM explainability.')
+def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
+    """
+    Build and parse CLI arguments for the LLM explanation-path selection runner.
 
-    # Input data and recommendations
-    parser.add_argument('--datain', type=str, required=True, help="Base input data directory")
-    parser.add_argument('--inputdir_recommendation', type=str, required=True, 
-                        help="Directory or file containing pre-generated recommendations")
-    
+    This function defines the command-line interface used by the module that
+    generates LLM-based explainability outputs from precomputed explanation
+    paths. After parsing the raw CLI values, it enriches the resulting
+    namespace with derived paths, a timestamp, and normalized boolean flags.
+
+    Parameters
+    ----------
+    None
+        The function does not receive Python-level arguments. It reads command-
+        line values from ``sys.argv`` through ``argparse.ArgumentParser``.
+
+    Returns
+    -------
+    Tuple[argparse.Namespace, Dict[str, Any]]
+        A tuple ``(args, info)`` where ``args`` is the parsed namespace with
+        additional derived attributes such as ``inputdir``, ``outputdir``,
+        ``outfilename``, ``start_time``, ``include_user_history``, and
+        ``explanation_paths_prefix``. ``info`` contains ``{"args": vars(args)}``
+        so the final configuration can be logged downstream.
+
+    Raises
+    ------
+    SystemExit
+        Raised by ``argparse`` when required arguments are missing or invalid.
+    OSError
+        Raised if the output directory needs to be created and the filesystem
+        operation fails.
+
+    Side Effects
+    ------------
+    Prints the parsed arguments and status messages, calls
+    ``check_if_out_file_exists(args)``, creates the output directory when it
+    does not exist yet, and seeds Python's ``random``, NumPy, and PyTorch
+    random number generators.
+
+    Notes
+    -----
+    This function centralizes the runtime configuration for the explanation
+    generation flow. The derived ``explanation_paths_prefix`` is the base path
+    later used to locate the explanation-path files associated with the chosen
+    recommendation algorithm.
+    """
+
+    parser = argparse.ArgumentParser(
+        description="LLM explainability (explanation-path selection)."
+    )
+
+    # Input
+    parser.add_argument(
+        "--datain",
+        type=str,
+        required=True,
+        help="Base input data directory (e.g., ../datasets).",
+    )
+
+    # Explanation paths
+    parser.add_argument(
+        "--algorithm",
+        type=str,
+        required=True,
+        help="Algorithm name used to locate explanation paths (e.g., user_knn, item_knn).",
+    )
+
+    parser.add_argument(
+        "--selection_strategy",
+        type=str,
+        default="random",
+        help="Strategy used to select explanation paths (default: random).",
+    )
+
+    parser.add_argument(
+        "--num_recommendations",
+        type=int,
+        default=3,
+        help="Number of recommendations to include per user (default: 3).",
+    )
+
+    parser.add_argument(
+        "--num_paths_per_recommendation",
+        type=int,
+        default=3,
+        help="Number of candidate explanation paths per recommendation (default: 3).",
+    )
+
+    parser.add_argument(
+        "--include_user_history",
+        type=str,
+        default="true",
+        help="Whether to include user interaction history in the prompt (true/false).",
+    )
+
     # Seed and model
-    parser.add_argument('--seed',       type=int, default=2025, help="Seed for reproducibility")
-    parser.add_argument('--llm_method', type=str, required=True, help="LLM method or model name")
-    
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=2026,
+        help="Seed for reproducibility.",
+    )
+
+    parser.add_argument(
+        "--llm_method",
+        type=str,
+        required=True,
+        help="LLM method or model name.",
+    )
+
     # Output
-    parser.add_argument('--out',        type=str, required=True, help="Base output directory")
-    
+    parser.add_argument(
+        "--out",
+        type=str,
+        required=True,
+        help="Base output directory.",
+    )
+
     # Machine / environment
-    parser.add_argument('--machine',    type=str, default=socket.gethostname(), help="Machine hostname")
-    
-    # Parse arguments
+    parser.add_argument(
+        "--machine",
+        type=str,
+        default=socket.gethostname(),
+        help="Machine hostname.",
+    )
+
     args = parser.parse_args()
 
-    # Define paths
-    args.inputdir   = f'{args.datain}'
-    args.outputdir   = f'{args.out}'
+    # Post-processing
+    args.inputdir = f"{args.datain}"
+    args.outputdir = f"{args.out}"
     args.outfilename = f"{args.outputdir}/responses"
-    args.start_time  = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    args.start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
-    print(args)
+    # Normalize CLI string values into booleans expected by the downstream flow.
+    args.include_user_history = str(args.include_user_history).lower() in ["true", "1", "yes"]
+
+    # Build the shared prefix used to locate the explanation-path files.
+    args.explanation_paths_prefix = os.path.join(
+        args.datain,
+        "explanation_paths",
+        f"{args.algorithm}-opt",
+        args.algorithm,
+    )
+
+    print('\n', args)
     check_if_out_file_exists(args)
 
-    # Create output directory if not exists
     if not os.path.exists(args.outputdir):
-        print(f"Creating output directory at {args.outputdir}")
+        print(f"\nCreating output directory at {args.outputdir}\n")
         os.makedirs(args.outputdir, exist_ok=True)
+    else: 
+        print('\n')
 
-    # Set random seeds for reproducibility
+    # Reproducibility
     random.seed(args.seed)
     torch.manual_seed(args.seed)
-    numpy.random.seed(seed=args.seed)
+    np.random.seed(seed=args.seed)
 
     info = {"args": vars(args)}
 
+    return args, info
+
+def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
+    """
+    Build and parse CLI arguments for the prompt-optimization runner.
+
+    This function defines the command-line interface for the prompt
+    optimization workflow, which searches for better system instructions for
+    the explainability pipeline. Besides parsing the raw CLI values, it derives
+    convenience attributes used later in the optimization process, such as the
+    explanation-path prefix, output paths, metric-specific parameters, and
+    normalized boolean flags.
+
+    Parameters
+    ----------
+    None
+        The function does not receive Python-level arguments. It reads command-
+        line values from ``sys.argv`` through ``argparse.ArgumentParser``.
+
+    Returns
+    -------
+    Tuple[argparse.Namespace, Dict[str, Any]]
+        A tuple ``(args, info)`` where ``args`` is the parsed namespace with
+        additional derived attributes such as ``inputdir``,
+        ``explanation_paths_prefix``, ``metric_params``, ``outputdir``,
+        ``outfilename``, ``start_time``, ``include_user_history``, and
+        ``early_stopping``. ``info`` contains ``{"args": vars(args)}`` so the
+        final configuration can be logged downstream.
+
+    Raises
+    ------
+    SystemExit
+        Raised by ``argparse`` when required arguments are missing or invalid.
+    OSError
+        Raised if the output directory needs to be created and the filesystem
+        operation fails.
+
+    Side Effects
+    ------------
+    Prints the parsed arguments and status messages, calls
+    ``check_if_out_file_exists(args)``, creates the output directory when it
+    does not exist yet, and seeds Python's ``random``, NumPy, and PyTorch
+    random number generators.
+
+    Notes
+    -----
+    This function acts as the configuration entry point for prompt
+    optimization. The metric-specific branch converts the selected objective
+    into the ``metric_params`` structure expected by later evaluation and
+    optimization stages.
+    """
+    
+    parser = argparse.ArgumentParser(
+        description="Prompt optimization for LLM explainability (path selection)."
+    )
+
+    # Input
+    parser.add_argument(
+        "--datain",
+        type=str,
+        required=True,
+        help="Base input data directory (e.g., ../datasets).",
+    )
+
+    # Explanation paths (same as explainability)
+    parser.add_argument(
+        "--algorithm",
+        type=str,
+        required=True,
+        help="Algorithm name used to locate explanation paths (e.g., user_knn, item_knn).",
+    )
+
+    parser.add_argument(
+        "--selection_strategy",
+        type=str,
+        default="random",
+        help="Strategy used to select explanation paths (default: random).",
+    )
+
+    parser.add_argument(
+        "--num_recommendations",
+        type=int,
+        default=3,
+        help="Number of recommendations to include per user (default: 3).",
+    )
+
+    parser.add_argument(
+        "--num_paths_per_recommendation",
+        type=int,
+        default=3,
+        help="Number of candidate explanation paths per recommendation (default: 3).",
+    )
+
+    parser.add_argument(
+        "--include_user_history",
+        type=str,
+        default="true",
+        help="Whether to include user interaction history in the prompt (true/false).",
+    )
+
+    # Knowledge Graph (needed by metrics)
+    parser.add_argument(
+        "--kg_path",
+        type=str,
+        required=True,
+        help="Path to the Knowledge Graph CSV file.",
+    )
+
+    # Seed and model
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=2026,
+        help="Seed for reproducibility.",
+    )
+
+    parser.add_argument(
+        "--llm_method",
+        type=str,
+        required=True,
+        help="LLM method or model name.",
+    )
+
+    # Optimization settings
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=6,
+        help="Number of optimization iterations.",
+    )
+
+    parser.add_argument(
+        "--total_instructions_per_iteration",
+        type=int,
+        default=1,
+        help="Candidate prompts per iteration.",
+    )
+
+    parser.add_argument(
+        "--meta_prompt_instruction_quantity",
+        type=int,
+        default=3,
+        help="How many best prompts to show as examples.",
+    )
+
+    # Optimization control (validation + early stopping)
+    parser.add_argument(
+        "--eval_every",
+        type=int,
+        default=1,
+        help="Run validation every N iterations (default: 1).",
+    )
+
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=3,
+        help="Early stopping patience in validation checks (default: 3).",
+    )
+
+    parser.add_argument(
+        "--min_delta",
+        type=float,
+        default=1e-2,
+        help="Minimum validation improvement to be considered progress (default: 1e-2).",
+    )
+
+    parser.add_argument(
+        "--early_stopping",
+        type=str,
+        default="false",
+        help="Whether to enable early stopping during validation checks (true/false).",
+    )
+
+    parser.add_argument(
+        "--mmr_lambda_quality",
+        type=float,
+        default=1.0,
+        help="MMR balance between relevance and diversity in reference selection (default: 1.0).",
+    )
+
+    parser.add_argument(
+        "--mmr_pool_multiplier",
+        type=int,
+        default=10,
+        help="MMR candidate pool multiplier used in reference selection (default: 10).",
+    )
+
+    parser.add_argument(
+        "--representation_model",
+        type=str,
+        default="llm2vec",
+        choices=available_representations(),
+        help="Text representation model used to embed candidate system instructions.",
+    )
+
+    # Metric (objective)
+    parser.add_argument(
+        "--metric",
+        type=str,
+        choices=["sep", "etd"],
+        required=True,
+        help="Metric used to score explanations during prompt optimization.",
+    )
+
+    parser.add_argument(
+        "--sep_beta",
+        type=float,
+        default=0.3,
+        help="(SEP only) Exponential decay parameter beta.",
+    )
+
+    parser.add_argument(
+        "--etd_k",
+        type=int,
+        default=5,
+        help="(ETD only) Number of explanations (k) considered.",
+    )
+
+    # Output
+    parser.add_argument(
+        "--out",
+        type=str,
+        required=True,
+        help="Base output directory.",
+    )
+
+    # Machine / environment
+    parser.add_argument(
+        "--machine",
+        type=str,
+        default=socket.gethostname(),
+        help="Machine hostname.",
+    )
+
+    args = parser.parse_args()
+
+    # Post-processing
+    args.inputdir = f"{args.datain}"
+
+    # Normalize CLI string values into booleans expected by the downstream flow.
+    args.include_user_history = str(args.include_user_history).lower() in ["true", "1", "yes"]
+    args.early_stopping = str(args.early_stopping).lower() in ["true", "1", "yes"]
+
+    # Build the shared prefix used to locate the explanation-path files.
+    args.explanation_paths_prefix = os.path.join(
+        args.datain,
+        "explanation_paths",
+        f"{args.algorithm}-opt",
+        args.algorithm,
+    )
+
+    # Convert metric-specific CLI options into the compact structure used later.
+    if args.metric == "sep":
+        args.metric_params = {"beta": float(args.sep_beta)}
+    else:
+        args.metric_params = {"k": int(args.etd_k)}
+
+    # Output dirs/files
+    args.outputdir = os.path.join(args.out, args.llm_method, "prompt_opt", args.metric)
+    args.outfilename = os.path.join(args.outputdir, "optimization_process")
+    args.start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+    print("\n", args)
+    check_if_out_file_exists(args)
+
+    if not os.path.exists(args.outputdir):
+        print(f"\nCreating output directory at {args.outputdir}\n")
+        os.makedirs(args.outputdir, exist_ok=True)
+    else:
+        print("\n")
+
+    # Reproducibility
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    np.random.seed(seed=args.seed)
+
+    info = {"args": vars(args)}
     return args, info

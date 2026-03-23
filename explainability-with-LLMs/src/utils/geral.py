@@ -1,60 +1,809 @@
-import os
-import json
+from __future__ import annotations
+
+from src.metrics.graph_utils import (
+    score_sep_from_explanations,
+    score_etd_from_explanations,
+)
+
+from pathlib import Path
+from typing import Dict, List, Any, Tuple, Optional, Callable
+import os, json, glob
+import numpy as np
 import pandas as pd
-import ast
 
-def str2bool(x):
-    if x.lower() in ['y', 'yes', 's', 'sim', '1', 'abacaxi']:
-        return True
-    return False
+def check_if_out_file_exists(args: Any) -> None:
+    """
+    Stop execution when output files matching the configured prefix already exist.
 
-def check_if_out_file_exists(args):
-    if os.path.exists(args.outfilename+'_time'+'.json'):
-        print("Out dir already exist!")
-        exit()
+    This helper checks whether any file path begins with ``args.outfilename``,
+    regardless of extension or suffix, and aborts the current run if matches
+    are found. It is used as a safety guard before writing artifacts so a new
+    execution does not silently overwrite or append to previous outputs.
 
-def read_movie_titles(inputdir):
-    return pd.read_csv(f"{inputdir}/movies.csv")
+    Parameters
+    ----------
+    args : Any
+        Configuration object expected to expose an ``outfilename`` attribute.
 
-def read_train_test(inputdir):
-    trainset = pd.read_csv(f'{inputdir}/train_llm.csv')
-    testset  = pd.read_csv(f'{inputdir}/test_llm.csv')
-    return trainset, testset
+    Returns
+    -------
+    None
+        This function returns nothing. It either completes silently when no
+        matching files are found or terminates execution.
 
-def read_recommendations(inputdir):
-    df = pd.read_csv(inputdir)
-    df['response'] = df['response'].apply(ast.literal_eval)
+    Raises
+    ------
+    SystemExit
+        Raised with exit code ``1`` when one or more matching output files are
+        found.
+    AttributeError
+        May be raised if ``args`` does not define ``outfilename``.
+
+    Side Effects
+    ------------
+    Prints the list of matching files before aborting execution.
+    """
+
+    pattern = f"{args.outfilename}*"
+    existing_files = glob.glob(pattern)
+
+    if existing_files:
+        print("\nOutput files already exist:")
+        for f in existing_files:
+            print(f" - {f}")
+        raise SystemExit(1)
+
+def save_metadata_json(save_path: str, info: Dict[str, Any]) -> None:
+    """
+    Persist metadata to a JSON file on disk.
+
+    Parameters
+    ----------
+    save_path : str
+        Destination path for the JSON file.
+    info : Dict[str, Any]
+        Metadata dictionary to serialize.
+
+    Returns
+    -------
+    None
+        This function writes the file and does not return a value.
+
+    Raises
+    ------
+    OSError
+        May be propagated if the file cannot be created or written.
+    TypeError
+        May be raised by ``json.dump`` if ``info`` contains non-serializable
+        values.
+
+    Side Effects
+    ------------
+    Creates or overwrites the target file.
+    """
+
+    with open(save_path, "w", encoding="utf-8") as f:
+        json.dump(info, f, indent=4, ensure_ascii=False)
+
+def save_explanations_csv(
+    output_path: str,
+    user_explanations: pd.DataFrame,
+) -> None:
+    """
+    Save generated explanations to a CSV file using the expected project schema.
+
+    The current explainability flow generates explanations as a pandas
+    DataFrame, and this function persists that DataFrame using the project's
+    expected CSV schema. The target directory is created when needed. If the
+    file does not exist yet, the CSV is created with a header; otherwise, rows
+    are appended without rewriting the header.
+
+    Parameters
+    ----------
+    output_path : str
+        Path to the CSV file (including .csv extension).
+    user_explanations : pd.DataFrame
+        DataFrame containing explanation rows. The function expects the
+        columns ``userId``, ``recommended_item_id``, ``explanation``,
+        ``tries``, and ``valid``. ``raw_model_output`` is added with null
+        values when it is missing.
+
+    Returns
+    -------
+    None
+        This function writes data to disk and does not return a value.
+
+    Raises
+    ------
+    ValueError
+        Raised when the input DataFrame is missing any required column.
+    TypeError
+        Raised when ``user_explanations`` is not a pandas DataFrame.
+    OSError
+        May be propagated if directory creation or CSV writing fails.
+
+    Side Effects
+    ------------
+    Creates the parent directory when necessary and creates or appends to the
+    target CSV file.
+
+    Notes
+    -----
+    This helper standardizes the output format of generated explanations for
+    the current pipeline, where ``LLM.generate_explanations()`` returns a
+    pandas DataFrame.
+    """
+
+    # Ensure the parent directory exists before attempting to write the CSV.
+    out_dir = os.path.dirname(output_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
+    if not isinstance(user_explanations, pd.DataFrame):
+        raise TypeError("user_explanations must be a pandas DataFrame")
+
+    df = user_explanations.copy()
+
+    # Validate the columns generated by the explainability pipeline.
+    required_cols = {
+        "userId",
+        "recommended_item_id",
+        "explanation",
+        "tries",
+        "valid",
+    }
+
+    missing = required_cols - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"Missing required columns in explanations DataFrame: {sorted(list(missing))}"
+        )
+
+    # Add the optional column when absent to preserve a stable CSV schema.
+    if "raw_model_output" not in df.columns:
+        df["raw_model_output"] = None
+
+    # Reorder columns to keep the CSV schema stable across runs.
+    ordered_cols = [
+        "userId",
+        "recommended_item_id",
+        "explanation",
+        "tries",
+        "valid",
+        "raw_model_output",
+    ]
+    df = df[ordered_cols]
+
+    write_header = not os.path.exists(output_path)
+    df.to_csv(
+        output_path,
+        index=False,
+        mode="w" if write_header else "a",
+        header=write_header,
+    )
+
+def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None:
+    """
+    Save the current best prompt and the model that produced it.
+
+    The function stores this information in ``best_prompt.json`` inside the
+    provided output directory. If the file already exists, its current JSON
+    content is loaded first and updated with the new values.
+
+    Parameters
+    ----------
+    output_dir : str
+        Directory where ``best_prompt.json`` will be stored.
+    best_prompt : str
+        Prompt text considered the best result so far.
+    llm_method : str
+        Identifier of the model or method that generated the prompt.
+
+    Returns
+    -------
+    None
+        This function writes data to disk and does not return a value.
+
+    Raises
+    ------
+    OSError
+        May be propagated if directory creation or file writing fails.
+    json.JSONDecodeError
+        May be propagated if an existing ``best_prompt.json`` file contains
+        invalid JSON.
+
+    Side Effects
+    ------------
+    Creates the output directory when necessary and creates or overwrites
+    ``best_prompt.json``.
+
+    Notes
+    -----
+    This helper persists the best optimization result so later stages or manual
+    inspection can recover the final prompt without re-running the search.
+    """
+
+    output_dir_path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
+
+    best_prompt_path = output_dir_path / "best_prompt.json"
+
+    if best_prompt_path.exists():
+        with open(best_prompt_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    else:
+        data = {}
+
+    data["best_prompt"] = best_prompt
+    data["model_that_generated_the_prompt"] = llm_method
+
+    with open(best_prompt_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+def read_movie_titles(inputdir: str) -> pd.DataFrame:
+    """
+    Load the MovieLens title metadata table from the dataset directory.
+
+    The function reads ``ml-latest-small/movies.csv`` relative to the provided
+    input directory and returns the resulting DataFrame unchanged.
+
+    Parameters
+    ----------
+    inputdir : str
+        Base directory that contains the ``ml-latest-small`` dataset folder.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame loaded from ``movies.csv``.
+
+    Raises
+    ------
+    FileNotFoundError
+        May be propagated if the expected CSV file does not exist.
+    pandas.errors.ParserError
+        May be propagated if the CSV file cannot be parsed.
+    """
+
+    return pd.read_csv(f"{inputdir}/ml-latest-small/movies.csv")
+
+def load_user_item_interactions_no_header(path: str) -> pd.DataFrame:
+    """
+    Load a headerless interaction CSV and normalize its column types.
+
+    The file is expected to follow the column order used throughout this
+    project: ``userId``, ``movieId``, ``implicit_feedback``, and ``timestamp``.
+    After loading, the function coerces numeric fields, removes rows with
+    missing values in the required columns, and converts selected columns to
+    the integer or string types expected elsewhere in the pipeline.
+
+    Parameters
+    ----------
+    path : str
+        Path to the CSV file containing user-item interaction data without a
+        header row.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with standardized columns ``userId``, ``movieId``,
+        ``implicit_feedback``, and ``timestamp``.
+
+    Raises
+    ------
+    FileNotFoundError
+        May be propagated if the CSV file does not exist.
+    pandas.errors.ParserError
+        May be propagated if the CSV file cannot be parsed.
+    """
+    
+    df = pd.read_csv(
+        path,
+        header=None,
+        names=["userId", "movieId", "implicit_feedback", "timestamp"],
+    )
+
+    # Normalize identifier and numeric fields to the types expected downstream.
+    df["userId"] = pd.to_numeric(df["userId"], errors="coerce")
+    df["movieId"] = df["movieId"].astype(str)
+    df["implicit_feedback"] = pd.to_numeric(df["implicit_feedback"], errors="coerce")
+    df["timestamp"] = pd.to_numeric(df["timestamp"], errors="coerce")
+
+    df = df.dropna(subset=["userId", "movieId", "implicit_feedback", "timestamp"])
+    df["userId"] = df["userId"].astype(int)
+    df["timestamp"] = df["timestamp"].astype(int)
+
     return df
 
-def save_file(save_dir, info):
-    with open(save_dir+'.json', 'w') as arquivo_json:
-        json.dump(info, arquivo_json, indent=4)
+def prepare_explainability_inputs(args: Any) -> pd.DataFrame:
+    """
+    Build the interaction inputs used by the explainability workflow.
 
-def prepare_explainability_inputs(args):
-    trainset, testset = read_train_test(args.inputdir)
+    The function loads the train and test interaction files, reads movie title
+    metadata, merges titles into the training interactions, and keeps only the
+    users that also appear in the test split. It then returns both the filtered
+    interaction DataFrame and the list of remaining user identifiers.
 
+    Parameters
+    ----------
+    args : Any
+        Configuration object expected to expose ``inputdir``.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, List[int]]
+        A tuple containing the filtered interaction DataFrame and the list of
+        unique user identifiers present after filtering.
+
+    Raises
+    ------
+    FileNotFoundError
+        May be propagated if any required CSV file is missing.
+    pandas.errors.ParserError
+        May be propagated if any required CSV file cannot be parsed.
+    AttributeError
+        May be raised if ``args`` does not define ``inputdir``.
+
+    Notes
+    -----
+    This function prepares the main interaction context later used to build
+    prompts for explanation generation and for the prompt-optimization flow.
+
+    - loads recommender_train_test_oficial/{train.csv,test.csv}
+    - merges train interactions with movie titles
+    - keeps only users that appear in test
+    """
+
+    interactions_df = load_user_item_interactions_no_header(
+        f"{args.inputdir}/recommender_train_test_oficial/train.csv"
+    )
+    testset = load_user_item_interactions_no_header(
+        f"{args.inputdir}/recommender_train_test_oficial/test.csv"
+    )
     all_titles = read_movie_titles(args.inputdir)
-    movie_dict = {title.lower(): title for title in all_titles.title}
-    all_lower_movie_set = set(movie_dict.keys())
 
-    users = testset.userId.unique().tolist()
-    trainset = trainset[trainset.userId.isin(users)]
+    interactions_df["movieId"] = interactions_df["movieId"].astype(str)
+    all_titles["movieId"] = all_titles["movieId"].astype(str)
 
-    user_movies_dict_train = (
-        trainset.groupby('userId')['title']
-        .apply(list)
-        .to_dict()
+    interactions_df = interactions_df.merge(all_titles[["movieId", "title"]], on="movieId", how="left")
+
+    users_in_test = testset["userId"].unique().tolist()
+    interactions_df = interactions_df[interactions_df["userId"].isin(users_in_test)].reset_index(drop=True)
+
+    users = interactions_df["userId"].unique().tolist()
+
+    return interactions_df, users
+
+def split_users_disjoint(
+    ratings_df: pd.DataFrame,
+    train_ratio: float = 0.8,
+    val_ratio: float = 0.2,
+    seed: int = 2025,
+    user_col: str = "userId",
+) -> Dict[str, List[int]]:
+    """
+    Split users into disjoint training and validation sets at user level.
+
+    The function extracts the unique non-null user identifiers from the given
+    ratings DataFrame, shuffles them with a seeded NumPy generator, and divides
+    them according to the requested ratios. The same user is never placed in
+    both splits.
+
+    Parameters
+    ----------
+    ratings_df : pd.DataFrame
+        DataFrame containing at least the user identifier column.
+    train_ratio : float, default=0.8
+        Fraction of users assigned to the training split.
+    val_ratio : float, default=0.2
+        Fraction of users assigned to the validation split.
+    seed : int, default=2025
+        Seed used by the random generator that shuffles users.
+    user_col : str, default="userId"
+        Name of the column that contains user identifiers.
+
+    Returns
+    -------
+    Dict[str, List[int]]
+        {"train_users": [...], "val_users": [...]}
+
+    Raises
+    ------
+    ValueError
+        Raised when the provided ratios do not sum to 1.0 or when no users are
+        available after removing missing values.
+    KeyError
+        Raised when ``user_col`` is not present in ``ratings_df``.
+    RuntimeError
+        Raised if the generated splits are unexpectedly not disjoint.
+
+    """
+    
+    total = float(train_ratio) + float(val_ratio)
+    if not np.isclose(total, 1.0):
+        raise ValueError(f"train_ratio + val_ratio must sum to 1. Got {total}.")
+
+    if user_col not in ratings_df.columns:
+        raise KeyError(f"'{user_col}' not found in ratings_df columns: {list(ratings_df.columns)}")
+
+    users = ratings_df[user_col].dropna().unique().astype(int)
+    if len(users) == 0:
+        raise ValueError("No users found in ratings_df after dropna().")
+
+    rng = np.random.default_rng(seed)
+    rng.shuffle(users)
+
+    n_users = len(users)
+    n_train = int(round(n_users * train_ratio))
+
+    train_users = users[:n_train].tolist()
+    val_users = users[n_train:].tolist()
+
+    if set(train_users) & set(val_users):
+        raise RuntimeError("User splits are not disjoint. This should never happen.")
+
+    return {"train_users": train_users, "val_users": val_users}
+
+def save_user_split(
+    out_dir: str,
+    split: Dict[str, List[int]],
+    metadata: Optional[Dict[str, object]] = None,
+    user_col: str = "userId",
+) -> None:
+    """
+    Save a previously generated user split and its metadata to disk.
+
+    The function writes one CSV file for the training user identifiers, one CSV
+    file for the validation user identifiers, and a JSON metadata file
+    describing the saved split.
+
+    Parameters
+    ----------
+    out_dir : str
+        Destination directory where the split files will be written.
+    split : Dict[str, List[int]]
+        Dictionary expected to contain ``train_users`` and ``val_users`` keys.
+    metadata : Optional[Dict[str, object]], default=None
+        Additional metadata merged into the JSON file.
+    user_col : str, default="userId"
+        Column name used in the saved CSV files.
+
+    Files written:
+    - train_users.csv, val_users.csv (one userId per row)
+    - split_meta.json (ratios, sizes, seed, etc.)
+
+    Returns
+    -------
+    None
+        This function writes files and does not return a value.
+
+    Raises
+    ------
+    KeyError
+        Raised when ``split`` does not contain both expected keys.
+    OSError
+        May be propagated if the output directory or files cannot be created.
+
+    Side Effects
+    ------------
+    Creates the output directory when necessary and writes three files to disk.
+    """
+    
+    os.makedirs(out_dir, exist_ok=True)
+
+    if "train_users" not in split or "val_users" not in split:
+        raise KeyError("split must contain keys: 'train_users' and 'val_users'.")
+
+    pd.DataFrame({user_col: split["train_users"]}).to_csv(
+        os.path.join(out_dir, "train_users.csv"), index=False
+    )
+    pd.DataFrame({user_col: split["val_users"]}).to_csv(
+        os.path.join(out_dir, "val_users.csv"), index=False
     )
 
-    user_movies_dict_test = (
-        testset.groupby('userId')['title']
-        .apply(list)
-        .to_dict()
+    meta: Dict[str, object] = {
+        "user_col": user_col,
+        "n_train": len(split["train_users"]),
+        "n_val": len(split["val_users"]),
+    }
+    if metadata:
+        meta.update(metadata)
+
+    with open(os.path.join(out_dir, "split_meta.json"), "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+
+def load_user_split(
+    split_dir: str,
+    user_col: str = "userId",
+) -> Dict[str, List[int]]:
+    """
+    Load training and validation user identifiers from disk.
+
+    The function reads ``train_users.csv`` and ``val_users.csv`` from the given
+    directory, converts the selected user column to integers, and verifies that
+    the two loaded splits are disjoint.
+
+    Parameters
+    ----------
+    split_dir : str
+        Directory containing the saved split files.
+    user_col : str, default="userId"
+        Column name used in the saved CSV files.
+
+    Returns
+    -------
+    Dict[str, List[int]]
+        {"train_users": [...], "val_users": [...]}
+
+    Raises
+    ------
+    FileNotFoundError
+        Raised when one or both expected CSV files are missing.
+    KeyError
+        May be raised if the CSV files do not contain ``user_col``.
+    RuntimeError
+        Raised if the loaded splits are not disjoint.
+
+    Notes
+    -----
+    This helper is used to reuse a persisted split across runs instead of
+    recreating it every time.
+    """
+
+    train_path = os.path.join(split_dir, "train_users.csv")
+    val_path = os.path.join(split_dir, "val_users.csv")
+
+    if not os.path.exists(train_path) or not os.path.exists(val_path):
+        raise FileNotFoundError(
+            f"Missing split files in {split_dir}. Expected train_users.csv and val_users.csv."
+        )
+
+    train_users = pd.read_csv(train_path)[user_col].astype(int).tolist()
+    val_users = pd.read_csv(val_path)[user_col].astype(int).tolist()
+
+    if set(train_users) & set(val_users):
+        raise RuntimeError("Loaded splits are not disjoint. This should never happen.")
+
+    return {"train_users": train_users, "val_users": val_users}
+
+def create_and_save_user_split(
+    ratings_df: pd.DataFrame,
+    base_datasets_dir: str,
+    split_folder: str = "user_split_disjoint_80_20",
+    train_ratio: float = 0.8,
+    val_ratio: float = 0.2,
+    seed: int = 2025,
+    user_col: str = "userId",
+) -> str:
+    """
+    Create a user-disjoint split and persist it to the dataset directory.
+
+    The function delegates the split creation to ``split_users_disjoint`` and
+    then writes the resulting files with ``save_user_split``.
+
+    Parameters
+    ----------
+    ratings_df : pd.DataFrame
+        Ratings data used to derive the unique users.
+    base_datasets_dir : str
+        Base directory where the split folder will be created.
+    split_folder : str, default="user_split_disjoint_80_20"
+        Name of the folder used to store the split files.
+    train_ratio : float, default=0.8
+        Fraction of users assigned to the training split.
+    val_ratio : float, default=0.2
+        Fraction of users assigned to the validation split.
+    seed : int, default=2025
+        Seed used during user shuffling.
+    user_col : str, default="userId"
+        Column name containing user identifiers.
+
+    Returns
+    -------
+    str
+        Path to the directory where the split files were saved.
+
+    Raises
+    ------
+    ValueError
+        May be propagated if the split ratios are invalid or no users are
+        available.
+    KeyError
+        May be propagated if ``user_col`` is missing or if the generated split
+        is malformed.
+    OSError
+        May be propagated if the split files cannot be written.
+
+    Notes
+    -----
+    This helper encapsulates the creation-and-persistence step used by the
+    prompt-optimization preparation flow.
+    """
+
+    split = split_users_disjoint(
+        ratings_df=ratings_df,
+        train_ratio=train_ratio,
+        val_ratio=val_ratio,
+        seed=seed,
+        user_col=user_col,
     )
 
-    df_recommendations = read_recommendations(args.inputdir_recommendation)
+    out_dir = os.path.join(base_datasets_dir, split_folder)
+    save_user_split(
+        out_dir=out_dir,
+        split=split,
+        user_col=user_col,
+        metadata={
+            "seed": seed,
+            "ratios": {"train": float(train_ratio), "val": float(val_ratio)},
+        },
+    )
+    return out_dir
+
+def prepare_optimization_inputs(args: Any) -> Dict[str, Any]:
+    """
+    Prepare the datasets and metadata required by the prompt-optimization flow.
+
+    This function:
+    - loads ml-latest-small/ratings.csv
+    - creates a user-disjoint split (train/val) if it does not exist on disk
+    - loads the split user lists
+    - builds the explainability interactions_df and filters it into train/val dataframes
+    - loads the KG props_df from args.kg_path
+
+    Parameters
+    ----------
+    args : Any
+        Configuration object expected to expose at least ``datain``,
+        ``seed``, and ``kg_path``. It is also passed to
+        ``prepare_explainability_inputs``, which expects ``inputdir``.
+
+    Returns
+    -------
+    Dict[str, Any]
+        Dictionary containing the split directory, user lists, filtered
+        interaction DataFrames, and the loaded knowledge-graph DataFrame.
+
+    Raises
+    ------
+    FileNotFoundError
+        May be propagated if required ratings, split, or knowledge-graph files
+        are missing.
+    AttributeError
+        May be raised if ``args`` does not provide the expected attributes.
+    OSError
+        May be propagated if the split needs to be created and disk writes fail.
+
+    Side Effects
+    ------------
+    May create and save a user split on disk when it does not already exist,
+    and prints a status message in that case.
+
+    Notes
+    -----
+    This function is the main input-preparation entry point for prompt
+    optimization. It bridges the recommender data, explainability inputs, and
+    knowledge-graph information into a single structure consumed downstream.
+    """
+
+    ratings_path = os.path.join(args.datain, "ml-latest-small", "ratings.csv")
+    ratings_df = pd.read_csv(ratings_path)
+
+    split_dir = os.path.join(args.datain, "user_split_disjoint_80_20")
+
+    # Reuse an existing persisted split when available; otherwise create it once.
+    if not os.path.exists(split_dir):
+        print("Creating user-disjoint split 80/20...")
+        create_and_save_user_split(
+            ratings_df=ratings_df,
+            base_datasets_dir=args.datain,
+            split_folder="user_split_disjoint_80_20",
+            train_ratio=0.8,
+            val_ratio=0.2,
+            seed=args.seed,
+            user_col="userId",
+        )
+
+    split = load_user_split(split_dir, user_col="userId")
+    train_user_ids = split["train_users"]
+    val_user_ids = split["val_users"]
+
+    # Full interaction set used for explainability
+    interactions_df_full, _ = prepare_explainability_inputs(args)
+
+    interactions_df_train = (
+        interactions_df_full[interactions_df_full["userId"].isin(train_user_ids)]
+        .reset_index(drop=True)
+    )
+    interactions_df_val = (
+        interactions_df_full[interactions_df_full["userId"].isin(val_user_ids)]
+        .reset_index(drop=True)
+    )
+
+    # Load KG
+    props_df = pd.read_csv(args.kg_path)
 
     return {
-        "user_movies_dict_train": user_movies_dict_train,
-        "df_recommendations": df_recommendations,
+        "split_dir": split_dir,
+        "train_user_ids": train_user_ids,
+        "val_user_ids": val_user_ids,
+        "interactions_df_train": interactions_df_train,
+        "interactions_df_val": interactions_df_val,
+        "props_df": props_df,
     }
+
+def build_metric_fn(
+    metric: str,
+    metric_params: dict,
+    props_df: pd.DataFrame,
+) -> Tuple[str, Callable[[Any], float]]:
+    """
+    Build the metric callable used to score explanations during optimization.
+
+    Parameters
+    ----------
+    metric : str
+        Name of the metric ("sep" or "etd").
+    metric_params : dict
+        Parameters associated with the metric.
+    props_df : pd.DataFrame
+        Knowledge graph dataframe.
+
+    Returns
+    -------
+    Tuple[str, Callable]
+        Tuple ``(metric_name, metric_fn)`` where ``metric_name`` is the
+        display name of the selected metric and ``metric_fn`` is a callable
+        that receives user explanations and returns a numeric score.
+
+    Raises
+    ------
+    ValueError
+        Raised when ``metric`` is not supported.
+    KeyError
+        May be raised when the expected metric-specific parameter is missing
+        from ``metric_params``.
+
+    Notes
+    -----
+    The returned callable closes over metric-specific resources, such as the
+    SEP memoization dictionary or the total number of object types for ETD.
+    This helper is used to convert configuration into a scoring function that
+    can be called repeatedly during prompt search.
+    """
+
+    metric = metric.lower()
+
+    if metric == "sep":
+        metric_name = "SEP"
+        memo_sep = {}
+        beta = float(metric_params["beta"])
+
+        def metric_fn(user_explanations):
+            return float(
+                score_sep_from_explanations(
+                    user_explanations=user_explanations,
+                    props_df=props_df,
+                    memo_sep=memo_sep,
+                    beta=beta,
+                )
+            )
+
+    elif metric == "etd":
+        metric_name = "ETD"
+        total_types = int(props_df["obj"].dropna().nunique())
+        k = int(metric_params["k"])
+
+        def metric_fn(user_explanations):
+            return float(
+                score_etd_from_explanations(
+                    user_explanations=user_explanations,
+                    total_types=total_types,
+                    k=k,
+                )
+            )
+
+    else:
+        raise ValueError(f"Unsupported metric: {metric}")
+
+    return metric_name, metric_fn
