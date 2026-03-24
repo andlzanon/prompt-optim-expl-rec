@@ -5,6 +5,7 @@ from recommenders.datasets.python_splitters import python_stratified_split
 ml_ratings_path = "../ml-latest-small/ratings.csv"
 train_path = "../recommender_train_test_oficial/train.csv"
 test_path = "../recommender_train_test_oficial/test.csv"
+kg_wikidata_path = "../knowledge-graphs/props_wikidata_movielens_small.csv"
 
 # Load ratings data
 ratings_df = pd.read_csv(ml_ratings_path)
@@ -12,8 +13,13 @@ ratings_df = pd.read_csv(ml_ratings_path)
 # Convert explicit ratings to implicit feedback
 ratings_df["rating"] = (ratings_df["rating"] > 0).astype(int)
 
+# Remove ratings from movieIds which are not in the knowledge graphs
+knowledge_graph = pd.read_csv(kg_wikidata_path)
+movieIds = knowledge_graph["movieId"].unique()
+ratings_filtered = ratings_df[ratings_df["movieId"].isin(movieIds)]
+
 # Keep only required columns for splitting
-ratings_to_split = ratings_df[["userId", "movieId", "rating"]]
+ratings_to_split = ratings_filtered[["userId", "movieId", "rating"]]
 
 # Stratified split by user (90% train, 10% test)
 train_split, test_split = python_stratified_split(
