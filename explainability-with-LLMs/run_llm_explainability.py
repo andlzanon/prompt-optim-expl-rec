@@ -1,8 +1,16 @@
 from src.utils.args import args_llm
 from src.llm.llm_for_explainability import LLM
-from src.utils.geral import prepare_explainability_inputs, save_metadata_json, save_explanations_csv
+from src.utils.geral import (
+    build_metric_fn,
+    explanations_df_to_blocks,
+    load_best_prompt,
+    prepare_explainability_inputs,
+    save_explanations_csv,
+    save_metadata_json,
+)
 
 import time
+import pandas as pd
 
 if __name__ == "__main__":
     """
@@ -18,14 +26,31 @@ if __name__ == "__main__":
 
     # Load the interaction data and the users that will be processed.
     interactions_df, users = prepare_explainability_inputs(args)
-
-    # Optional debug slice for running the pipeline on only a subset of users.
-    # interactions_df = interactions_df[interactions_df["userId"].isin(users[:20])].reset_index(drop=True)
-    # users = interactions_df["userId"].unique().tolist()
+    
+    props_df = pd.read_csv(args.kg_path)
+    metric_name, metric_fn = build_metric_fn(
+        metric=args.metric,
+        metric_params=args.metric_params,
+        props_df=props_df,
+    )
 
     # Initialize and load the LLM wrapper before generating explanations.
     llm = LLM(llm_method=args.llm_method, seed=args.seed)
     llm.set_model()
+
+    if args.prompt_source == "best_prompt":
+        best_prompt_payload = load_best_prompt(args.best_prompt_path)
+        llm.system_prompt = best_prompt_payload["best_prompt"]
+        llm.prompt = [{"role": "system", "content": llm.system_prompt}]
+
+        info["prompt_source"] = "best_prompt"
+        info["best_prompt_path"] = args.best_prompt_path
+        info["best_prompt_model"] = best_prompt_payload.get(
+            "model_that_generated_the_prompt"
+        )
+    else:
+        info["prompt_source"] = "default"
+        info["best_prompt_path"] = None
 
     # Measure the end-to-end time spent generating explanation selections.
     start_time = time.time()
@@ -40,11 +65,19 @@ if __name__ == "__main__":
     )
 
     end_time = time.time()
+    explanation_blocks = explanations_df_to_blocks(user_explanations)
+    metric_value = float(metric_fn(explanation_blocks))
 
     # Record summary metadata about the run for later inspection.
     info["time_to_explain"] = float(end_time - start_time)
     info["system_prompt"] = llm.system_prompt
     info["n_users"] = len(users)
+    info["users_path"] = args.test_users_path
+    info["metric"] = args.metric
+    info["metric_name"] = metric_name
+    info["metric_value"] = metric_value
+    info["metric_params"] = args.metric_params
+    info["kg_path"] = args.kg_path
 
     # Persist metadata and generated explanations as separate artifacts.
     output_json = args.outfilename + "_metadata.json"
@@ -54,4 +87,5 @@ if __name__ == "__main__":
     save_explanations_csv(output_csv, user_explanations)
 
     print(f"\nExplanations saved to {output_csv}")
+    print(f"{metric_name}={metric_value:.6f}")
     print(f"Metadata saved to {output_json}")

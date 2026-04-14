@@ -118,6 +118,58 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         help="LLM method or model name.",
     )
 
+    parser.add_argument(
+        "--prompt_source",
+        type=str,
+        default="default",
+        choices=["default", "best_prompt"],
+        help=(
+            "Source used to populate the system prompt. "
+            "'default' keeps the built-in prompt and 'best_prompt' loads the "
+            "prompt stored in a best_prompt.json file."
+        ),
+    )
+
+    parser.add_argument(
+        "--best_prompt_path",
+        type=str,
+        default=None,
+        help="Path to the best_prompt.json file used when --prompt_source best_prompt.",
+    )
+
+    parser.add_argument(
+        "--kg_path",
+        type=str,
+        default=None,
+        help=(
+            "Path to the knowledge-graph properties file used when computing "
+            "SEP or ETD. Defaults to <datain>/knowledge-graphs/"
+            "props_wikidata_movielens_small.csv."
+        ),
+    )
+
+    parser.add_argument(
+        "--metric",
+        type=str,
+        choices=["sep", "etd"],
+        default="sep",
+        help="Metric used to score the generated explanations (default: sep).",
+    )
+
+    parser.add_argument(
+        "--sep_beta",
+        type=float,
+        default=0.3,
+        help="(SEP only) Exponential decay parameter beta.",
+    )
+
+    parser.add_argument(
+        "--etd_k",
+        type=int,
+        default=5,
+        help="(ETD only) Number of explanations (k) considered.",
+    )
+
     # Output
     parser.add_argument(
         "--out",
@@ -144,6 +196,25 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
 
     # Normalize CLI string values into booleans expected by the downstream flow.
     args.include_user_history = str(args.include_user_history).lower() in ["true", "1", "yes"]
+    args.test_users_path = os.path.join(
+        args.datain,
+        "user_split_train_val_test",
+        "test_users.csv",
+    )
+    if args.kg_path is None:
+        args.kg_path = os.path.join(
+            args.datain,
+            "knowledge-graphs",
+            "props_wikidata_movielens_small.csv",
+        )
+
+    if args.prompt_source == "best_prompt" and not args.best_prompt_path:
+        parser.error("--best_prompt_path is required when --prompt_source best_prompt.")
+
+    if args.metric == "sep":
+        args.metric_params = {"beta": float(args.sep_beta)}
+    else:
+        args.metric_params = {"k": int(args.etd_k)}
 
     # Build the shared prefix used to locate the explanation-path files.
     args.explanation_paths_prefix = os.path.join(

@@ -1,169 +1,375 @@
 # explainability-with-LLMs
 
-## Project overview
+## Overview
 
-This project runs an LLM-based explanation-path selection workflow for recommender-system explanations and also provides a prompt-optimization pipeline for improving the system instruction used by the LLM.
+This module contains the LLM layer used in the recommender-explainability pipeline. It currently supports two connected workflows:
 
-At a high level, the project supports two main workflows:
+1. `run_prompt_optimizer.py`
+Searches for a better system prompt for explanation-path selection, evaluates prompt candidates on user-disjoint train/validation splits, and saves the best prompt plus per-epoch artifacts.
 
-- `run_llm_explainability.py`: generates explanation-path selections for users and saves the resulting explanations and metadata.
-- `run_prompt_optimizer.py`: evaluates prompt variants across training and validation users, optimizes the system instruction, and saves the best prompt together with per-epoch artifacts.
+2. `run_llm_explainability.py`
+Runs explanation-path selection for held-out test users, optionally using the optimized prompt found in the previous workflow, and saves both the explanations and their evaluation metadata.
 
-The codebase is organized around reusable modules for:
+Today the project is organized around:
 
-- LLM interaction and prompt optimization
-- text representations (`llm2vec` and `sbert`)
-- graph-based metrics (`SEP` and `ETD`)
-- utility functions for data preparation, argument parsing, and persistence
+- LLM-based path selection with Meta Llama models
+- prompt optimization with MMR-based reference selection
+- text representations via `llm2vec` or `sbert`
+- graph-based evaluation with `SEP` and `ETD`
+- automatic train/validation/test user splitting under `../datasets/user_split_train_val_test`
 
-The shell scripts in `bash/` are the main execution entry points and already contain the project’s configured parameters.
+The shell scripts in [`bash/`](./bash) are the recommended entry points because they already encode the experiment matrix currently used in the project.
 
-The project is configured to use Python `3.10.12` (see `settings/.python-version`).
+## Current workflow
 
-## Setup and execution
+### Prompt optimization
 
-### 1. Run the environment setup script
+`bash/run_llm_for_optimization.sh` loops over the configured combinations of:
 
-Run the setup script from the `settings` directory:
+- model
+- recommender algorithm
+- representation model
+- metric
+- early-stopping flag
+- MMR hyperparameters
+
+For each combination it runs `run_prompt_optimizer.py`, which:
+
+- ensures the user split exists in `../datasets/user_split_train_val_test`
+- uses train users to score prompts
+- optionally evaluates on validation users
+- stores per-epoch explanations and metrics
+- saves in `best_prompt.json` the prompt with the best training score
+
+Epoch `0` evaluates the default built-in prompt. Later epochs generate new candidate prompts from the best previously ranked prompts.
+
+### Explainability generation
+
+`bash/run_llm_for_explainability.sh` now supports two modes in the same batch:
+
+- `default`: uses the built-in prompt from `src/llm/llm_for_explainability.py`
+- `best_prompt`: loads a prompt from a discovered `best_prompt.json`
+
+The script always runs the default explainability pass for the configured algorithms. If optimized prompts already exist under `out/prompt_optimization`, it also runs a second pass using those prompts and writes the results under a separate output tree.
+
+The Python entry point `run_llm_explainability.py`:
+
+- loads the held-out test users from `../datasets/user_split_train_val_test/test_users.csv`
+- generates explanations for the configured algorithm
+- computes the selected metric (`SEP` or `ETD`)
+- writes the explanations CSV and a metadata JSON
+
+### Orchestration scripts
+
+Two helper scripts were added to chain both workflows:
+
+- `bash/run_optimization_then_explainability.sh`
+- `bash/run_explainability_then_optimization.sh`
+
+Use `run_optimization_then_explainability.sh` when you want to generate optimized prompts first and immediately consume them in the explainability batch.
+
+## Environment setup
+
+The project is configured for Python `3.10.12` in [`settings/.python-version`](./settings/.python-version).
+
+From the `settings` directory:
 
 ```bash
 cd explainability-with-LLMs/settings
 bash setup-llm.sh
-```
-
-What this script does:
-
-- installs `python3.10-venv`
-- creates the virtual environment in `settings/.venv`
-- appends the `LLMWORKDIR` environment variable to the activation script
-- activates the environment
-- upgrades `pip`, `wheel`, and `setuptools`
-- installs the dependencies from `llm_requirements.txt`
-
-### 2. Activate the virtual environment
-
-After setup, activate the virtual environment:
-
-```bash
 source .venv/bin/activate
-```
-
-### 3. Leave the `settings` directory
-
-Return to the project root:
-
-```bash
 cd ..
 ```
 
-At this point, you should be in the `explainability-with-LLMs` directory.
+What `settings/setup-llm.sh` does:
 
-### 4. Run the main shell scripts
+- installs `python3.10-venv` with `apt`
+- creates the virtual environment in `settings/.venv`
+- appends `LLMWORKDIR` to `.venv/bin/activate`
+- upgrades `pip`, `wheel`, and `setuptools`
+- installs the packages from `settings/llm_requirements.txt`
 
-The execution order is:
+Current Python dependencies are:
 
-1. `cd explainability-with-LLMs/settings`
-2. `bash setup-llm.sh`
-3. `source .venv/bin/activate`
-4. `cd ..`
-5. run one of the main shell scripts from the project root
+- `transformers`
+- `torch`
+- `accelerate`
+- `bitsandbytes`
+- `datasets`
+- `sentence-transformers`
+- `llm2vec`
+- `pandas`
+- `scikit-learn`
+- `pyarrow`
+- `fastparquet`
 
-Run the prompt-optimization workflow:
+Notes:
+
+- `setup-llm.sh` uses `sudo apt install`, so it expects a machine where you can install system packages.
+- The configured LLMs are gated Hugging Face models, so model access must be available for the token resolution used by the code in [`src/llm/token_id.py`](./src/llm/token_id.py).
+- The code falls back to CPU if CUDA is unavailable, but the intended setup is a machine capable of running the quantized model stack.
+
+## Expected data layout
+
+The shell scripts assume `--datain ../datasets`. With that layout, the current code expects these inputs:
+
+- `../datasets/ml-latest-small/movies.csv`
+- `../datasets/ml-latest-small/ratings.csv`
+- `../datasets/recommender_train_test_oficial/train.csv`
+- `../datasets/recommender_train_test_oficial/test.csv`
+- `../datasets/knowledge-graphs/props_wikidata_movielens_small.csv`
+- `../datasets/explanation_paths/<algorithm>-opt/...`
+
+The user split directory is managed automatically:
+
+- `../datasets/user_split_train_val_test/train_users.csv`
+- `../datasets/user_split_train_val_test/val_users.csv`
+- `../datasets/user_split_train_val_test/test_users.csv`
+
+If this split directory does not exist, it is created automatically from `ml-latest-small/ratings.csv` and then reused by both workflows.
+
+## Main scripts
+
+### `bash/run_llm_for_optimization.sh`
+
+Main batch runner for prompt optimization.
+
+Current defaults in the script:
+
+- models: `Llama3.1-I`
+- algorithms: `user_knn`, `item_knn`, `ncf`, `bprmf`
+- representation models: `llm2vec`, `sbert`
+- metric: `sep`
+- explainability settings: `10` recommendations and `10` candidate paths per recommendation
+
+Important parameters already exposed near the top of the script:
+
+- `EPOCHS`
+- `META_PROMPT_INSTRUCTION_QUANTITY`
+- `EVAL_EVERY`
+- `PATIENCE`
+- `MIN_DELTA`
+- `EARLY_STOPPING_VALUES`
+- `MMR_LAMBDA_QUALITIES`
+- `MMR_POOL_MULTIPLIERS`
+
+The script builds an experiment root like:
+
+```text
+out/prompt_optimization/<model>/<algorithm>/<metric>/repr_<representation>/early_<flag>/mmr_lambda_<value>/mmr_pool_<value>
+```
+
+Then `run_prompt_optimizer.py` appends its own run directory below that root:
+
+```text
+.../<llm_method>/prompt_opt/<metric>/
+```
+
+Inside the final run directory you should expect artifacts such as:
+
+- `best_prompt.json`
+- `optimization_process_metadata.json`
+- `epoch_000/epoch.json`
+- `epoch_000/train_explanations.csv`
+- `epoch_000/val_explanations.csv`
+
+### `bash/run_llm_for_explainability.sh`
+
+Main batch runner for explainability generation.
+
+Current defaults in the script:
+
+- algorithms: `user_knn`, `item_knn`, `ncf`, `bprmf`
+- model: `Llama3.1-I`
+- metric: `sep`
+- both execution modes enabled: `RUN_DEFAULT="true"` and `RUN_OPTIMIZED="true"`
+
+Outputs are separated into two roots:
+
+```text
+out/test_explainability/without_optimization/
+out/test_explainability/with_optimization/
+```
+
+Each explainability run writes:
+
+- `responses.csv`
+- `responses_metadata.json`
+
+The script scans `out/prompt_optimization/**/best_prompt.json` automatically. When optimized prompts are found, it reconstructs the output path for the corresponding explainability run and invokes:
+
+```bash
+python3.10 run_llm_explainability.py --prompt_source best_prompt --best_prompt_path ...
+```
+
+### `bash/run_optimization_then_explainability.sh`
+
+Runs:
+
+1. `bash/run_llm_for_optimization.sh`
+2. `bash/run_llm_for_explainability.sh`
+
+This is the best one-command option when you want the optimized prompts to be generated and then immediately applied to the test explainability batch.
+
+### `bash/run_explainability_then_optimization.sh`
+
+Runs:
+
+1. `bash/run_llm_for_explainability.sh`
+2. `bash/run_llm_for_optimization.sh`
+
+This is useful when you want to produce the baseline explainability outputs first and optimize prompts afterwards.
+
+## Python entry points
+
+### `run_prompt_optimizer.py`
+
+This script:
+
+- parses optimization and explainability arguments
+- prepares train/validation users from the auto-generated split
+- loads the knowledge-graph properties file
+- builds the selected metric function
+- loads the LLM used for path selection
+- runs the optimization loop through `PromptOptimizer`
+- saves the optimization metadata and the final `best_prompt.json`
+
+Most relevant CLI arguments:
+
+- `--datain`
+- `--kg_path`
+- `--algorithm`
+- `--llm_method`
+- `--representation_model`
+- `--epochs`
+- `--eval_every`
+- `--patience`
+- `--min_delta`
+- `--early_stopping`
+- `--mmr_lambda_quality`
+- `--mmr_pool_multiplier`
+- `--metric`
+- `--sep_beta` or `--etd_k`
+- `--out`
+
+### `run_llm_explainability.py`
+
+This script:
+
+- prepares explainability inputs restricted to the held-out test users
+- loads the knowledge graph and builds the selected metric function
+- loads the LLM wrapper
+- optionally replaces the default system prompt with a saved `best_prompt.json`
+- generates explanations
+- saves both the explanations CSV and the metadata JSON
+
+Most relevant CLI arguments:
+
+- `--datain`
+- `--algorithm`
+- `--llm_method`
+- `--prompt_source`
+- `--best_prompt_path`
+- `--metric`
+- `--sep_beta` or `--etd_k`
+- `--num_recommendations`
+- `--num_paths_per_recommendation`
+- `--include_user_history`
+- `--kg_path`
+- `--out`
+
+## Typical usage
+
+### Setup once
+
+```bash
+cd explainability-with-LLMs/settings
+bash setup-llm.sh
+source .venv/bin/activate
+cd ..
+```
+
+### Run only prompt optimization
 
 ```bash
 bash bash/run_llm_for_optimization.sh
 ```
 
-Run the explainability-generation workflow:
+### Run only explainability
 
 ```bash
 bash bash/run_llm_for_explainability.sh
 ```
 
-### Notes on paths and expected data
+### Run the full pipeline in the recommended order
 
-The shell scripts currently expect:
+```bash
+bash bash/run_optimization_then_explainability.sh
+```
 
-- datasets at `../datasets`
-- the knowledge-graph CSV at `../knowledge-graphs/props_wikidata_movielens_small.csv` for prompt optimization
+## Output summary
 
-These paths are defined directly in the shell scripts, so if your local structure is different, you will need to update the script variables.
+### Explainability outputs
 
-## Script descriptions
+Per run, the current explainability flow writes:
 
-### `bash/run_llm_for_optimization.sh`
+- `responses.csv`
+- `responses_metadata.json`
 
-This is the main shell entry point for prompt optimization.
+The CSV is saved with the stable schema:
 
-Role in the pipeline:
+- `userId`
+- `recommended_item_id`
+- `explanation`
+- `tries`
+- `valid`
+- `raw_model_output`
 
-- defines dataset and knowledge-graph paths
-- defines models, algorithms, representation models, metrics, and optimization hyperparameters
-- loops over the configured combinations
-- runs `run_prompt_optimizer.py` with the assembled command-line arguments
+The metadata JSON records, among other things:
 
-This workflow produces optimization artifacts under `out/prompt_optimization/...`, including per-epoch files and the best prompt found during the run.
+- full CLI arguments
+- prompt source
+- selected metric and parameters
+- metric value
+- runtime
+- number of processed users
+- system prompt used in the run
 
-### `run_prompt_optimizer.py`
+### Prompt-optimization outputs
 
-This Python script orchestrates the prompt-optimization process.
+Per run, the optimizer writes:
 
-Role in the pipeline:
+- `best_prompt.json`
+- `optimization_process_metadata.json`
+- one `epoch_<nnn>/` directory per completed epoch
 
-- parses optimization arguments
-- prepares train/validation inputs and the knowledge graph
-- builds the metric function
-- loads the LLM wrapper
-- runs the optimization loop through `PromptOptimizer`
-- saves optimization metadata and the best prompt
+`best_prompt.json` is currently populated from the best training result. Validation metrics are still recorded in the metadata and may stop the run early when early stopping is enabled.
 
-### `bash/run_llm_for_explainability.sh`
+Each epoch directory contains:
 
-This is the main shell entry point for explanation generation.
-
-Role in the pipeline:
-
-- defines the model, algorithm, and explainability parameters
-- loops over the configured combinations
-- runs `run_llm_explainability.py` with the assembled command-line arguments
-
-This workflow produces explanation outputs under `out/explainability/...`.
-
-### `run_llm_explainability.py`
-
-This Python script orchestrates explanation generation for the configured users.
-
-Role in the pipeline:
-
-- parses explainability arguments
-- prepares user interaction inputs
-- loads the LLM wrapper
-- generates explanation-path selections
-- saves explanations and metadata
+- `epoch.json`
+- `train_explanations.csv`
+- `val_explanations.csv` when validation runs on that epoch
 
 ## Project structure
-
-Below is the relevant structure for using and maintaining the project:
 
 ```text
 explainability-with-LLMs/
 ├── bash/
+│   ├── run_explainability_then_optimization.sh
 │   ├── run_llm_for_explainability.sh
-│   └── run_llm_for_optimization.sh
-├── out/
+│   ├── run_llm_for_optimization.sh
+│   └── run_optimization_then_explainability.sh
 ├── settings/
 │   ├── .python-version
 │   ├── llm_requirements.txt
 │   └── setup-llm.sh
 ├── src/
-│   ├── __init__.py
 │   ├── llm/
-│   │   ├── __init__.py
 │   │   ├── llm_for_explainability.py
 │   │   ├── llm_for_prompt_optimization.py
 │   │   └── token_id.py
 │   ├── metrics/
-│   │   ├── __init__.py
 │   │   ├── etd.py
 │   │   ├── graph_utils.py
 │   │   └── sep.py
@@ -171,84 +377,21 @@ explainability-with-LLMs/
 │   │   ├── __init__.py
 │   │   ├── base_representation.py
 │   │   ├── bkp_l2v.py
+│   │   ├── embedding_utils/
 │   │   ├── l2v.py
-│   │   ├── sbert.py
-│   │   └── embedding_utils/
-│   │       ├── __init__.py
-│   │       ├── mmr.py
-│   │       └── similarity.py
+│   │   └── sbert.py
 │   └── utils/
-│       ├── __init__.py
 │       ├── args.py
 │       └── geral.py
+├── out/
 ├── README.md
 ├── run_llm_explainability.py
 └── run_prompt_optimizer.py
 ```
 
-### `bash/`
+## Practical notes
 
-Contains the main shell scripts used to run the project workflows. These files define the execution parameters and serve as the main operational entry points.
-
-### `settings/`
-
-Contains environment-setup files:
-
-- `.python-version`: Python version indicator for the project, currently `3.10.12`
-- `setup-llm.sh`: creates and configures the Python environment
-- `llm_requirements.txt`: lists the Python dependencies used by the project
-
-### `src/llm/`
-
-Contains the LLM-related implementation:
-
-- `llm_for_explainability.py`: LLM wrapper used to select explanation paths
-- `llm_for_prompt_optimization.py`: prompt-optimization loop and support logic
-- `token_id.py`: access-token helper used during model loading
-
-### `src/metrics/`
-
-Contains the evaluation logic:
-
-- `etd.py`: ETD metric
-- `sep.py`: SEP metric
-- `graph_utils.py`: helpers that convert textual explanations into structures consumed by the metrics
-
-### `src/representation/`
-
-Contains the text-representation layer:
-
-- `base_representation.py`: common representation interface
-- `sbert.py`: Sentence-Transformers backend
-- `l2v.py`: LLM2Vec backend
-- `embedding_utils/`: similarity and MMR helpers used during prompt optimization
-
-### `src/utils/`
-
-Contains project utilities:
-
-- `args.py`: command-line argument parsing for both workflows
-- `geral.py`: data preparation, split handling, persistence, and metric integration helpers
-
-### `out/`
-
-Stores generated artifacts such as:
-
-- explainability outputs
-- prompt-optimization results
-- metadata files
-- per-epoch CSV and JSON files
-
-## Typical usage summary
-
-If you want the shortest practical sequence, use:
-
-```bash
-cd explainability-with-LLMs/settings
-bash setup-llm.sh
-source .venv/bin/activate
-cd ..
-bash bash/run_llm_for_optimization.sh
-# or
-bash bash/run_llm_for_explainability.sh
-```
+- The CLI exposes `--selection_strategy`, but the current LLM wrapper only implements random path sampling.
+- Both Python entry points stop if output files with the configured prefix already exist.
+- `bash/run_llm_for_explainability.sh` also skips a run when files matching `responses*` already exist in the destination directory.
+- If you change the datasets location, update `DATA_DIR` and related path variables in the shell scripts.

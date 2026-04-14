@@ -5,6 +5,7 @@ from src.metrics.graph_utils import (
     score_etd_from_explanations,
 )
 
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Tuple, Optional, Callable
 import os, json, glob
@@ -182,6 +183,47 @@ def save_explanations_csv(
         header=write_header,
     )
 
+def explanations_df_to_blocks(
+    df: pd.DataFrame,
+    user_col: str = "userId",
+    explanation_col: str = "explanation",
+) -> Dict[Any, str]:
+    """
+    Convert an explanations DataFrame into per-user multiline text blocks.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing at least the user and explanation columns.
+    user_col : str, default="userId"
+        Column used to group explanations by user.
+    explanation_col : str, default="explanation"
+        Column containing the explanation-path text.
+
+    Returns
+    -------
+    Dict[Any, str]
+        Mapping from user identifier to a multiline string containing that
+        user's valid explanations joined with newline characters. Returns an
+        empty dictionary when the input DataFrame is ``None`` or empty.
+
+    Raises
+    ------
+    KeyError
+        May be raised if ``df`` does not contain the requested columns.
+    """
+
+    if df is None or df.empty:
+        return {}
+
+    tmp = df[[user_col, explanation_col]].dropna().copy()
+    tmp[explanation_col] = tmp[explanation_col].astype(str)
+    tmp = tmp[tmp[explanation_col].str.contains(r"\|", regex=True)]
+    tmp = tmp[tmp[explanation_col].str.contains("->", regex=False)]
+
+    grouped = tmp.groupby(user_col)[explanation_col].apply(lambda s: "\n".join(s.tolist()))
+    return grouped.to_dict()
+
 def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None:
     """
     Save the current best prompt and the model that produced it.
@@ -239,6 +281,44 @@ def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None
 
     with open(best_prompt_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+def load_best_prompt(best_prompt_path: str) -> Dict[str, Any]:
+    """
+    Load a previously saved optimized system prompt from ``best_prompt.json``.
+
+    Parameters
+    ----------
+    best_prompt_path : str
+        Path to the JSON file written by ``save_best_prompt``.
+
+    Returns
+    -------
+    Dict[str, Any]
+        Parsed JSON payload. The dictionary is guaranteed to contain a
+        non-empty ``"best_prompt"`` string.
+
+    Raises
+    ------
+    FileNotFoundError
+        Raised when the target file does not exist.
+    json.JSONDecodeError
+        May be propagated if the file content is not valid JSON.
+    KeyError
+        Raised when the JSON payload does not contain ``"best_prompt"``.
+    ValueError
+        Raised when ``"best_prompt"`` is empty or not a string.
+    """
+
+    with open(best_prompt_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    prompt = data.get("best_prompt")
+    if prompt is None:
+        raise KeyError(f"Missing 'best_prompt' key in {best_prompt_path}.")
+    if not isinstance(prompt, str) or not prompt.strip():
+        raise ValueError(f"'best_prompt' in {best_prompt_path} must be a non-empty string.")
+
+    return data
 
 def read_movie_titles(inputdir: str) -> pd.DataFrame:
     """
@@ -315,14 +395,16 @@ def load_user_item_interactions_no_header(path: str) -> pd.DataFrame:
 
     return df
 
-def prepare_explainability_inputs(args: Any) -> pd.DataFrame:
+def prepare_users_inputs(args: Any) -> Tuple[pd.DataFrame, List[int]]:
     """
     Build the interaction inputs used by the explainability workflow.
 
-    The function loads the train and test interaction files, reads movie title
-    metadata, merges titles into the training interactions, and keeps only the
-    users that also appear in the test split. It then returns both the filtered
-    interaction DataFrame and the list of remaining user identifiers.
+    The function loads the recommender training interactions, reads the
+    recommender test interactions only to identify which users also appear in
+    that split, merges movie titles into the training interactions, and keeps
+    only the training-history rows whose users are present in the recommender
+    test split. It then returns both the filtered interaction DataFrame and
+    the corresponding user identifiers.
 
     Parameters
     ----------
@@ -333,7 +415,7 @@ def prepare_explainability_inputs(args: Any) -> pd.DataFrame:
     -------
     Tuple[pd.DataFrame, List[int]]
         A tuple containing the filtered interaction DataFrame and the list of
-        unique user identifiers present after filtering.
+        unique user identifiers present in the filtered training history.
 
     Raises
     ------
@@ -346,12 +428,14 @@ def prepare_explainability_inputs(args: Any) -> pd.DataFrame:
 
     Notes
     -----
-    This function prepares the main interaction context later used to build
+    This function prepares the training-history context later used to build
     prompts for explanation generation and for the prompt-optimization flow.
 
-    - loads recommender_train_test_oficial/{train.csv,test.csv}
+    - loads ``recommender_train_test_oficial/train.csv`` as user history
+    - loads ``recommender_train_test_oficial/test.csv`` only to get the
+      overlapping users
     - merges train interactions with movie titles
-    - keeps only users that appear in test
+    - keeps only training-history rows whose users also appear in test
     """
 
     interactions_df = load_user_item_interactions_no_header(
@@ -444,6 +528,108 @@ def split_users_disjoint(
 
     return {"train_users": train_users, "val_users": val_users}
 
+def split_users_train_val_test_disjoint(
+    ratings_df: pd.DataFrame,
+    train_val_ratio: float = 0.8,
+    test_ratio: float = 0.2,
+    train_ratio: float = 0.8,
+    val_ratio: float = 0.2,
+    seed: int = 2025,
+    user_col: str = "userId",
+) -> Dict[str, List[int]]:
+    """
+    Split users into train, validation, and test sets at user level.
+
+    The split is performed in two stages. First, all users are divided into a
+    train-validation pool and a held-out test set. Then, only the
+    train-validation pool is divided into training and validation users. The
+    same user is never placed in more than one split.
+
+    Parameters
+    ----------
+    ratings_df : pd.DataFrame
+        DataFrame containing at least the user identifier column.
+    train_val_ratio : float, default=0.8
+        Fraction of all users assigned to the train-validation pool.
+    test_ratio : float, default=0.2
+        Fraction of all users assigned to the held-out test split.
+    train_ratio : float, default=0.8
+        Fraction of the train-validation pool assigned to the training split.
+    val_ratio : float, default=0.2
+        Fraction of the train-validation pool assigned to the validation split.
+    seed : int, default=2025
+        Seed used by the random generator that shuffles users.
+    user_col : str, default="userId"
+        Name of the column that contains user identifiers.
+
+    Returns
+    -------
+    Dict[str, List[int]]
+        Dictionary with the keys ``"train_users"``, ``"val_users"``, and
+        ``"test_users"``.
+
+    Raises
+    ------
+    ValueError
+        Raised when the provided ratios do not define valid two-stage splits or
+        when no users are available after removing missing values.
+    KeyError
+        Raised when ``user_col`` is not present in ``ratings_df``.
+    RuntimeError
+        Raised if the generated splits are unexpectedly not disjoint.
+
+    Notes
+    -----
+    With the default ratios, the final proportions are 64% training users, 16%
+    validation users, and 20% test users.
+    """
+
+    total_outer = float(train_val_ratio) + float(test_ratio)
+    if not np.isclose(total_outer, 1.0):
+        raise ValueError(
+            f"train_val_ratio + test_ratio must sum to 1. Got {total_outer}."
+        )
+
+    total_inner = float(train_ratio) + float(val_ratio)
+    if not np.isclose(total_inner, 1.0):
+        raise ValueError(
+            f"train_ratio + val_ratio must sum to 1. Got {total_inner}."
+        )
+
+    if user_col not in ratings_df.columns:
+        raise KeyError(
+            f"'{user_col}' not found in ratings_df columns: {list(ratings_df.columns)}"
+        )
+
+    users = ratings_df[user_col].dropna().unique().astype(int)
+    if len(users) == 0:
+        raise ValueError("No users found in ratings_df after dropna().")
+
+    rng = np.random.default_rng(seed)
+    rng.shuffle(users)
+
+    n_train_val = int(round(len(users) * train_val_ratio))
+    train_val_users = users[:n_train_val]
+    test_users = users[n_train_val:].tolist()
+
+    n_train = int(round(len(train_val_users) * train_ratio))
+    train_users = train_val_users[:n_train].tolist()
+    val_users = train_val_users[n_train:].tolist()
+
+    split_sets = [set(train_users), set(val_users), set(test_users)]
+    if any(
+        split_sets[i] & split_sets[j]
+        for i in range(len(split_sets))
+        for j in range(i + 1, len(split_sets))
+    ):
+        raise RuntimeError("User splits are not disjoint. This should never happen.")
+
+    return {
+        "train_users": train_users,
+        "val_users": val_users,
+        "test_users": test_users,
+    }
+
 def save_user_split(
     out_dir: str,
     split: Dict[str, List[int]],
@@ -453,9 +639,9 @@ def save_user_split(
     """
     Save a previously generated user split and its metadata to disk.
 
-    The function writes one CSV file for the training user identifiers, one CSV
-    file for the validation user identifiers, and a JSON metadata file
-    describing the saved split.
+    The function writes CSV files for the available user identifiers and a JSON
+    metadata file describing the saved split. Training and validation users are
+    required; test users are written when the ``"test_users"`` key is present.
 
     Parameters
     ----------
@@ -463,14 +649,15 @@ def save_user_split(
         Destination directory where the split files will be written.
     split : Dict[str, List[int]]
         Dictionary expected to contain ``train_users`` and ``val_users`` keys.
+        When present, ``test_users`` is also saved.
     metadata : Optional[Dict[str, object]], default=None
         Additional metadata merged into the JSON file.
     user_col : str, default="userId"
         Column name used in the saved CSV files.
 
     Files written:
-    - train_users.csv, val_users.csv (one userId per row)
-    - split_meta.json (ratios, sizes, seed, etc.)
+    - train_users.csv, val_users.csv, and optionally test_users.csv
+    - split_meta.json (ratios, sizes, seed, creation timestamp, etc.)
 
     Returns
     -------
@@ -486,7 +673,7 @@ def save_user_split(
 
     Side Effects
     ------------
-    Creates the output directory when necessary and writes three files to disk.
+    Creates the output directory when necessary and writes split files to disk.
     """
     
     os.makedirs(out_dir, exist_ok=True)
@@ -501,11 +688,20 @@ def save_user_split(
         os.path.join(out_dir, "val_users.csv"), index=False
     )
 
+    if "test_users" in split:
+        pd.DataFrame({user_col: split["test_users"]}).to_csv(
+            os.path.join(out_dir, "test_users.csv"), index=False
+        )
+
+    created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     meta: Dict[str, object] = {
         "user_col": user_col,
         "n_train": len(split["train_users"]),
         "n_val": len(split["val_users"]),
+        "created_at": created_at,
     }
+    if "test_users" in split:
+        meta["n_test"] = len(split["test_users"])
     if metadata:
         meta.update(metadata)
 
@@ -515,13 +711,14 @@ def save_user_split(
 def load_user_split(
     split_dir: str,
     user_col: str = "userId",
+    require_test: bool = False,
 ) -> Dict[str, List[int]]:
     """
-    Load training and validation user identifiers from disk.
+    Load saved user split identifiers from disk.
 
     The function reads ``train_users.csv`` and ``val_users.csv`` from the given
-    directory, converts the selected user column to integers, and verifies that
-    the two loaded splits are disjoint.
+    directory, optionally reads ``test_users.csv``, converts the selected user
+    column to integers, and verifies that all loaded splits are disjoint.
 
     Parameters
     ----------
@@ -529,16 +726,21 @@ def load_user_split(
         Directory containing the saved split files.
     user_col : str, default="userId"
         Column name used in the saved CSV files.
+    require_test : bool, default=False
+        Whether ``test_users.csv`` must exist in ``split_dir``.
 
     Returns
     -------
     Dict[str, List[int]]
-        {"train_users": [...], "val_users": [...]}
+        Dictionary with ``"train_users"`` and ``"val_users"``. Includes
+        ``"test_users"`` when the corresponding file exists.
 
     Raises
     ------
     FileNotFoundError
-        Raised when one or both expected CSV files are missing.
+        Raised when one or both expected train/validation CSV files are
+        missing, or when ``require_test`` is true and ``test_users.csv`` is
+        missing.
     KeyError
         May be raised if the CSV files do not contain ``user_col``.
     RuntimeError
@@ -552,19 +754,170 @@ def load_user_split(
 
     train_path = os.path.join(split_dir, "train_users.csv")
     val_path = os.path.join(split_dir, "val_users.csv")
+    test_path = os.path.join(split_dir, "test_users.csv")
 
     if not os.path.exists(train_path) or not os.path.exists(val_path):
         raise FileNotFoundError(
             f"Missing split files in {split_dir}. Expected train_users.csv and val_users.csv."
         )
+    if require_test and not os.path.exists(test_path):
+        raise FileNotFoundError(
+            f"Missing test split file in {split_dir}. Expected test_users.csv."
+        )
 
     train_users = pd.read_csv(train_path)[user_col].astype(int).tolist()
     val_users = pd.read_csv(val_path)[user_col].astype(int).tolist()
 
-    if set(train_users) & set(val_users):
+    split = {
+        "train_users": train_users,
+        "val_users": val_users,
+    }
+    if os.path.exists(test_path):
+        split["test_users"] = pd.read_csv(test_path)[user_col].astype(int).tolist()
+
+    split_sets = [set(users) for users in split.values()]
+    if any(
+        split_sets[i] & split_sets[j]
+        for i in range(len(split_sets))
+        for j in range(i + 1, len(split_sets))
+    ):
         raise RuntimeError("Loaded splits are not disjoint. This should never happen.")
 
-    return {"train_users": train_users, "val_users": val_users}
+    return split
+
+def _metadata_value_matches(actual: Any, expected: Any) -> bool:
+    """
+    Recursively compare split metadata values.
+
+    Parameters
+    ----------
+    actual : Any
+        Value loaded from the persisted metadata file.
+    expected : Any
+        Value expected for the current run configuration.
+
+    Returns
+    -------
+    bool
+        ``True`` when the actual value matches the expected value. Numeric
+        values are compared with ``numpy.isclose`` to avoid false mismatches
+        from floating-point serialization.
+
+    Raises
+    ------
+    None directly.
+
+    Notes
+    -----
+    This helper is used to decide whether a persisted user split can be safely
+    reused for the current seed and ratio configuration.
+    """
+
+    if isinstance(expected, dict):
+        if not isinstance(actual, dict):
+            return False
+        return all(
+            key in actual and _metadata_value_matches(actual[key], value)
+            for key, value in expected.items()
+        )
+
+    if isinstance(expected, (int, float)) and isinstance(actual, (int, float)):
+        return bool(np.isclose(float(actual), float(expected)))
+
+    return actual == expected
+
+def split_metadata_matches(split_dir: str, expected_metadata: Dict[str, Any]) -> bool:
+    """
+    Check whether a saved split metadata file matches the current configuration.
+
+    Parameters
+    ----------
+    split_dir : str
+        Directory expected to contain ``split_meta.json``.
+    expected_metadata : Dict[str, Any]
+        Metadata values required by the current run configuration. Extra keys
+        in the saved metadata are ignored.
+
+    Returns
+    -------
+    bool
+        ``True`` when the saved metadata exists and contains matching values
+        for every key in ``expected_metadata``; otherwise ``False``.
+
+    Raises
+    ------
+    None directly.
+        Missing or invalid metadata files are treated as non-matches.
+
+    Notes
+    -----
+    The prompt-optimization flow uses this check to avoid silently reusing a
+    split generated with an old seed or old split ratios.
+    """
+
+    meta_path = os.path.join(split_dir, "split_meta.json")
+    if not os.path.exists(meta_path):
+        return False
+
+    try:
+        with open(meta_path, "r", encoding="utf-8") as f:
+            saved_metadata = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    return _metadata_value_matches(saved_metadata, expected_metadata)
+
+def train_val_test_split_metadata(
+    seed: int,
+    train_val_ratio: float,
+    test_ratio: float,
+    train_ratio: float,
+    val_ratio: float,
+) -> Dict[str, Any]:
+    """
+    Build the metadata that identifies a two-stage train/validation/test split.
+
+    Parameters
+    ----------
+    seed : int
+        Seed used during user shuffling.
+    train_val_ratio : float
+        Fraction of all users assigned to the train-validation pool.
+    test_ratio : float
+        Fraction of all users assigned to the held-out test split.
+    train_ratio : float
+        Fraction of the train-validation pool assigned to training.
+    val_ratio : float
+        Fraction of the train-validation pool assigned to validation.
+
+    Returns
+    -------
+    Dict[str, Any]
+        Metadata dictionary containing the seed and both configured and
+        effective split ratios.
+
+    Raises
+    ------
+    None directly.
+
+    Notes
+    -----
+    Keeping this metadata in one helper ensures the split creation and split
+    reuse checks compare the same values.
+    """
+
+    return {
+        "seed": seed,
+        "ratios": {
+            "train_val_pool": float(train_val_ratio),
+            "test": float(test_ratio),
+            "train_within_train_val_pool": float(train_ratio),
+            "val_within_train_val_pool": float(val_ratio),
+            "effective_train": float(train_val_ratio) * float(train_ratio),
+            "effective_val": float(train_val_ratio) * float(val_ratio),
+            "effective_test": float(test_ratio),
+        },
+    }
 
 def create_and_save_user_split(
     ratings_df: pd.DataFrame,
@@ -640,15 +993,197 @@ def create_and_save_user_split(
     )
     return out_dir
 
+def create_and_save_train_val_test_user_split(
+    ratings_df: pd.DataFrame,
+    base_datasets_dir: str,
+    split_folder: str = "user_split_train_val_test",
+    train_val_ratio: float = 0.8,
+    test_ratio: float = 0.2,
+    train_ratio: float = 0.8,
+    val_ratio: float = 0.2,
+    seed: int = 2025,
+    user_col: str = "userId",
+) -> str:
+    """
+    Create a two-stage user split and persist it to the dataset directory.
+
+    The split first reserves ``test_ratio`` of all users as a held-out test set.
+    The remaining ``train_val_ratio`` users are then divided into training and
+    validation sets according to ``train_ratio`` and ``val_ratio``.
+
+    Parameters
+    ----------
+    ratings_df : pd.DataFrame
+        Ratings data used to derive the unique users.
+    base_datasets_dir : str
+        Base directory where the split folder will be created.
+    split_folder : str, default="user_split_train_val_test"
+        Name of the folder used to store the split files.
+    train_val_ratio : float, default=0.8
+        Fraction of all users assigned to the train-validation pool.
+    test_ratio : float, default=0.2
+        Fraction of all users assigned to the held-out test split.
+    train_ratio : float, default=0.8
+        Fraction of the train-validation pool assigned to training.
+    val_ratio : float, default=0.2
+        Fraction of the train-validation pool assigned to validation.
+    seed : int, default=2025
+        Seed used during user shuffling.
+    user_col : str, default="userId"
+        Column name containing user identifiers.
+
+    Returns
+    -------
+    str
+        Path to the directory where the split files were saved.
+
+    Raises
+    ------
+    ValueError
+        May be propagated if the split ratios are invalid or no users are
+        available.
+    KeyError
+        May be propagated if ``user_col`` is missing or if the generated split
+        is malformed.
+    OSError
+        May be propagated if the split files cannot be written.
+
+    Notes
+    -----
+    With the default ratios, the final saved split is 64% training users, 16%
+    validation users, and 20% test users.
+    """
+
+    split = split_users_train_val_test_disjoint(
+        ratings_df=ratings_df,
+        train_val_ratio=train_val_ratio,
+        test_ratio=test_ratio,
+        train_ratio=train_ratio,
+        val_ratio=val_ratio,
+        seed=seed,
+        user_col=user_col,
+    )
+
+    out_dir = os.path.join(base_datasets_dir, split_folder)
+    save_user_split(
+        out_dir=out_dir,
+        split=split,
+        user_col=user_col,
+        metadata=train_val_test_split_metadata(
+            seed=seed,
+            train_val_ratio=train_val_ratio,
+            test_ratio=test_ratio,
+            train_ratio=train_ratio,
+            val_ratio=val_ratio,
+        ),
+    )
+    return out_dir
+
+def ensure_train_val_test_user_split(
+    base_datasets_dir: str,
+    seed: int = 2025,
+    split_folder: str = "user_split_train_val_test",
+    train_val_ratio: float = 0.8,
+    test_ratio: float = 0.2,
+    train_ratio: float = 0.8,
+    val_ratio: float = 0.2,
+    user_col: str = "userId",
+) -> str:
+    """
+    Ensure the persisted train/validation/test user split exists on disk.
+
+    Parameters
+    ----------
+    base_datasets_dir : str
+        Base datasets directory that contains ``ml-latest-small/ratings.csv``.
+    seed : int, default=2025
+        Seed used during split creation.
+    split_folder : str, default="user_split_train_val_test"
+        Folder name used to store the persisted split files.
+    train_val_ratio : float, default=0.8
+        Fraction of all users assigned to the train-validation pool.
+    test_ratio : float, default=0.2
+        Fraction of all users assigned to the held-out test split.
+    train_ratio : float, default=0.8
+        Fraction of the train-validation pool assigned to training.
+    val_ratio : float, default=0.2
+        Fraction of the train-validation pool assigned to validation.
+    user_col : str, default="userId"
+        Column name containing user identifiers.
+
+    Returns
+    -------
+    str
+        Path to the persisted split directory.
+
+    Raises
+    ------
+    FileNotFoundError
+        May be propagated if ``ratings.csv`` does not exist.
+    OSError
+        May be propagated if the split files cannot be written.
+
+    Notes
+    -----
+    This helper centralizes the reuse/create logic so both explainability and
+    prompt optimization rely on the same persisted split.
+    """
+
+    split_metadata = train_val_test_split_metadata(
+        seed=seed,
+        train_val_ratio=train_val_ratio,
+        test_ratio=test_ratio,
+        train_ratio=train_ratio,
+        val_ratio=val_ratio,
+    )
+    split_dir = os.path.join(base_datasets_dir, split_folder)
+    required_split_files = [
+        os.path.join(split_dir, "train_users.csv"),
+        os.path.join(split_dir, "val_users.csv"),
+        os.path.join(split_dir, "test_users.csv"),
+    ]
+    split_files_exist = all(os.path.exists(path) for path in required_split_files)
+    split_can_be_reused = (
+        split_files_exist
+        and split_metadata_matches(split_dir, split_metadata)
+    )
+
+    if not split_can_be_reused:
+        ratings_path = os.path.join(base_datasets_dir, "ml-latest-small", "ratings.csv")
+        ratings_df = pd.read_csv(ratings_path)
+
+        if os.path.exists(split_dir):
+            print(
+                "Recreating user-disjoint split because saved files or "
+                "metadata do not match..."
+            )
+        else:
+            print("Creating user-disjoint split train/val/test...")
+
+        create_and_save_train_val_test_user_split(
+            ratings_df=ratings_df,
+            base_datasets_dir=base_datasets_dir,
+            split_folder=split_folder,
+            train_val_ratio=train_val_ratio,
+            test_ratio=test_ratio,
+            train_ratio=train_ratio,
+            val_ratio=val_ratio,
+            seed=seed,
+            user_col=user_col,
+        )
+
+    return split_dir
+
 def prepare_optimization_inputs(args: Any) -> Dict[str, Any]:
     """
     Prepare the datasets and metadata required by the prompt-optimization flow.
 
     This function:
     - loads ml-latest-small/ratings.csv
-    - creates a user-disjoint split (train/val) if it does not exist on disk
+    - creates a user-disjoint split (train/val/test) if it does not exist on disk
     - loads the split user lists
-    - builds the explainability interactions_df and filters it into train/val dataframes
+    - builds the explainability interactions_df and filters it into
+      train/val dataframes
     - loads the KG props_df from args.kg_path
 
     Parameters
@@ -656,7 +1191,7 @@ def prepare_optimization_inputs(args: Any) -> Dict[str, Any]:
     args : Any
         Configuration object expected to expose at least ``datain``,
         ``seed``, and ``kg_path``. It is also passed to
-        ``prepare_explainability_inputs``, which expects ``inputdir``.
+        ``prepare_users_inputs``, which expects ``inputdir``.
 
     Returns
     -------
@@ -686,30 +1221,23 @@ def prepare_optimization_inputs(args: Any) -> Dict[str, Any]:
     knowledge-graph information into a single structure consumed downstream.
     """
 
-    ratings_path = os.path.join(args.datain, "ml-latest-small", "ratings.csv")
-    ratings_df = pd.read_csv(ratings_path)
+    split_dir = ensure_train_val_test_user_split(
+        base_datasets_dir=args.datain,
+        seed=args.seed,
+        split_folder="user_split_train_val_test",
+        train_val_ratio=0.8,
+        test_ratio=0.2,
+        train_ratio=0.8,
+        val_ratio=0.2,
+        user_col="userId",
+    )
 
-    split_dir = os.path.join(args.datain, "user_split_disjoint_80_20")
-
-    # Reuse an existing persisted split when available; otherwise create it once.
-    if not os.path.exists(split_dir):
-        print("Creating user-disjoint split 80/20...")
-        create_and_save_user_split(
-            ratings_df=ratings_df,
-            base_datasets_dir=args.datain,
-            split_folder="user_split_disjoint_80_20",
-            train_ratio=0.8,
-            val_ratio=0.2,
-            seed=args.seed,
-            user_col="userId",
-        )
-
-    split = load_user_split(split_dir, user_col="userId")
+    split = load_user_split(split_dir, user_col="userId", require_test=False)
     train_user_ids = split["train_users"]
     val_user_ids = split["val_users"]
 
     # Full interaction set used for explainability
-    interactions_df_full, _ = prepare_explainability_inputs(args)
+    interactions_df_full, _ = prepare_users_inputs(args)
 
     interactions_df_train = (
         interactions_df_full[interactions_df_full["userId"].isin(train_user_ids)]
@@ -731,6 +1259,49 @@ def prepare_optimization_inputs(args: Any) -> Dict[str, Any]:
         "interactions_df_val": interactions_df_val,
         "props_df": props_df,
     }
+
+def prepare_explainability_inputs(args: Any) -> Tuple[pd.DataFrame, List[int]]:
+    """
+    Build explainability inputs restricted to the held-out test users.
+
+    Parameters
+    ----------
+    args : Any
+        Configuration object expected to expose at least ``datain``,
+        ``inputdir``, and ``seed``.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, List[int]]
+        A tuple containing the interaction DataFrame filtered to the held-out
+        test users and the corresponding list of user identifiers.
+    """
+
+    split_dir = ensure_train_val_test_user_split(
+        base_datasets_dir=args.datain,
+        seed=args.seed,
+        split_folder="user_split_train_val_test",
+        train_val_ratio=0.8,
+        test_ratio=0.2,
+        train_ratio=0.8,
+        val_ratio=0.2,
+        user_col="userId",
+    )
+
+    split = load_user_split(split_dir, user_col="userId", require_test=True)
+    test_user_ids = split["test_users"]
+
+    # Full interaction set used for explainability
+    interactions_df_full, _ = prepare_users_inputs(args)
+
+    interactions_df_test = (
+        interactions_df_full[interactions_df_full["userId"].isin(test_user_ids)]
+        .reset_index(drop=True)
+    )
+
+    users = interactions_df_test["userId"].unique().tolist()
+
+    return interactions_df_test, users
 
 def build_metric_fn(
     metric: str,

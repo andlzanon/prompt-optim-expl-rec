@@ -2,14 +2,14 @@
 
 # Paths
 DATA_DIR="../datasets"
-KG_PATH="../knowledge-graphs/props_wikidata_movielens_small.csv"
+KG_PATH="../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
 
 # Models & Algorithms
 MODELS=("Llama3.1-I")
-ALGORITHMS=("user_knn")   # ("user_knn" "item_knn")
+ALGORITHMS=("user_knn" "item_knn" "ncf" "bprmf")   # ("user_knn" "item_knn" "ncf" "bprmf")
 
 # Representation models
-# REPRESENTATION_MODELS=("llm2vec")
+# REPRESENTATION_MODELS=("sbert")
 REPRESENTATION_MODELS=("llm2vec" "sbert")
 
 # Explainability settings
@@ -31,11 +31,12 @@ MIN_DELTA=0.03
 EARLY_STOPPING_VALUES=("false")
 
 # MMR settings
-MMR_LAMBDA_QUALITIES=("0.0" "0.1" "0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9" "1.0")
+# MMR_LAMBDA_QUALITIES=("0.0" "0.1" "0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9" "1.0")
+MMR_LAMBDA_QUALITIES=("0.0" "0.5" "1.0")
 MMR_POOL_MULTIPLIERS=(10)
 
 # Metrics
-METRICS=("etd" "sep") # ("sep")
+METRICS=("sep") # ("etd" "sep")
 
 SEP_BETA=0.3
 ETD_K=5
