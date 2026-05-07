@@ -54,7 +54,6 @@ if __name__ == "__main__":
             )
 
         llm.metric_selection_guidance = best_prompt_payload["best_prompt"]
-        llm.refresh_system_prompt()
 
         info["prompt_source"] = "best_prompt"
         info["best_prompt_path"] = args.best_prompt_path
@@ -87,6 +86,7 @@ if __name__ == "__main__":
     # Record summary metadata about the run for later inspection.
     info["time_to_explain"] = float(end_time - start_time)
     info["system_prompt"] = llm.system_prompt
+    info["metric_selection_guidance"] = llm.metric_selection_guidance
     info["n_users"] = len(users)
     info["users_path"] = args.test_users_path
     info["metric"] = args.metric

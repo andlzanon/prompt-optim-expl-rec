@@ -71,38 +71,21 @@ class LLM:
         self.fixed_system_prompt = None
         self.metric_selection_guidance = None
         self.system_prompt = None
-        self.prompt = None
         self.model = None
         self.tokenizer = None
         self.terminators = None
         self.token_access = None
         self.last_selected_paths_df = pd.DataFrame()
 
-    def refresh_system_prompt(self) -> None:
-        """
-        Rebuild the final system prompt from its fixed and optimizable parts.
-
-        Returns
-        -------
-        None
-            This method updates instance attributes in place.
-
-        Side Effects
-        ------------
-        Mutates ``self.system_prompt`` and ``self.prompt``.
-        """
-
-        self.system_prompt = self.fixed_system_prompt + self.metric_selection_guidance
-        self.prompt = [{"role": "system", "content": self.system_prompt}]
-
     def set_prompt(self) -> None:
         """
-        Build the system prompt used for explanation-path selection.
+        Build the fixed system prompt and the default user guidance block.
 
         The method defines the instruction that constrains the model to return
-        exactly one option number and stores both the raw system prompt text
-        and the initial chat message structure expected by later prompt
-        builders.
+        exactly one option number, stores the raw fixed system prompt text,
+        initializes the default selection-guidance block used inside the user
+        message, and stores the final fixed system prompt used later when each
+        chat payload is assembled.
 
         Returns
         -------
@@ -112,7 +95,8 @@ class LLM:
 
         Side Effects
         ------------
-        Mutates ``self.system_prompt`` and ``self.prompt``.
+        Mutates ``self.fixed_system_prompt``, ``self.metric_selection_guidance``,
+        and ``self.system_prompt``.
 
         Notes
         -----
@@ -132,12 +116,12 @@ class LLM:
             "- Output ONLY the integer corresponding to the chosen option.\n"
         )
         self.metric_selection_guidance = (
-            "Selection criteria (priority order):\n"
-            "1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n"
-            "2) Avoid overly generic attributes when more descriptive ones are available.\n"
-            "3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n"
+            "Selection guidance:\n"
+            "- Prefer attributes that provide more informative, specific, and discriminative explanations.\n"
+            "- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n"
+            "- Prefer attributes that better explain why the recommended item is related to the interacted item.\n"
         )
-        self.refresh_system_prompt()
+        self.system_prompt = self.fixed_system_prompt
 
     def set_model(self) -> None:
         """
@@ -163,7 +147,7 @@ class LLM:
         ------------
         Loads model weights into memory and mutates ``self.model``,
         ``self.tokenizer``, ``self.terminators``, ``self.token_access``,
-        ``self.system_prompt``, and ``self.prompt``.
+        and ``self.system_prompt``.
 
         Notes
         -----
@@ -699,13 +683,8 @@ class LLM:
 
         chunks.append("\n")
 
-        # SEP-friendly guidance
-        chunks.append(
-            "Selection guidance:\n"
-            "- Prefer attributes that provide more informative, specific, and discriminative explanations.\n"
-            "- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n"
-            "- Prefer attributes that better explain why the recommended item is related to the interacted item.\n\n"
-        )
+        if self.metric_selection_guidance:
+            chunks.append(self.metric_selection_guidance.rstrip() + "\n\n")
 
         # Optional context about previously used attributes
         if used_attributes:
@@ -732,13 +711,13 @@ class LLM:
         Returns
         -------
         list[dict]
-            Two-message chat prompt containing the stored system prompt and the
-            provided user message.
+            Two-message chat prompt containing the fixed stored system prompt
+            and the provided user message.
 
         Raises
         ------
-        TypeError
-            May occur later if ``self.prompt`` is not in the expected format.
+        ValueError
+            Raised when the system prompt has not been initialized yet.
 
         Notes
         -----
@@ -746,7 +725,15 @@ class LLM:
         template before generation.
         """
 
-        return [self.prompt[0], {"role": "user", "content": user_message}]
+        if self.system_prompt is None:
+            raise ValueError(
+                "System prompt is not initialized. Call set_prompt() or set_model() first."
+            )
+
+        return [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": user_message},
+        ]
 
     @torch.inference_mode()
     def request_model(self, prompt: list[dict], k: int) -> str:

@@ -300,7 +300,7 @@ def explanations_df_to_blocks(
 
 def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None:
     """
-    Save the current best prompt and the model that produced it.
+    Save the current best selection-guidance block and the generating model.
 
     The function stores this information in ``best_prompt.json`` inside the
     provided output directory. If the file already exists, its current JSON
@@ -311,7 +311,7 @@ def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None
     output_dir : str
         Directory where ``best_prompt.json`` will be stored.
     best_prompt : str
-        Prompt text considered the best result so far.
+        Selection-guidance block considered the best result so far.
     llm_method : str
         Identifier of the model or method that generated the prompt.
 
@@ -336,7 +336,8 @@ def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None
     Notes
     -----
     This helper persists the best optimization result so later stages or manual
-    inspection can recover the final prompt without re-running the search.
+    inspection can recover the final optimized guidance block without
+    re-running the search.
     """
 
     output_dir_path = Path(output_dir)

@@ -16,9 +16,9 @@ class PromptOptimizer:
     Coordinate iterative prompt optimization for explanation-path selection.
 
     This class manages the loop that evaluates prompts on training and
-    validation users, generates new candidate system instructions from prior
-    high-performing prompts, and persists per-epoch artifacts and summary
-    metadata.
+    validation users, generates new candidate user-message guidance blocks
+    from prior high-performing prompts, and persists per-epoch artifacts and
+    summary metadata.
     """
 
     def __init__(
@@ -117,11 +117,11 @@ class PromptOptimizer:
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
 
-        # The optimizer rewrites only the selection-guidance block, which is
-        # the portion of the final system prompt that belongs to the search
-        # space.
+        # The optimizer rewrites only the user-message selection-guidance
+        # block, which is the portion of the explainability prompt that
+        # belongs to the search space.
         self.meta_prompt_template = """\
-You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.
+You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.
 
 TASK CONTEXT (what the user message contains):
 - For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:
@@ -137,7 +137,7 @@ SELECTION CRITERIA (must be included; in priority order):
 3) If tied, prefer the option whose attribute most clearly connects the two items in the path.
 
 STYLE REQUIREMENTS:
-- Write only the selection-guidance block, not a full system prompt.
+- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.
 - Start with a short heading or label for the guidance block.
 - Use imperative language and explicit constraints when useful.
 - Avoid single-sentence guidance.
@@ -456,7 +456,7 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
 
     def _create_meta_messages(self, meta_prompt_used: str) -> List[Dict[str, str]]:
         """
-        Build the chat message list used to request a new prompt instruction.
+        Build the chat message list used to request a new guidance block.
 
         Parameters
         ----------
@@ -467,7 +467,7 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
         -------
         List[Dict[str, str]]
             Two-message chat payload containing one system message and one user
-            request asking for a new system instruction.
+            request asking for a new selection-guidance block.
         """
 
         return [
@@ -480,7 +480,7 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
 
     def _generate_one_instruction(self, llm: LLM, meta_prompt_used: str) -> Tuple[str, float]:
         """
-        Generate one new candidate system instruction from the meta-prompt.
+        Generate one new candidate guidance block from the meta-prompt.
 
         Parameters
         ----------
@@ -493,7 +493,7 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
         Returns
         -------
         Tuple[str, float]
-            Tuple ``(prompt_text, generation_time_seconds)``.
+            Tuple ``(guidance_text, generation_time_seconds)``.
 
         Raises
         ------
@@ -602,8 +602,8 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
         ------------
         Creates per-epoch directories, writes ``epoch.json`` files, writes
         training explanation CSVs, writes validation CSVs when validation runs,
-        mutates the passed ``llm`` instance by updating ``system_prompt`` and
-        ``prompt``, and prints per-epoch progress lines.
+        mutates the passed ``llm`` instance by updating
+        ``metric_selection_guidance`` and prints per-epoch progress lines.
 
         Notes
         -----
@@ -616,7 +616,8 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
 
         ranked_train: List[Tuple[str, float, int]] = []
         info: Dict[str, Any] = {
-            "baseline_prompt": llm.system_prompt,
+            "baseline_prompt": llm.metric_selection_guidance,
+            "baseline_system_prompt": llm.system_prompt,
             "baseline_metric_selection_guidance": llm.metric_selection_guidance,
             "final_meta_prompt_template": self.meta_prompt_template,
             "settings": {
@@ -676,16 +677,16 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
                 guidance_this_epoch, gen_time = self._generate_one_instruction(llm, meta_prompt_used)
                 generated = True
 
-            # Update only the optimizable guidance block, then rebuild the
-            # final system prompt used during explanation generation.
+            # Update only the optimizable user-message guidance block; the
+            # system prompt remains the fixed default instruction.
             llm.metric_selection_guidance = guidance_this_epoch
-            llm.refresh_system_prompt()
 
             epoch_json: Dict[str, Any] = {
                 "epoch": epoch,
                 "prompt": {
                     "guidance_this_epoch": guidance_this_epoch,
-                    "prompt_this_epoch": llm.system_prompt,
+                    "selection_guidance_this_epoch": guidance_this_epoch,
+                    "prompt_this_epoch": guidance_this_epoch,
                     "system_prompt_this_epoch": llm.system_prompt,
                     "generated_new_prompt": generated,
                     "time_spent_instruction": float(gen_time),
@@ -844,7 +845,8 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
                     },
                     "meta_prompt_used": meta_prompt_used,
                     "guidance_this_epoch": guidance_this_epoch,
-                    "prompt_this_epoch": llm.system_prompt,
+                    "selection_guidance_this_epoch": guidance_this_epoch,
+                    "prompt_this_epoch": guidance_this_epoch,
                     "system_prompt_this_epoch": llm.system_prompt,
                     "mmr_selected_reference_epochs": refs_debug if refs_debug else None,
                 }
@@ -857,12 +859,14 @@ Return ONLY the new selection-guidance block text (no quotes, no markdown).
             "best_train_metric": float(best_train_metric),
             "best_train_epoch": int(best_train_epoch) if best_train_epoch is not None else None,
             "best_train_prompt": best_train_prompt,
+            "best_train_selection_guidance": best_train_prompt,
             "best_train_system_prompt": best_train_system_prompt,
         }
         info["best_on_validation"] = {
             "best_val_metric": float(best_val_metric),
             "best_val_epoch": int(best_val_epoch) if best_val_epoch is not None else None,
             "best_val_prompt": best_val_prompt,
+            "best_val_selection_guidance": best_val_prompt,
             "best_val_system_prompt": best_val_system_prompt,
         }
         info["run_summary"] = {

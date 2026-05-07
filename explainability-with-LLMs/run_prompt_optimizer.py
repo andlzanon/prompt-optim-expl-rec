@@ -43,8 +43,10 @@ if __name__ == "__main__":
     llm = LLM(llm_method=args.llm_method, seed=args.seed)
     llm.set_model()
 
-    # Record the initial prompt state before optimization starts.
-    info["baseline_prompt"] = llm.system_prompt
+    # Record the initial fixed system prompt and the default user-guidance
+    # block before optimization starts.
+    info["baseline_prompt"] = llm.metric_selection_guidance
+    info["baseline_system_prompt"] = llm.system_prompt
     info["baseline_metric_selection_guidance"] = llm.metric_selection_guidance
     info["selected_paths_input_path"] = args.selected_paths_input_path
 

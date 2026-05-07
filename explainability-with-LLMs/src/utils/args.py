@@ -135,9 +135,10 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         default="default",
         choices=["default", "best_prompt"],
         help=(
-            "Source used to populate the system prompt. "
-            "'default' keeps the built-in prompt and 'best_prompt' loads the "
-            "prompt stored in a best_prompt.json file."
+            "Source used to populate the selection-guidance block shown in "
+            "the user prompt. 'default' keeps the built-in guidance and "
+            "'best_prompt' loads the optimized guidance stored in a "
+            "best_prompt.json file."
         ),
     )
 
@@ -268,11 +269,11 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
     Build and parse CLI arguments for the prompt-optimization runner.
 
     This function defines the command-line interface for the prompt
-    optimization workflow, which searches for better system instructions for
-    the explainability pipeline. Besides parsing the raw CLI values, it derives
-    convenience attributes used later in the optimization process, such as the
-    explanation-path prefix, output paths, metric-specific parameters, and
-    normalized boolean flags.
+    optimization workflow, which searches for better selection-guidance
+    instructions for the user message in the explainability pipeline. Besides
+    parsing the raw CLI values, it derives convenience attributes used later
+    in the optimization process, such as the explanation-path prefix, output
+    paths, metric-specific parameters, and normalized boolean flags.
 
     Parameters
     ----------
@@ -465,7 +466,7 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         type=str,
         default="llm2vec",
         choices=available_representations(),
-        help="Text representation model used to embed candidate system instructions.",
+        help="Text representation model used to embed candidate guidance blocks.",
     )
 
     # Metric (objective)
