@@ -1,0 +1,33 @@
+{
+  "epoch": 6,
+  "prompt": {
+    "prompt_this_epoch": "Choose the numerical index pointing towards the explanatory sequence manifestly showcasing optimal contextual connectivity alongside indispensable discriminatory prowess in terms of specified linkage characteristics throughout.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 2.6899187564849854,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.700899, epoch=5)\n---\nPick the number of an option presenting an explanatory pathway \nwith the attribute description boasting maximum discrimination \nacross options while ensuring superior relevance ties at both ends. \n\nProvide the numeral alone designating your sole choice without extra content.\n---\n\nExample 2 (train_score=0.628452, epoch=4)\n---\nPrioritize options founded on the presence of descriptive attribute linkages surpassing equivalent levels of generic labelling, while giving precedence to sequences facilitating easier differentiation among alternatives upon connection through identifiable elements or comparable metrics in direct succession within explanatory context. Select the option accordingly corresponding solely to a singular digit representing its ordinal position.\n---\n\nExample 3 (train_score=0.577723, epoch=3)\n---\nSelect precisely one explained pathway \nout of your displayed numbered options, choosing whichever presents \nan advantageously unique connecting attribute that either uniquely identifies the relationship, distinguishes itself via semantic significance, or offers distinctiveness through quantifiable linkage comparison relative to other equally viable candidates.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6177863393846531,
+    "time_spent_train_eval": 1569.15274310112,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6211476587685807,
+    "time_spent_val_eval": 384.82628321647644,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.7018326186192301,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

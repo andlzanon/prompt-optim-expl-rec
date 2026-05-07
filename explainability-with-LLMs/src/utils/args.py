@@ -103,6 +103,17 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         help="Whether to include user interaction history in the prompt (true/false).",
     )
 
+    parser.add_argument(
+        "--selected_paths_input_path",
+        type=str,
+        default=None,
+        help=(
+            "Optional CSV path with precomputed candidate paths. When provided, "
+            "the explainability run reuses this file instead of sampling paths "
+            "again."
+        ),
+    )
+
     # Seed and model
     parser.add_argument(
         "--seed",
@@ -223,6 +234,16 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         f"{args.algorithm}-opt",
         args.algorithm,
     )
+    args.selected_paths_output_dir = os.path.join(
+        args.outputdir,
+        "selected_paths",
+        args.selection_strategy,
+        f"seed_{args.seed}",
+    )
+    args.selected_paths_output_path = os.path.join(
+        args.selected_paths_output_dir,
+        "selected_paths.csv",
+    )
 
     print('\n', args)
     check_if_out_file_exists(args)
@@ -338,6 +359,17 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         type=str,
         default="true",
         help="Whether to include user interaction history in the prompt (true/false).",
+    )
+
+    parser.add_argument(
+        "--selected_paths_input_path",
+        type=str,
+        default=None,
+        help=(
+            "Optional CSV path with precomputed candidate paths. When provided, "
+            "prompt optimization reuses this file instead of sampling paths "
+            "again."
+        ),
     )
 
     # Knowledge Graph (needed by metrics)
@@ -513,6 +545,125 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         print("\n")
 
     # Reproducibility
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    np.random.seed(seed=args.seed)
+
+    info = {"args": vars(args)}
+    return args, info
+
+def args_prepare_selected_paths() -> Tuple[argparse.Namespace, Dict[str, Any]]:
+    """
+    Build and parse CLI arguments for the selected-path precomputation runner.
+
+    This function configures a lightweight preprocessing step that samples the
+    candidate explanation paths before the LLM runs. The resulting CSV can be
+    reused later by either ``run_prompt_optimizer.py`` or
+    ``run_llm_explainability.py``.
+    """
+
+    parser = argparse.ArgumentParser(
+        description="Precompute and save selected explanation-path candidates."
+    )
+
+    parser.add_argument(
+        "--datain",
+        type=str,
+        required=True,
+        help="Base input data directory (e.g., ../datasets).",
+    )
+
+    parser.add_argument(
+        "--algorithm",
+        type=str,
+        required=True,
+        help="Algorithm name used to locate explanation paths (e.g., user_knn, item_knn).",
+    )
+
+    parser.add_argument(
+        "--selection_strategy",
+        type=str,
+        default="random",
+        help="Strategy used to select explanation paths (default: random).",
+    )
+
+    parser.add_argument(
+        "--num_recommendations",
+        type=int,
+        default=3,
+        help="Number of recommendations to include per user (default: 3).",
+    )
+
+    parser.add_argument(
+        "--num_paths_per_recommendation",
+        type=int,
+        default=3,
+        help="Number of candidate explanation paths per recommendation (default: 3).",
+    )
+
+    parser.add_argument(
+        "--user_scope",
+        type=str,
+        default="test",
+        choices=["train", "val", "test", "train_val", "all", "optimization", "explainability"],
+        help=(
+            "Which user split to precompute. "
+            "'optimization' is an alias for 'train_val' and "
+            "'explainability' is an alias for 'test'."
+        ),
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=2026,
+        help="Seed for reproducibility.",
+    )
+
+    parser.add_argument(
+        "--out",
+        type=str,
+        required=True,
+        help="Base output directory used to store the selected-path CSV.",
+    )
+
+    parser.add_argument(
+        "--machine",
+        type=str,
+        default=socket.gethostname(),
+        help="Machine hostname.",
+    )
+
+    args = parser.parse_args()
+
+    args.inputdir = f"{args.datain}"
+    args.explanation_paths_prefix = os.path.join(
+        args.datain,
+        "explanation_paths",
+        f"{args.algorithm}-opt",
+        args.algorithm,
+    )
+    args.outputdir = os.path.join(
+        args.out,
+        args.algorithm,
+        args.user_scope,
+        args.selection_strategy,
+        f"recs_{args.num_recommendations}_paths_{args.num_paths_per_recommendation}",
+        f"seed_{args.seed}",
+    )
+    args.outfilename = os.path.join(args.outputdir, "selected_paths")
+    args.selected_paths_output_path = args.outfilename + ".csv"
+    args.start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+    print("\n", args)
+    check_if_out_file_exists(args)
+
+    if not os.path.exists(args.outputdir):
+        print(f"\nCreating output directory at {args.outputdir}\n")
+        os.makedirs(args.outputdir, exist_ok=True)
+    else:
+        print("\n")
+
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     np.random.seed(seed=args.seed)

@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Informative Attribute Pathway Prioritisation**\n\nOptimise your recommendations by prioritising paths according to their relative informativeness and specificity:\n\n1. Emphasize paths featuring the most distinctive and revealing attributes regarding interacting items to enhance decision accuracy.\n2. When equally compelling options arise, favour more detailed attributes which demonstrate richer understanding and context around linked interactions, thereby reducing ambiguity and promoting clarity.\n3. To settle differences, preferably choose attribute paths boasting superior contextual coherence as evidence for the best connection between paired elements in contention.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

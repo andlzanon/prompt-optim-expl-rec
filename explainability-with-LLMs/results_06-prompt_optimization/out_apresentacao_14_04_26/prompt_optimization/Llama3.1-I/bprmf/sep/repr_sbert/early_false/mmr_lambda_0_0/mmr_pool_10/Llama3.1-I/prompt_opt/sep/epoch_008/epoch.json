@@ -1,0 +1,33 @@
+{
+  "epoch": 8,
+  "prompt": {
+    "prompt_this_epoch": "Select one numerical value strictly according to priority rules: give precedence to specifics over generics based on associated attribute informativeness in the explanation sequences, breaking equality through attributing highest relevance scores accordingly; in cases of ties due to identical ranks between connected elements, favor paths linked via less ambiguous attributes initially existing within such sets then progress onward as necessitated; your final output must comprise merely an ordered choice represented as a unique integer ID referring directly to top-ranked entry throughout evaluation process exhaustively considered against competing counterparts established in given environment contextually defined by supplied interaction structures.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 12.894047737121582,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.711743, epoch=2)\n---\nSelect one numbered explanation path from your listed alternatives, following these selection preferences: choose options primarily based on specificity in their attribute descriptions; if equally descriptive, prioritize connections between explained and explainer entities across all paths, with preference towards avoiding ambiguity; however, ensure that your output comprises simply a singular numerical identifier, representing the absolute optimal match. \n\nGiven a finite set of interaction pathways, specifically attribute-based associations, you must return the definitive number directly referencing which one was deemed supreme after thorough examination of all specified factors within its structure and constituent components. \n\nFollow strict adherence to this rule structure and refrain from suggesting anything beyond a mere numerical representation signifying excellence amongst offered alternatives, effectively discarding any extrinsic contextual cues or supplementary annotations to conform solely with numeric representations aligned along hierarchical importance scaling based upon discerning evaluation metrics employed uniformly for every comparative assessment consideration made necessary at critical junctures during exhaustive review process execution.\n---\n\nExample 2 (train_score=0.691862, epoch=1)\n---\nSelect precisely one explanatory pathway out of your presented options where the preferred choice is based on specificity in the connecting attribute within the sequence as prioritized:\n\n(1 - Path with most specific Attribute in line)\n\nDo not include extraneous information or divergent choices \n Output solely the numeric identifier of your picked Option (integer value):\n---\n\nExample 3 (train_score=0.675415, epoch=3)\n---\nChoose one option using strict precedence rules: pick the first viable option with maximally informative attributes, preferring clear and non-generic links whenever those exist before resorting to otherwise equal alternatives and finally default to the first available instance. Simply type the number corresponding to your optimal pick amongst given alternatives, adhering strictly to our prescribed response format.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6064218381940248,
+    "time_spent_train_eval": 1630.426109790802,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6067099741383545,
+    "time_spent_val_eval": 402.6036763191223,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.644331615650138,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

@@ -1,0 +1,33 @@
+{
+  "epoch": 8,
+  "prompt": {
+    "prompt_this_epoch": "To produce the optimum option number indicating the highest-ranking explanation path among those presented consider attributes first and foremost in terms of informativity, specificity, and differential power relative to all peer explanations; whenever these characteristics create parity among alternatives evaluate the role of connecting descriptors facilitating intelligible correlations between interrelated items preceding purely incidental matching scenarios; ultimately assert this definitive preference without further elaboration.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 9.408643007278442,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.711743, epoch=2)\n---\nSelect one numbered explanation path from your listed alternatives, following these selection preferences: choose options primarily based on specificity in their attribute descriptions; if equally descriptive, prioritize connections between explained and explainer entities across all paths, with preference towards avoiding ambiguity; however, ensure that your output comprises simply a singular numerical identifier, representing the absolute optimal match. \n\nGiven a finite set of interaction pathways, specifically attribute-based associations, you must return the definitive number directly referencing which one was deemed supreme after thorough examination of all specified factors within its structure and constituent components. \n\nFollow strict adherence to this rule structure and refrain from suggesting anything beyond a mere numerical representation signifying excellence amongst offered alternatives, effectively discarding any extrinsic contextual cues or supplementary annotations to conform solely with numeric representations aligned along hierarchical importance scaling based upon discerning evaluation metrics employed uniformly for every comparative assessment consideration made necessary at critical junctures during exhaustive review process execution.\n---\n\nExample 2 (train_score=0.647435, epoch=5)\n---\nIn order to finalize your selection among the offered explanation paths, strictly adhere to the outlined process: \n\nSelect as your best choice the pathway characterized primarily by attribute information content and uniqueness: \nFirstly, prefer the path featuring the most informative attributes over general, indistinct equivalents, thereby ensuring maximum explanatory value. \n\nIn cases where differing attribute levels render options equivalent according to previously described parameters, proceed to the next level of evaluation by prioritizing clarity in interconnecting the items via the attribute being highlighted. Finally, should still-indistinguishable outcomes arise after applying both of these considerations, then, necessarily, you will align yourself closely with whatever arbitrarily-chosen attribute facilitates direct bridging through simple co-incidence rather than deeper semantic insight, as neither other attribute provides distinct advantages. Nonetheless, ultimately choose and enter the unambiguous numerical indicator designating the optimal option, adhering rigidly to expected input standards.\n---\n\nExample 3 (train_score=0.585339, epoch=7)\n---\nChoose the option featuring the most discernible connecting attribute between interacted and recomposed items; whenever equality is established regarding descriptor uniqueness among pathways, favor clarity in item relationships before settling on merely coincidental alignments in lieu of explicit relevance. Enter precisely the chosen numerical designation.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.640717122137533,
+    "time_spent_train_eval": 1597.482305765152,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6324522233361102,
+    "time_spent_val_eval": 393.8794825077057,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.5957220315403625,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

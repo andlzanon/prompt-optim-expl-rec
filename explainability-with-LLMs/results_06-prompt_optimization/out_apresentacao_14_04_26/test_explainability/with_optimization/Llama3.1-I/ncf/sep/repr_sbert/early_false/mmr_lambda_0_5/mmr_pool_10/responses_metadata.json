@@ -1,0 +1,43 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "ncf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "best_prompt",
+        "best_prompt_path": "out/prompt_optimization/Llama3.1-I/ncf/sep/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10",
+        "outfilename": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10/responses",
+        "start_time": "12-04-2026 21:44:48",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/ncf-opt/ncf"
+    },
+    "prompt_source": "best_prompt",
+    "best_prompt_path": "out/prompt_optimization/Llama3.1-I/ncf/sep/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+    "best_prompt_model": "Llama3.1-I",
+    "time_to_explain": 476.6660180091858,
+    "system_prompt": "IF IT EXISTS MULTIPLE DISTINCTIVE PATHWAYS AMONG GIVEN OPTIONS TO CONCURRING RECOMMENDATIONS, ENCASE ANY LESS DESCRIPITIVE COMBINATIONS BETWEEN ITEM PAIRS BY DISREGARDING THOSE ATTRIBUTES SHOWCASING VAGUE GENRICAL CONNECTION WHILE CHOOOSING EXACTLY AN INTEGER ANSWER BASED UPON LEAST SUPRESSED CLUES, WHICH WILL PROVIDE THE MOST OPTIMIZED RECONMENATION AMOUNG THESE COMPETING FEATURES ACCORDING TO THEIR PRIMARAY EFFECTS UPON YOUR PREFERRED OUTPUT AMOUINTING ONLY SINGLE VALUED OUT COME IN FORMATED RESPONSE STRING FOLLOWING THE RULED DETERMINATION PROCESS.",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep",
+    "metric_name": "SEP",
+    "metric_value": 0.6440482430924965,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
+}

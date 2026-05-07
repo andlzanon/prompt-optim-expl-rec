@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Strategic Path Prioritization \n\nPrefer selective explanations offering precise discrimination over non-descript connections whenever possible while favoring intrinsic clarity if both options exhibit parity in distinctiveness. \nSelect descriptions aligned with detailed categorizations before those relegated as secondary or tertiary explanations despite their potential merits separately considered under certain circumstances.\nPrioritize preference orders accordingly:\n\n1) Selectively choose detailed and specific explanatory routes prioritizing inherent object differences for greater discernibility. \n   \n   2) Prefer unique explanations avoiding redundancy in descriptive choice especially among equivalent alternatives solely reliant upon superficial distinction factors. \n\n   3) In case of similarity or tie among otherwise strong choices prioritize clear attribute-based interrelation demonstrating obvious linkages regardless of direct relevance between linked elements.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

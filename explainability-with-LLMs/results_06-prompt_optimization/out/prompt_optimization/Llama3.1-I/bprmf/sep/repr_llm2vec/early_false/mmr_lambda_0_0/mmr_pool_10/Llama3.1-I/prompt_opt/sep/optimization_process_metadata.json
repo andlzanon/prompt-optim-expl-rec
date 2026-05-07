@@ -1,0 +1,426 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "bprmf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": null,
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "epochs": 10,
+        "total_instructions_per_iteration": 1,
+        "meta_prompt_instruction_quantity": 3,
+        "eval_every": 1,
+        "patience": 3,
+        "min_delta": 0.03,
+        "early_stopping": false,
+        "mmr_lambda_quality": 0.0,
+        "mmr_pool_multiplier": 10,
+        "representation_model": "llm2vec",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "explanation_paths_prefix": "../datasets/explanation_paths/bprmf-opt/bprmf",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "outputdir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep",
+        "outfilename": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/optimization_process",
+        "start_time": "17-04-2026 03:07:12"
+    },
+    "baseline_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n",
+    "baseline_metric_selection_guidance": "Selection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n",
+    "selected_paths_input_path": null,
+    "final_meta_prompt_template": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\n{instructions}\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+    "settings": {
+        "epochs": 10,
+        "meta_prompt_instruction_quantity": 3,
+        "eval_every": 1,
+        "patience": 3,
+        "min_delta": 0.03,
+        "early_stopping": false,
+        "mmr_lambda_quality": 0.0,
+        "mmr_pool_multiplier": 10,
+        "representation_model": "llm2vec",
+        "representation_kwargs": {}
+    },
+    "epochs_history": [
+        {
+            "epoch": 0,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000",
+            "generated_new_prompt": false,
+            "time_spent_instruction": 0.0,
+            "train_metric": 0.6286429995437793,
+            "time_spent_train_eval": 776.3397467136383,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6239914382443704,
+            "time_spent_val_eval": 191.36897206306458,
+            "prev_val_metric": null,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000/val_explanations.csv"
+            },
+            "meta_prompt_used": null,
+            "guidance_this_epoch": "Selection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n",
+            "mmr_selected_reference_epochs": null
+        },
+        {
+            "epoch": 1,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 3.9789602756500244,
+            "train_metric": 0.651576655769557,
+            "time_spent_train_eval": 777.875785112381,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6288966451278144,
+            "time_spent_val_eval": 191.28073024749756,
+            "prev_val_metric": 0.6239914382443704,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Explanation Path Selection Guidance**\n\nPrioritize recommendations based on the following sequence:\n\n1. Optimize explanations through attributes providing unique value propositions.\n2. Favour detailed attribute information over generic descriptions.\n3. Ties can be broken by considering the semantic relevance between involved items.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 2,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 5.582317113876343,
+            "train_metric": 0.6732575213451978,
+            "time_spent_train_eval": 785.4509637355804,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6642905434849502,
+            "time_spent_val_eval": 193.08300614356995,
+            "prev_val_metric": 0.6288966451278144,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.651577, epoch=1)\n---\n**Explanation Path Selection Guidance**\n\nPrioritize recommendations based on the following sequence:\n\n1. Optimize explanations through attributes providing unique value propositions.\n2. Favour detailed attribute information over generic descriptions.\n3. Ties can be broken by considering the semantic relevance between involved items.\n---\n\nExample 2 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.651576655769557
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 3,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 6.576861143112183,
+            "train_metric": 0.6584894448913345,
+            "time_spent_train_eval": 782.9920110702515,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6394664538464031,
+            "time_spent_val_eval": 192.90743279457092,
+            "prev_val_metric": 0.6642905434849502,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.651577, epoch=1)\n---\n**Explanation Path Selection Guidance**\n\nPrioritize recommendations based on the following sequence:\n\n1. Optimize explanations through attributes providing unique value propositions.\n2. Favour detailed attribute information over generic descriptions.\n3. Ties can be broken by considering the semantic relevance between involved items.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Optimising Explanation Paths  \nFollow this prioritisation approach to select the best explanation path:\n\n1 Opt for details, selecting paths revealing distinctly relevant attributes about interacted items.\n2 Consider subtlety, favouring descriptive characteristics ahead of broad categories.\n3 When tied, break via clearness, preferring links where explained connections are apparent and concise.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 2,
+                    "train_score": 0.6732575213451978
+                },
+                {
+                    "epoch": 1,
+                    "train_score": 0.651576655769557
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 4,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 10.371113777160645,
+            "train_metric": 0.6606375093392218,
+            "time_spent_train_eval": 799.2676212787628,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6210728628454961,
+            "time_spent_val_eval": 196.89195251464844,
+            "prev_val_metric": 0.6394664538464031,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.658489, epoch=3)\n---\nOptimising Explanation Paths  \nFollow this prioritisation approach to select the best explanation path:\n\n1 Opt for details, selecting paths revealing distinctly relevant attributes about interacted items.\n2 Consider subtlety, favouring descriptive characteristics ahead of broad categories.\n3 When tied, break via clearness, preferring links where explained connections are apparent and concise.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 2,
+                    "train_score": 0.6732575213451978
+                },
+                {
+                    "epoch": 3,
+                    "train_score": 0.6584894448913345
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 5,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 11.375296592712402,
+            "train_metric": 0.6510896267432384,
+            "time_spent_train_eval": 802.4385838508606,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6451856115878395,
+            "time_spent_val_eval": 197.83436059951782,
+            "prev_val_metric": 0.6210728628454961,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.660638, epoch=4)\n---\n**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Optimised Explanation Path Guidance**\nFollow this ordered set of preferences for effective explanation path selection:\n1 Employ attribute priorities favouring those delivering more particular detail, clarity, and precision in elucidating interacted entities as opposed to broader, vaguer interpretations.\n2 When comparable attributes exist, prefer choices circumventing excessive generality while embracing instead richer descriptive profiles embodying intrinsic relevance.\n3 In scenarios where alternative decision-making authority aligns equally under these conditions, rank recommendations based on coherence between component members within proposed relations, assigning higher value to those demonstrating superior interconnectedness.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 2,
+                    "train_score": 0.6732575213451978
+                },
+                {
+                    "epoch": 4,
+                    "train_score": 0.6606375093392218
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 6,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 10.543803930282593,
+            "train_metric": 0.656904019159976,
+            "time_spent_train_eval": 799.3137404918671,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6547907908207138,
+            "time_spent_val_eval": 196.4391212463379,
+            "prev_val_metric": 0.6451856115878395,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.660638, epoch=4)\n---\n**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Detailed Explanatory Path Guidance**\n\nFor optimal selection consideration, follow this structured approach prioritising the evaluation of explanation paths as follows:\n\n1 Consider preferences toward highly descriptive and explanatory attributes to increase the comprehensiveness of the recommendations.\n2 When faced with comparable choices, avoid broad categorisations, instead opting for nuanced distinctions provided by more detailed explanations.\n3 In case of equal ranking outcomes, break tie decision through assessment and comparison of the inherent relationships between chosen elements using discernible indicators pointing towards more coherent understanding over ambiguous connections.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 2,
+                    "train_score": 0.6732575213451978
+                },
+                {
+                    "epoch": 4,
+                    "train_score": 0.6606375093392218
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 7,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 10.000885248184204,
+            "train_metric": 0.6393455969747048,
+            "time_spent_train_eval": 795.924099445343,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6500728535755173,
+            "time_spent_val_eval": 195.23496794700623,
+            "prev_val_metric": 0.6547907908207138,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.660638, epoch=4)\n---\n**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Guided Recommendation Inference**\n\nTo navigate differing explanation paths, adhere to this ordered set of priorities:\n\n1) Emphasise preference towards attributes providing unique characteristics that highlight distinctions between involved items throughout every chosen route.\n2) When presented with alternative routes featuring equivalent distinction points, opt instead for those exhibiting specificity through concise description or particular relevance alongside connected elements under consideration wherever applicable. \n\nNote: As you face equalising situations, select accordingly based on clear and unambiguous connections between all relevant entities.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 2,
+                    "train_score": 0.6732575213451978
+                },
+                {
+                    "epoch": 4,
+                    "train_score": 0.6606375093392218
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 8,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 17.249379634857178,
+            "train_metric": 0.6854906462135376,
+            "time_spent_train_eval": 827.7459783554077,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6729341924486426,
+            "time_spent_val_eval": 204.71306204795837,
+            "prev_val_metric": 0.6500728535755173,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.660638, epoch=4)\n---\n**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Optimised Explanation Path Selection Criteria**\n\nEmploy this structured approach to select optimal explanation paths for recommendations:\n\n1 Follow prioritisation rules prioritising relevance and specificity:\n   - Directly choose paths pointing to very distinctive, exclusive factors explaining interactions when present.\n   - In case such cases occur, otherwise default decision rule relies upon picking pathways associated with attributes being considerably narrower compared to broader characteristic representations.\n2 When faced with choices that still do not provide meaningful differentiation adhere strictly to relative influence analysis:\n   - Select higher scoring pathways based significantly greater impact seen between them & individual pair instances observed earlier during processing phase.\n\n\n   \n        \n            \n                \n               \n   \n        \n   \n\nOptimisation through reduction leads to efficiency. Hence, tie-break rule will rely on clearness evaluation as absolute benchmark criterion when both comparison points end up at dead-tie after running comparative effectiveness computations.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 2,
+                    "train_score": 0.6732575213451978
+                },
+                {
+                    "epoch": 4,
+                    "train_score": 0.6606375093392218
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        },
+        {
+            "epoch": 9,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 9.306013584136963,
+            "train_metric": 0.6604554438443682,
+            "time_spent_train_eval": 791.2244436740875,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6409587176495996,
+            "time_spent_val_eval": 194.6278235912323,
+            "prev_val_metric": 0.6729341924486426,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.685491, epoch=8)\n---\n**Optimised Explanation Path Selection Criteria**\n\nEmploy this structured approach to select optimal explanation paths for recommendations:\n\n1 Follow prioritisation rules prioritising relevance and specificity:\n   - Directly choose paths pointing to very distinctive, exclusive factors explaining interactions when present.\n   - In case such cases occur, otherwise default decision rule relies upon picking pathways associated with attributes being considerably narrower compared to broader characteristic representations.\n2 When faced with choices that still do not provide meaningful differentiation adhere strictly to relative influence analysis:\n   - Select higher scoring pathways based significantly greater impact seen between them & individual pair instances observed earlier during processing phase.\n\n\n   \n        \n            \n                \n               \n   \n        \n   \n\nOptimisation through reduction leads to efficiency. Hence, tie-break rule will rely on clearness evaluation as absolute benchmark criterion when both comparison points end up at dead-tie after running comparative effectiveness computations.\n---\n\nExample 2 (train_score=0.660638, epoch=4)\n---\n**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "**Enhanced Explanation Path Evaluation Criteria**\n\nAdhere to the following prioritized protocol when evaluating potential explanation paths to inform recommendation decisions:\n\n1 Ensure clarity by preferring attributes yielding concise yet comprehensive explanations across interaction categories.\n2 Next, avoid pathways featuring excessively broad descriptors; instead opt for attributes providing richer context where applicable.\n3 Should multiple options remain comparably effective, choose the pathway linked by the attribute demonstrating the clearest logical association between involved entities.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 8,
+                    "train_score": 0.6854906462135376
+                },
+                {
+                    "epoch": 4,
+                    "train_score": 0.6606375093392218
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6286429995437793
+                }
+            ]
+        }
+    ],
+    "best_on_train": {
+        "best_train_metric": 0.6854906462135376,
+        "best_train_epoch": 8,
+        "best_train_prompt": "**Optimised Explanation Path Selection Criteria**\n\nEmploy this structured approach to select optimal explanation paths for recommendations:\n\n1 Follow prioritisation rules prioritising relevance and specificity:\n   - Directly choose paths pointing to very distinctive, exclusive factors explaining interactions when present.\n   - In case such cases occur, otherwise default decision rule relies upon picking pathways associated with attributes being considerably narrower compared to broader characteristic representations.\n2 When faced with choices that still do not provide meaningful differentiation adhere strictly to relative influence analysis:\n   - Select higher scoring pathways based significantly greater impact seen between them & individual pair instances observed earlier during processing phase.\n\n\n   \n        \n            \n                \n               \n   \n        \n   \n\nOptimisation through reduction leads to efficiency. Hence, tie-break rule will rely on clearness evaluation as absolute benchmark criterion when both comparison points end up at dead-tie after running comparative effectiveness computations."
+    },
+    "best_on_validation": {
+        "best_val_metric": 0.6729341924486426,
+        "best_val_epoch": 8,
+        "best_val_prompt": "**Optimised Explanation Path Selection Criteria**\n\nEmploy this structured approach to select optimal explanation paths for recommendations:\n\n1 Follow prioritisation rules prioritising relevance and specificity:\n   - Directly choose paths pointing to very distinctive, exclusive factors explaining interactions when present.\n   - In case such cases occur, otherwise default decision rule relies upon picking pathways associated with attributes being considerably narrower compared to broader characteristic representations.\n2 When faced with choices that still do not provide meaningful differentiation adhere strictly to relative influence analysis:\n   - Select higher scoring pathways based significantly greater impact seen between them & individual pair instances observed earlier during processing phase.\n\n\n   \n        \n            \n                \n               \n   \n        \n   \n\nOptimisation through reduction leads to efficiency. Hence, tie-break rule will rely on clearness evaluation as absolute benchmark criterion when both comparison points end up at dead-tie after running comparative effectiveness computations."
+    },
+    "run_summary": {
+        "epochs_completed": 10,
+        "early_stopped": false,
+        "embedding_cache_size": 9
+    },
+    "time_prompt_optimization": 10316.137507915497
+}

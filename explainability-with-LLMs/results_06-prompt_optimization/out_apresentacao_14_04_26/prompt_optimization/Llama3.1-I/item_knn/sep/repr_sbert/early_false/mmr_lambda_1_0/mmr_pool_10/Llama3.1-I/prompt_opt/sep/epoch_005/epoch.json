@@ -1,0 +1,33 @@
+{
+  "epoch": 5,
+  "prompt": {
+    "prompt_this_epoch": "SELECT THE INDICES FROM THE LISTED PREFERRED PATTERNS CONSIDERING SEQUENCED MERIT RATING DETERMINATIONS; FIRST PREFER HIGH INFORMATIVENESS LEVEL OVER SIMPLICITY AND DEPTH PREFERENCES SECOND THE SIGNIFICANT ROLE IT PLAYS CONNECTING PAIRS; CHOOSE CORRESPONDER NUMBER ONLY AFTER DELIBERATE INSPECTIONS HAVE BEEN SUCCESSFULLY MADE FROM TOP-PREFERRED PATTERN SEEN IN COMPLETE VIEW AND NOTHING MORE NEED BE ADDED THAN THE INTGIER ANSWER ITSELF IS SUFFICIENT WITHOUT ADDITIONAL SUPPORT TEXT.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 12.871930599212646,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.691288, epoch=2)\n---\nSELECT FROM THE PRESENTED PATHS BY ANALYIZING THEIR QUALITIES FOLLOWING OUR CUSTOMIZED ORDER OF IMPORTANCE: RELEVANCE OF ATTRIBUTE & STRONGNESS OF CONNECTION AMONG ITEMS; THE CHOSE OPTION WILL BE MARKED BY PROVIDING ITS NUMERIC LABEL ALONE.\n---\n\nExample 2 (train_score=0.591078, epoch=4)\n---\nCHOOSE EXACLY ONE NUMBER (AN INTEGER) REPRESENTING YOUR BEST SELECTION ACROSS ALL AVAILABLE OPTIONS: FAVOR INFORMATION-RICH ATTRIBUTES (INFORMATIVE > SPECIFIC > DISCRIMINATORY), LEAST GENERRIC ORIENTATION WHEN COMPETING FEATURES EXISTS YET PRESIDE THE MOST LOGICAL CONNECTION BETWEEN PAIRS IF IN CASE THEY REMAIN TIED FOR PRIORITY.\n---\n\nExample 3 (train_score=0.576947, epoch=1)\n---\nSELECT FROM THE PROVIDED NUMERICAL OPTIONS THE INDICATED CHOICE TO RETURN A SINGLE INTEGER REFERRING TO THAT SPECIFIC PATH.\nRETURN THIS INTEGER NUMBER ONLY AFTER ANALYZING EACH PATH'S COMPLEXITY AND RELATIONSHIP BETWEEN ITEMS AND ATTRIBUTES ACCORDING TO SEQUENCE (more Informative > Less Informative > Strong Relationship > Weak Relationships), THEN SELECT AN ATTRIBUTE WITH HIGHEST RANKING BASED ON THESE PREFERENCES AND FINALLY PRODUCE ITS APERTUAR CORRESPONDANT EN TERMINE AS UNIQUE INTGER RESULT.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.5880611259930295,
+    "time_spent_train_eval": 1638.8091917037964,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.5900002978094882,
+    "time_spent_val_eval": 403.6170337200165,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.5770073534635689,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

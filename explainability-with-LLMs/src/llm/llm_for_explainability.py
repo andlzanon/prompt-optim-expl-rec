@@ -49,11 +49,6 @@ class LLM:
         None
             This constructor initializes the instance in place.
 
-        Raises
-        ------
-        KeyError
-            Raised when ``llm_method`` is not present in ``MODEL_ID``.
-
         Notes
         -----
         Model weights are not loaded here. They are loaded later by
@@ -62,15 +57,43 @@ class LLM:
 
         self.seed = seed
         self.llm_method = llm_method
-        self.model_name = MODEL_ID[self.llm_method]
+        if self.llm_method:
+            if self.llm_method not in MODEL_ID:
+                raise KeyError(
+                    f"Unknown llm_method {self.llm_method!r}. "
+                    f"Expected one of: {sorted(MODEL_ID.keys())}"
+                )
+            self.model_name = MODEL_ID[self.llm_method]
+        else:
+            self.model_name = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        self.fixed_system_prompt = None
+        self.metric_selection_guidance = None
         self.system_prompt = None
         self.prompt = None
         self.model = None
         self.tokenizer = None
         self.terminators = None
         self.token_access = None
+        self.last_selected_paths_df = pd.DataFrame()
+
+    def refresh_system_prompt(self) -> None:
+        """
+        Rebuild the final system prompt from its fixed and optimizable parts.
+
+        Returns
+        -------
+        None
+            This method updates instance attributes in place.
+
+        Side Effects
+        ------------
+        Mutates ``self.system_prompt`` and ``self.prompt``.
+        """
+
+        self.system_prompt = self.fixed_system_prompt + self.metric_selection_guidance
+        self.prompt = [{"role": "system", "content": self.system_prompt}]
 
     def set_prompt(self) -> None:
         """
@@ -97,7 +120,7 @@ class LLM:
         the explainability flow.
         """
 
-        self.system_prompt = (
+        self.fixed_system_prompt = (
             "You are selecting ONE explanation path for the given recommendation.\n"
             "Return ONLY the final answer.\n"
             "Output MUST be exactly ONE token: the OPTION NUMBER.\n"
@@ -107,12 +130,14 @@ class LLM:
             "- Do NOT invent items, attributes, or paths.\n"
             "- Do NOT output words, punctuation, or explanations.\n"
             "- Output ONLY the integer corresponding to the chosen option.\n"
+        )
+        self.metric_selection_guidance = (
             "Selection criteria (priority order):\n"
             "1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n"
             "2) Avoid overly generic attributes when more descriptive ones are available.\n"
             "3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n"
         )
-        self.prompt = [{"role": "system", "content": self.system_prompt}]
+        self.refresh_system_prompt()
 
     def set_model(self) -> None:
         """
@@ -145,6 +170,12 @@ class LLM:
         This is the main setup step required before the instance can generate
         explanations.
         """
+
+        if self.model_name is None:
+            raise ValueError(
+                "Cannot load the model because llm_method was not provided when "
+                "initializing LLM."
+            )
 
         self.set_prompt()
         self.token_access = get_token()
@@ -237,6 +268,61 @@ class LLM:
             return paths_df
         return paths_df.sample(n=num_paths, random_state=self.seed)
 
+    def _load_user_paths_df(self, user_paths_path: str) -> pd.DataFrame:
+        """
+        Load and normalize one user's explanation-path table.
+
+        Parameters
+        ----------
+        user_paths_path : str
+            CSV path containing the candidate explanation paths for one user.
+
+        Returns
+        -------
+        pd.DataFrame
+            Loaded DataFrame with normalized item-title columns when present.
+        """
+
+        user_paths_df = pd.read_csv(user_paths_path)
+
+        if "recommended_item_name" in user_paths_df.columns:
+            user_paths_df["recommended_item_name"] = user_paths_df[
+                "recommended_item_name"
+            ].apply(self.remove_year_from_title)
+        if "interacted_item_name" in user_paths_df.columns:
+            user_paths_df["interacted_item_name"] = user_paths_df[
+                "interacted_item_name"
+            ].apply(self.remove_year_from_title)
+
+        return user_paths_df
+
+    def _select_paths_for_recommendation(
+        self,
+        paths_for_rec_df: pd.DataFrame,
+        selection_strategy: str,
+        num_paths_per_recommendation: int,
+    ) -> pd.DataFrame:
+        """
+        Select the candidate paths used for one recommendation.
+
+        Notes
+        -----
+        The current implementation still routes every strategy to random
+        sampling. The strategy name is preserved for logging and future
+        strategy-specific branches.
+        """
+
+        if selection_strategy == "random":
+            return self.sample_paths_randomly(
+                paths_for_rec_df,
+                num_paths_per_recommendation,
+            )
+
+        return self.sample_paths_randomly(
+            paths_for_rec_df,
+            num_paths_per_recommendation,
+        )
+
     @staticmethod
     def _build_valid_lines_list(paths_df: pd.DataFrame) -> list[str]:
         """
@@ -273,6 +359,180 @@ class LLM:
                 paths_df["common_props"],
             )
         ]
+
+    def _build_selected_paths_snapshot(
+        self,
+        selected_paths_df: pd.DataFrame,
+        user_id: int,
+        recommendation_order: int,
+        selection_strategy: str,
+        source_paths_path: str,
+        available_paths_count: int,
+    ) -> pd.DataFrame:
+        """
+        Build a tabular snapshot of the paths sampled for one recommendation.
+
+        Parameters
+        ----------
+        selected_paths_df : pd.DataFrame
+            DataFrame containing only the candidate paths sampled for the
+            current user and recommendation.
+        user_id : int
+            Identifier of the user whose paths were sampled.
+        recommendation_order : int
+            One-based order of the processed recommendation for that user.
+        selection_strategy : str
+            Strategy label used to choose the candidate paths.
+        source_paths_path : str
+            Source CSV file from which the candidate paths were loaded.
+        available_paths_count : int
+            Total number of candidate paths available for the recommendation
+            before sampling.
+
+        Returns
+        -------
+        pd.DataFrame
+            Snapshot DataFrame enriched with user, selection, and ordering
+            metadata for later persistence.
+        """
+
+        snapshot_df = selected_paths_df.copy().reset_index(drop=True)
+        snapshot_df.insert(0, "userId", user_id)
+        snapshot_df["recommendation_order"] = recommendation_order
+        snapshot_df["selection_strategy"] = selection_strategy
+        snapshot_df["selection_seed"] = self.seed
+        snapshot_df["available_paths_for_recommendation"] = available_paths_count
+        snapshot_df["selected_paths_for_recommendation"] = len(snapshot_df)
+        snapshot_df["selection_order"] = range(1, len(snapshot_df) + 1)
+        snapshot_df["source_paths_file"] = source_paths_path
+        snapshot_df["selected_path"] = self._build_valid_lines_list(snapshot_df)
+        return snapshot_df
+
+    @staticmethod
+    def _selected_paths_required_columns() -> list[str]:
+        """
+        Return the required schema used by preselected-path CSV files.
+        """
+
+        return [
+            "userId",
+            "recommendation_order",
+            "recommended_item_id",
+            "interacted_item_id",
+            "selection_strategy",
+            "selection_seed",
+            "selection_order",
+            "available_paths_for_recommendation",
+            "selected_paths_for_recommendation",
+            "common_props",
+            "interacted_item_name",
+            "recommended_item_name",
+            "selected_path",
+            "source_paths_file",
+        ]
+
+    def _normalize_selected_paths_df(
+        self,
+        selected_paths_df: pd.DataFrame,
+        users: list[int],
+    ) -> pd.DataFrame:
+        """
+        Validate and normalize a precomputed selected-paths DataFrame.
+        """
+
+        if not isinstance(selected_paths_df, pd.DataFrame):
+            raise TypeError("selected_paths_df must be a pandas DataFrame.")
+
+        required_cols = set(self._selected_paths_required_columns())
+        missing = required_cols - set(selected_paths_df.columns)
+        if missing:
+            raise ValueError(
+                "Missing required columns in selected_paths_df: "
+                f"{sorted(list(missing))}"
+            )
+
+        normalized_df = selected_paths_df.copy()
+        normalized_df = normalized_df[normalized_df["userId"].isin(users)].copy()
+
+        if "recommended_item_name" in normalized_df.columns:
+            normalized_df["recommended_item_name"] = normalized_df[
+                "recommended_item_name"
+            ].apply(self.remove_year_from_title)
+        if "interacted_item_name" in normalized_df.columns:
+            normalized_df["interacted_item_name"] = normalized_df[
+                "interacted_item_name"
+            ].apply(self.remove_year_from_title)
+
+        normalized_df = normalized_df.sort_values(
+            ["userId", "recommendation_order", "selection_order", "recommended_item_id"]
+        ).reset_index(drop=True)
+
+        return normalized_df
+
+    def prepare_selected_paths(
+        self,
+        users: list[int],
+        explanation_paths_prefix: str,
+        selection_strategy: str = "random",
+        num_recommendations: int = 3,
+        num_paths_per_recommendation: int = 3,
+    ) -> pd.DataFrame:
+        """
+        Precompute and return the candidate paths sampled for the requested users.
+
+        Returns
+        -------
+        pd.DataFrame
+            Tabular snapshot containing the sampled candidate paths for every
+            processed user and recommendation.
+        """
+
+        selected_paths_rows: list[dict] = []
+
+        for user_id in tqdm(users, desc="Preparing selected paths", ascii=True):
+            user_paths_path = f"{explanation_paths_prefix}_{user_id}_user_id.csv"
+            if not os.path.exists(user_paths_path):
+                raise FileNotFoundError(
+                    f"Explanation paths file not found: {user_paths_path}"
+                )
+
+            user_paths_df = self._load_user_paths_df(user_paths_path)
+
+            recommended_item_ids = user_paths_df["recommended_item_id"].drop_duplicates()
+            if num_recommendations > len(recommended_item_ids):
+                raise ValueError(
+                    f"Requested {num_recommendations} recommendations, but only "
+                    f"{len(recommended_item_ids)} available for user {user_id}."
+                )
+
+            selected_recommended_ids = recommended_item_ids.head(num_recommendations)
+
+            for recommendation_order, rec_id in enumerate(
+                selected_recommended_ids,
+                start=1,
+            ):
+                paths_for_rec_df = user_paths_df[
+                    user_paths_df["recommended_item_id"] == rec_id
+                ]
+                selected_paths_df = self._select_paths_for_recommendation(
+                    paths_for_rec_df=paths_for_rec_df,
+                    selection_strategy=selection_strategy,
+                    num_paths_per_recommendation=num_paths_per_recommendation,
+                )
+                selected_paths_snapshot = self._build_selected_paths_snapshot(
+                    selected_paths_df=selected_paths_df,
+                    user_id=user_id,
+                    recommendation_order=recommendation_order,
+                    selection_strategy=selection_strategy,
+                    source_paths_path=user_paths_path,
+                    available_paths_count=len(paths_for_rec_df),
+                )
+                selected_paths_rows.extend(
+                    selected_paths_snapshot.to_dict(orient="records")
+                )
+
+        self.last_selected_paths_df = pd.DataFrame(selected_paths_rows)
+        return self.last_selected_paths_df
 
     @classmethod
     def _try_parse_choice_index(cls, text: str, k: int) -> int | None:
@@ -614,6 +874,7 @@ class LLM:
         selection_strategy: str = "random",
         num_recommendations: int = 3,
         num_paths_per_recommendation: int = 3,
+        selected_paths_df: pd.DataFrame | None = None,
         include_user_history: bool = True,
         max_retries: int = 1,
         max_history_items: int = 200,
@@ -691,42 +952,58 @@ class LLM:
         if "title" in interactions_df.columns:
             interactions_df["title"] = interactions_df["title"].apply(self.remove_year_from_title)
 
+        if selected_paths_df is None:
+            selected_paths_source_df = self.prepare_selected_paths(
+                users=users,
+                explanation_paths_prefix=explanation_paths_prefix,
+                selection_strategy=selection_strategy,
+                num_recommendations=num_recommendations,
+                num_paths_per_recommendation=num_paths_per_recommendation,
+            )
+        else:
+            selected_paths_source_df = self._normalize_selected_paths_df(
+                selected_paths_df=selected_paths_df,
+                users=users,
+            )
+
+        self.last_selected_paths_df = selected_paths_source_df.copy()
+
         for u_i, user_id in enumerate(tqdm(users, desc="Generating explanations", ascii=True), start=1):
             user_history_df = interactions_df[interactions_df["userId"] == user_id]
             if user_history_df.empty:
                 raise ValueError(f"User {user_id} has no interaction history in interactions_df.")
 
-            user_paths_path = f"{explanation_paths_prefix}_{user_id}_user_id.csv"
-            if not os.path.exists(user_paths_path):
-                raise FileNotFoundError(f"Explanation paths file not found: {user_paths_path}")
-
-            user_paths_df = pd.read_csv(user_paths_path)
-
-            if "recommended_item_name" in user_paths_df.columns:
-                user_paths_df["recommended_item_name"] = user_paths_df["recommended_item_name"].apply(self.remove_year_from_title)
-            if "interacted_item_name" in user_paths_df.columns:
-                user_paths_df["interacted_item_name"] = user_paths_df["interacted_item_name"].apply(self.remove_year_from_title)
-
-            recommended_item_ids = user_paths_df["recommended_item_id"].drop_duplicates()
-            if num_recommendations > len(recommended_item_ids):
+            user_selected_paths_df = selected_paths_source_df[
+                selected_paths_source_df["userId"] == user_id
+            ].copy()
+            if user_selected_paths_df.empty:
                 raise ValueError(
-                    f"Requested {num_recommendations} recommendations, but only "
-                    f"{len(recommended_item_ids)} available for user {user_id}."
+                    f"No selected candidate paths were found for user {user_id}."
                 )
 
-            selected_recommended_ids = recommended_item_ids.head(num_recommendations)
+            recommendation_pairs = (
+                user_selected_paths_df[["recommendation_order", "recommended_item_id"]]
+                .drop_duplicates()
+                .sort_values(["recommendation_order", "recommended_item_id"])
+            )
+            if len(recommendation_pairs) != num_recommendations:
+                raise ValueError(
+                    f"Expected {num_recommendations} prepared recommendations for "
+                    f"user {user_id}, but found {len(recommendation_pairs)}. "
+                    "Check whether the precomputed selected-paths CSV was "
+                    "generated with the same configuration."
+                )
 
             used_attributes: list[str] = []
 
-            for rec_id in selected_recommended_ids:
-                paths_for_rec_df = user_paths_df[user_paths_df["recommended_item_id"] == rec_id]
-
-                # The current implementation uses random sampling regardless of
-                # the strategy label provided.
+            for recommendation_order, rec_id in recommendation_pairs.itertuples(index=False):
                 selected_paths_df = (
-                    self.sample_paths_randomly(paths_for_rec_df, num_paths_per_recommendation)
-                    if selection_strategy == "random"
-                    else self.sample_paths_randomly(paths_for_rec_df, num_paths_per_recommendation)
+                    user_selected_paths_df[
+                        (user_selected_paths_df["recommendation_order"] == recommendation_order)
+                        & (user_selected_paths_df["recommended_item_id"] == rec_id)
+                    ]
+                    .sort_values("selection_order")
+                    .reset_index(drop=True)
                 )
 
                 valid_lines = self._build_valid_lines_list(selected_paths_df)

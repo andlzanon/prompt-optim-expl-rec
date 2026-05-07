@@ -9,6 +9,7 @@ from src.utils.geral import (
 )
 
 import time
+import pandas as pd
 
 if __name__ == "__main__":
     """
@@ -21,6 +22,11 @@ if __name__ == "__main__":
     """
 
     args, info = args_prompt_optimizer()
+    selected_paths_input_df = (
+        pd.read_csv(args.selected_paths_input_path)
+        if args.selected_paths_input_path
+        else None
+    )
 
     # Load the datasets and auxiliary data required by the optimization flow.
     data = prepare_optimization_inputs(args)
@@ -37,8 +43,10 @@ if __name__ == "__main__":
     llm = LLM(llm_method=args.llm_method, seed=args.seed)
     llm.set_model()
 
-    # Record the initial system prompt before optimization starts.
+    # Record the initial prompt state before optimization starts.
     info["baseline_prompt"] = llm.system_prompt
+    info["baseline_metric_selection_guidance"] = llm.metric_selection_guidance
+    info["selected_paths_input_path"] = args.selected_paths_input_path
 
     # Configure the optimizer controller with the requested runtime settings.
     prompt_optimizer = PromptOptimizer(
@@ -61,8 +69,10 @@ if __name__ == "__main__":
     # Pack the explanation-generation arguments reused at each epoch.
     explain_kwargs = dict(
         explanation_paths_prefix=args.explanation_paths_prefix,
+        selection_strategy=args.selection_strategy,
         num_recommendations=args.num_recommendations,
         num_paths_per_recommendation=args.num_paths_per_recommendation,
+        selected_paths_df=selected_paths_input_df,
         include_user_history=args.include_user_history,
     )
 

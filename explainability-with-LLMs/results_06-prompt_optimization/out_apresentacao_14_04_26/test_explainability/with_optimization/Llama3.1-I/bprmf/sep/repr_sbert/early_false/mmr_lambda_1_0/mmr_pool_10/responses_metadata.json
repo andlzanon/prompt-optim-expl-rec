@@ -1,0 +1,43 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "bprmf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "best_prompt",
+        "best_prompt_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10",
+        "outfilename": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/responses",
+        "start_time": "12-04-2026 20:44:24",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/bprmf-opt/bprmf"
+    },
+    "prompt_source": "best_prompt",
+    "best_prompt_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+    "best_prompt_model": "Llama3.1-I",
+    "time_to_explain": 225.4481725692749,
+    "system_prompt": "Select one numbered explanation path from your listed alternatives, following these selection preferences: choose options primarily based on specificity in their attribute descriptions; if equally descriptive, prioritize connections between explained and explainer entities across all paths, with preference towards avoiding ambiguity; however, ensure that your output comprises simply a singular numerical identifier, representing the absolute optimal match. \n\nGiven a finite set of interaction pathways, specifically attribute-based associations, you must return the definitive number directly referencing which one was deemed supreme after thorough examination of all specified factors within its structure and constituent components. \n\nFollow strict adherence to this rule structure and refrain from suggesting anything beyond a mere numerical representation signifying excellence amongst offered alternatives, effectively discarding any extrinsic contextual cues or supplementary annotations to conform solely with numeric representations aligned along hierarchical importance scaling based upon discerning evaluation metrics employed uniformly for every comparative assessment consideration made necessary at critical junctures during exhaustive review process execution.",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep",
+    "metric_name": "SEP",
+    "metric_value": 0.7090690514832879,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
+}

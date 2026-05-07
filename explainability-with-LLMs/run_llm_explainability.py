@@ -7,6 +7,7 @@ from src.utils.geral import (
     prepare_explainability_inputs,
     save_explanations_csv,
     save_metadata_json,
+    save_selected_paths_csv,
 )
 
 import time
@@ -26,6 +27,11 @@ if __name__ == "__main__":
 
     # Load the interaction data and the users that will be processed.
     interactions_df, users = prepare_explainability_inputs(args)
+    selected_paths_input_df = (
+        pd.read_csv(args.selected_paths_input_path)
+        if args.selected_paths_input_path
+        else None
+    )
     
     props_df = pd.read_csv(args.kg_path)
     metric_name, metric_fn = build_metric_fn(
@@ -40,14 +46,22 @@ if __name__ == "__main__":
 
     if args.prompt_source == "best_prompt":
         best_prompt_payload = load_best_prompt(args.best_prompt_path)
-        llm.system_prompt = best_prompt_payload["best_prompt"]
-        llm.prompt = [{"role": "system", "content": llm.system_prompt}]
+        optimized_component = best_prompt_payload["optimized_component"]
+        if optimized_component != "metric_selection_guidance":
+            raise ValueError(
+                "Unsupported optimized_component in best_prompt.json: "
+                f"{optimized_component!r}. Expected 'metric_selection_guidance'."
+            )
+
+        llm.metric_selection_guidance = best_prompt_payload["best_prompt"]
+        llm.refresh_system_prompt()
 
         info["prompt_source"] = "best_prompt"
         info["best_prompt_path"] = args.best_prompt_path
         info["best_prompt_model"] = best_prompt_payload.get(
             "model_that_generated_the_prompt"
         )
+        info["optimized_component"] = optimized_component
     else:
         info["prompt_source"] = "default"
         info["best_prompt_path"] = None
@@ -59,8 +73,10 @@ if __name__ == "__main__":
         users=users,
         interactions_df=interactions_df,
         explanation_paths_prefix=args.explanation_paths_prefix,
+        selection_strategy=args.selection_strategy,
         num_recommendations=args.num_recommendations,
         num_paths_per_recommendation=args.num_paths_per_recommendation,
+        selected_paths_df=selected_paths_input_df,
         include_user_history=args.include_user_history 
     )
 
@@ -78,8 +94,13 @@ if __name__ == "__main__":
     info["metric_value"] = metric_value
     info["metric_params"] = args.metric_params
     info["kg_path"] = args.kg_path
+    info["selection_strategy"] = args.selection_strategy
+    info["selected_paths_input_path"] = args.selected_paths_input_path
+    info["selected_paths_output_path"] = args.selected_paths_output_path
 
     # Persist metadata and generated explanations as separate artifacts.
+    save_selected_paths_csv(args.selected_paths_output_path, llm.last_selected_paths_df)
+
     output_json = args.outfilename + "_metadata.json"
     save_metadata_json(output_json, info)
 
@@ -87,5 +108,6 @@ if __name__ == "__main__":
     save_explanations_csv(output_csv, user_explanations)
 
     print(f"\nExplanations saved to {output_csv}")
+    print(f"Selected candidate paths saved to {args.selected_paths_output_path}")
     print(f"{metric_name}={metric_value:.6f}")
     print(f"Metadata saved to {output_json}")

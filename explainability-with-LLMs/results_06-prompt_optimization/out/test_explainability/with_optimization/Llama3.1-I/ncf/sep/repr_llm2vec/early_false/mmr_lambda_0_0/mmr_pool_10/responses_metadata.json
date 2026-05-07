@@ -1,0 +1,50 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "ncf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": null,
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "best_prompt",
+        "best_prompt_path": "out/prompt_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10",
+        "outfilename": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/responses",
+        "start_time": "19-04-2026 20:38:50",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/ncf-opt/ncf",
+        "selected_paths_output_dir": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/selected_paths/random/seed_2026",
+        "selected_paths_output_path": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/selected_paths/random/seed_2026/selected_paths.csv"
+    },
+    "prompt_source": "best_prompt",
+    "best_prompt_path": "out/prompt_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+    "best_prompt_model": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance",
+    "time_to_explain": 227.97836089134216,
+    "system_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n**Rational Attribute Ranking**\n\nPrioritize explanations by aligning them with the goal of maximizing discriminatory power through strategically chosen attributes while emphasizing insightful transitions between entities.\nOptimally combine these attributes according to decreasing criteria:\n1 Favorably consider pathways comprising uniquely distinctive attributes capable of distinguishing the desired outcomes accurately.\n2 Weigh heavily against overly broad descriptors unless superior equivalents are absent or inferior.\n3 In even instances regarding explanatory effectiveness, prioritize those attribute selections best able to provide conceptually aligned bridges connecting disparate parts to unify understanding.",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep",
+    "metric_name": "SEP",
+    "metric_value": 0.6391592311547187,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+    "selection_strategy": "random",
+    "selected_paths_input_path": null,
+    "selected_paths_output_path": "out/test_explainability/with_optimization/Llama3.1-I/ncf/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/selected_paths/random/seed_2026/selected_paths.csv"
+}

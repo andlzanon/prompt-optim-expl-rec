@@ -1,0 +1,34 @@
+{
+  "epoch": 6,
+  "prompt": {
+    "guidance_this_epoch": "**Detailed Explanatory Path Guidance**\n\nFor optimal selection consideration, follow this structured approach prioritising the evaluation of explanation paths as follows:\n\n1 Consider preferences toward highly descriptive and explanatory attributes to increase the comprehensiveness of the recommendations.\n2 When faced with comparable choices, avoid broad categorisations, instead opting for nuanced distinctions provided by more detailed explanations.\n3 In case of equal ranking outcomes, break tie decision through assessment and comparison of the inherent relationships between chosen elements using discernible indicators pointing towards more coherent understanding over ambiguous connections.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n**Detailed Explanatory Path Guidance**\n\nFor optimal selection consideration, follow this structured approach prioritising the evaluation of explanation paths as follows:\n\n1 Consider preferences toward highly descriptive and explanatory attributes to increase the comprehensiveness of the recommendations.\n2 When faced with comparable choices, avoid broad categorisations, instead opting for nuanced distinctions provided by more detailed explanations.\n3 In case of equal ranking outcomes, break tie decision through assessment and comparison of the inherent relationships between chosen elements using discernible indicators pointing towards more coherent understanding over ambiguous connections.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 10.476399183273315,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 2 (train_score=0.660638, epoch=4)\n---\n**Explanation Path Selection Framework**\n\nFollow these selection steps with corresponding preference levels to guide your choice among possible explanation paths:\n\n1 Prioritize selections based on their potential to reveal highly specific details about interactions by selecting attributes offering the most detailed, precise explanations within distinct categories.\n2 Secondarily consider avoidance of overly general characteristics and lean towards descriptions encompassing essential traits rather than vague notions whenever feasible.\n3 Tied instances should then break down further depending on discernibility, choosing pathways with features manifestly linking participating elements clearly and understandably over unclear alternatives.\n---\n\nExample 3 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.656904019159976,
+    "time_spent_train_eval": 800.0576021671295,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6547907908207138,
+    "time_spent_val_eval": 196.13156294822693,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6451856115878395,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

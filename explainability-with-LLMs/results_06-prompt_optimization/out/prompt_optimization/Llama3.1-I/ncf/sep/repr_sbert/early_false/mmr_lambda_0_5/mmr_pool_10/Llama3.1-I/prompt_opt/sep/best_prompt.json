@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Strategic Attribute Alignment Directive**\n\nInstruct the recommendation process according to this strict precedence:\n1 Opt for attributes within interactions imbuing maximum informational value through pinpointed association over obscure references.\n2 Steer towards elaborate attribute narratives revealing nuanced disparities if substitutable counterparts emerge during deliberations.\n3 When matched characteristics prevail select the connection channel exhibiting logical cohesion governing harmonious linkages between the paired entities.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

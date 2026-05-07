@@ -183,6 +183,80 @@ def save_explanations_csv(
         header=write_header,
     )
 
+def save_selected_paths_csv(
+    output_path: str,
+    selected_paths_df: pd.DataFrame,
+) -> None:
+    """
+    Save the candidate explanation paths sampled for each user and recommendation.
+
+    Parameters
+    ----------
+    output_path : str
+        Path to the CSV file that will store the sampled paths.
+    selected_paths_df : pd.DataFrame
+        DataFrame containing the sampled candidate paths enriched with user,
+        strategy, and ordering metadata.
+
+    Returns
+    -------
+    None
+        This function writes the CSV to disk and does not return a value.
+
+    Raises
+    ------
+    TypeError
+        Raised when ``selected_paths_df`` is not a pandas DataFrame.
+    ValueError
+        Raised when required columns are missing from the input DataFrame.
+    OSError
+        May be propagated if directory creation or CSV writing fails.
+
+    Side Effects
+    ------------
+    Creates the parent directory when necessary and overwrites the target CSV.
+    """
+
+    out_dir = os.path.dirname(output_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
+    if not isinstance(selected_paths_df, pd.DataFrame):
+        raise TypeError("selected_paths_df must be a pandas DataFrame")
+
+    ordered_cols = [
+        "userId",
+        "recommendation_order",
+        "recommended_item_id",
+        "interacted_item_id",
+        "selection_strategy",
+        "selection_seed",
+        "selection_order",
+        "available_paths_for_recommendation",
+        "selected_paths_for_recommendation",
+        "common_props",
+        "interacted_item_name",
+        "recommended_item_name",
+        "selected_path",
+        "source_paths_file",
+    ]
+
+    df = selected_paths_df.copy()
+
+    if df.empty and not set(df.columns):
+        df = pd.DataFrame(columns=ordered_cols)
+
+    missing = set(ordered_cols) - set(df.columns)
+    if missing:
+        raise ValueError(
+            "Missing required columns in selected paths DataFrame: "
+            f"{sorted(list(missing))}"
+        )
+
+    extra_cols = [col for col in df.columns if col not in ordered_cols]
+    df = df[ordered_cols + extra_cols]
+    df.to_csv(output_path, index=False)
+
 def explanations_df_to_blocks(
     df: pd.DataFrame,
     user_col: str = "userId",
@@ -278,13 +352,14 @@ def save_best_prompt(output_dir: str, best_prompt: str, llm_method: str) -> None
 
     data["best_prompt"] = best_prompt
     data["model_that_generated_the_prompt"] = llm_method
+    data["optimized_component"] = "metric_selection_guidance"
 
     with open(best_prompt_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 def load_best_prompt(best_prompt_path: str) -> Dict[str, Any]:
     """
-    Load a previously saved optimized system prompt from ``best_prompt.json``.
+    Load a previously saved optimized prompt payload from ``best_prompt.json``.
 
     Parameters
     ----------
@@ -295,7 +370,8 @@ def load_best_prompt(best_prompt_path: str) -> Dict[str, Any]:
     -------
     Dict[str, Any]
         Parsed JSON payload. The dictionary is guaranteed to contain a
-        non-empty ``"best_prompt"`` string.
+        non-empty ``"best_prompt"`` string and a valid
+        ``"optimized_component"`` value.
 
     Raises
     ------
@@ -304,9 +380,11 @@ def load_best_prompt(best_prompt_path: str) -> Dict[str, Any]:
     json.JSONDecodeError
         May be propagated if the file content is not valid JSON.
     KeyError
-        Raised when the JSON payload does not contain ``"best_prompt"``.
+        Raised when the JSON payload does not contain ``"best_prompt"`` or
+        ``"optimized_component"``.
     ValueError
-        Raised when ``"best_prompt"`` is empty or not a string.
+        Raised when ``"best_prompt"`` is empty or not a string, or when
+        ``"optimized_component"`` is unsupported.
     """
 
     with open(best_prompt_path, "r", encoding="utf-8") as f:
@@ -317,6 +395,15 @@ def load_best_prompt(best_prompt_path: str) -> Dict[str, Any]:
         raise KeyError(f"Missing 'best_prompt' key in {best_prompt_path}.")
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError(f"'best_prompt' in {best_prompt_path} must be a non-empty string.")
+
+    optimized_component = data.get("optimized_component")
+    if optimized_component is None:
+        raise KeyError(f"Missing 'optimized_component' key in {best_prompt_path}.")
+    if optimized_component != "metric_selection_guidance":
+        raise ValueError(
+            f"'optimized_component' in {best_prompt_path} must be "
+            "'metric_selection_guidance'."
+        )
 
     return data
 
@@ -1302,6 +1389,72 @@ def prepare_explainability_inputs(args: Any) -> Tuple[pd.DataFrame, List[int]]:
     users = interactions_df_test["userId"].unique().tolist()
 
     return interactions_df_test, users
+
+def prepare_selected_paths_users(
+    args: Any,
+    user_scope: str = "test",
+) -> Dict[str, Any]:
+    """
+    Resolve which split users should be used when precomputing selected paths.
+
+    Parameters
+    ----------
+    args : Any
+        Configuration object expected to expose at least ``datain`` and
+        ``seed``.
+    user_scope : str, default="test"
+        Requested split scope. Supported values are ``"train"``, ``"val"``,
+        ``"test"``, ``"train_val"``, ``"all"``, ``"optimization"``, and
+        ``"explainability"``.
+
+    Returns
+    -------
+    Dict[str, Any]
+        Dictionary containing the resolved ``users`` list, the normalized
+        ``user_scope`` label, and the ``split_dir`` used.
+    """
+
+    split_dir = ensure_train_val_test_user_split(
+        base_datasets_dir=args.datain,
+        seed=args.seed,
+        split_folder="user_split_train_val_test",
+        train_val_ratio=0.8,
+        test_ratio=0.2,
+        train_ratio=0.8,
+        val_ratio=0.2,
+        user_col="userId",
+    )
+
+    split = load_user_split(split_dir, user_col="userId", require_test=True)
+
+    normalized_scope = str(user_scope).lower()
+    if normalized_scope == "optimization":
+        normalized_scope = "train_val"
+    elif normalized_scope == "explainability":
+        normalized_scope = "test"
+
+    scope_to_users = {
+        "train": split["train_users"],
+        "val": split["val_users"],
+        "test": split["test_users"],
+        "train_val": split["train_users"] + split["val_users"],
+        "all": split["train_users"] + split["val_users"] + split["test_users"],
+    }
+
+    if normalized_scope not in scope_to_users:
+        raise ValueError(
+            "Unsupported user_scope. Expected one of: "
+            "'train', 'val', 'test', 'train_val', 'all', "
+            "'optimization', or 'explainability'."
+        )
+
+    users = [int(user_id) for user_id in dict.fromkeys(scope_to_users[normalized_scope])]
+
+    return {
+        "split_dir": split_dir,
+        "user_scope": normalized_scope,
+        "users": users,
+    }
 
 def build_metric_fn(
     metric: str,

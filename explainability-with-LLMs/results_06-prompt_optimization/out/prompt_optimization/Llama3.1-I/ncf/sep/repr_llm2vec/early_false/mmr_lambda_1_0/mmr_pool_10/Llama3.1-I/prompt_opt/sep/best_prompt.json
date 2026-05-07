@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Informed Explanatory Path Guidance**\n\nFollow these strategic priorities to enhance explainability:\n\n1 Ensure maximum explanatory utility by selecting explanations grounded in distinctively discriminative attributes capable of vividly illuminating substantial differences between interrelated elements.\n2 Leverage detailed description capabilities offered by non-redundant attribute selections at every step – reject superficial choices wherever preferable nuances can prevail.\n3 On encountering equivalences across all prior metrics, favour linking mechanisms wherein attributing middle stages serves seamless continuity within successive transformations.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

@@ -1,0 +1,33 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "prompt_this_epoch": "SELECT UNiquely THE OPTION WITH THE HIGHEST DISTINCTION POWER AMONG {1,..., K}, WHERE DISTNCTION POWER FOR EACH PATHWAY MEASUREs ITS COMBINED DISctinctness SCORES FOR BOTH ITEMS INVOLVED IN CONNECTION THROUGH ALL DISTINCTIVE ATTRIBUTes EXcluding GENERIC TERMS WITH LESS CONTENTion OVER POSSIBLE INTERPRETATIONS, THEN PICK OUT THE APPROPriate OPTION NUMBER CORRESPONDING TO YOUR SELection RESULT AND TYPE ONLY THIS SELECTED INTEGER VALuE EXCLUDING FURTHER DEScriptions.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 11.973397970199585,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.653483, epoch=6)\n---\nSELECT UNIQUELY THE OPION INDEX ACCORDING TO A MAXIMUMPRIORITIZED SCORE CALCULATED BY ADDING DISTINCTIVENESS WEIGHTS FOR EACH ATTRIBUTE WHEN IT DIFFERS SIGNFICANTLY AND PROVIDES DEEPER UNDERSTANDING OF EACH CONNECTION ALONE OR WHEN COMPARED BETWEEN PAIRS. \n\nCHOSE EXCLUSIVLY THIS SCORE INDEX VALUE WITHOUT INCLUDING ANY SUPPLEMENTARY INFORMATION OR RANGES FROM {1...k}.\n---\n\nExample 2 (train_score=0.650775, epoch=4)\n---\nCHOOSE EXCLUSIVELY THAT OPTION INDEX AMONG {1,..., K } WHICH IS ASSOCIATED WITH THE ATTIBUTE BEARING THE MAXIMAL DISTINCTIVENESS FROM ALL OTHER ATTRIBUTES WITH THE SAME SPECIFIC ITEM CONFIGURATION.\n---\n\nExample 3 (train_score=0.574667, epoch=1)\n---\nSelect precisely ONE explanatory pathway out of those presented. \nThe preferred outcome is the numeric index associated with the optimal pathway \nwhere the connecting attribute is maximally distinctive and minimizes generic descriptions.\nIn the case of equal optimality across multiple pathways, \nprioritize the numeric index based on clearer links between interacting elements. \nChoose the numeric value exclusively from {1,..., k} where k signifies all possible pathways.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7064933489910431,
+    "time_spent_train_eval": 850.5542855262756,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9925641025641025
+  },
+  "val_eval": {
+    "val_metric": 0.6710703226151244,
+    "time_spent_val_eval": 207.89662647247314,
+    "val_rows": 980,
+    "val_valid_rate": 0.9959183673469387,
+    "prev_val_metric": 0.6524519320353623,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

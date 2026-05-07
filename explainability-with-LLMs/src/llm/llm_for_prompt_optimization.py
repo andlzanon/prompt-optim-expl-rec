@@ -117,25 +117,19 @@ class PromptOptimizer:
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
 
-        # Updated meta-prompt: no user history, no attribute-usage block, SEP-friendly criteria,
-        # and NO anchored formatting examples like "(e.g., 7)" or '"Option 7"'.
+        # The optimizer rewrites only the selection-guidance block, which is
+        # the portion of the final system prompt that belongs to the search
+        # space.
         self.meta_prompt_template = """\
-You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.
+You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.
 
 TASK CONTEXT (what the user message contains):
 - For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:
   <Interacted Item> -> <Attribute> -> <Recommended Item>
 
-REFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):
-- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.
+REFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):
+- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.
 {instructions}
-
-HARD REQUIREMENTS (must be explicitly stated in the new instruction):
-- Choose EXACTLY ONE of the numbered options provided by the user (1..K).
-- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).
-- Output ONLY the integer number and nothing else.
-- Do NOT output multiple numbers, ranges, or any additional text.
-- Do NOT invent items, attributes, or paths. Only select among the provided options.
 
 SELECTION CRITERIA (must be included; in priority order):
 1) Prefer attributes that make the explanation more informative, specific, and discriminative.
@@ -143,12 +137,13 @@ SELECTION CRITERIA (must be included; in priority order):
 3) If tied, prefer the option whose attribute most clearly connects the two items in the path.
 
 STYLE REQUIREMENTS:
-- Strict system-prompt style.
-- Use imperative language and explicit constraints.
-- Avoid single-sentence instructions.
+- Write only the selection-guidance block, not a full system prompt.
+- Start with a short heading or label for the guidance block.
+- Use imperative language and explicit constraints when useful.
+- Avoid single-sentence guidance.
 - Different wording/structure than the reference.
 
-Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
+Return ONLY the new selection-guidance block text (no quotes, no markdown).
 """
 
         self.gen_cfg = {
@@ -479,7 +474,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
             {"role": "system", "content": meta_prompt_used},
             {
                 "role": "user",
-                "content": "Return one new SYSTEM instruction now. Output only the instruction text.",
+                "content": "Return one new selection-guidance block now. Output only the block text.",
             },
         ]
 
@@ -622,6 +617,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
         ranked_train: List[Tuple[str, float, int]] = []
         info: Dict[str, Any] = {
             "baseline_prompt": llm.system_prompt,
+            "baseline_metric_selection_guidance": llm.metric_selection_guidance,
             "final_meta_prompt_template": self.meta_prompt_template,
             "settings": {
                 "epochs": self.epochs,
@@ -640,10 +636,12 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
         best_train_metric = float("-inf")
         best_train_prompt: Optional[str] = None
+        best_train_system_prompt: Optional[str] = None
         best_train_epoch: Optional[int] = None
 
         best_val_metric = float("-inf")
         best_val_prompt: Optional[str] = None
+        best_val_system_prompt: Optional[str] = None
         best_val_epoch: Optional[int] = None
 
         no_improve = 0
@@ -652,10 +650,10 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
         for epoch in range(self.epochs):
             ep_dir = self._epoch_dir(epoch)
 
-            # Epoch zero evaluates the baseline prompt already stored in the
-            # LLM instance; later epochs generate new prompts from references.
+            # Epoch zero evaluates the baseline guidance already stored in the
+            # LLM instance; later epochs generate new guidance from references.
             if epoch == 0:
-                prompt_this_epoch = llm.system_prompt
+                guidance_this_epoch = llm.metric_selection_guidance
                 gen_time = 0.0
                 generated = False
                 meta_prompt_used = None
@@ -675,18 +673,20 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
                 examples_block = "\n".join(blocks)
                 meta_prompt_used = self._meta_prompt_used(examples_block)
 
-                prompt_this_epoch, gen_time = self._generate_one_instruction(llm, meta_prompt_used)
+                guidance_this_epoch, gen_time = self._generate_one_instruction(llm, meta_prompt_used)
                 generated = True
 
-            # Update the LLM wrapper so explanation generation uses the prompt
-            # selected or generated for the current epoch.
-            llm.system_prompt = prompt_this_epoch
-            llm.prompt = [{"role": "system", "content": llm.system_prompt}]
+            # Update only the optimizable guidance block, then rebuild the
+            # final system prompt used during explanation generation.
+            llm.metric_selection_guidance = guidance_this_epoch
+            llm.refresh_system_prompt()
 
             epoch_json: Dict[str, Any] = {
                 "epoch": epoch,
                 "prompt": {
-                    "prompt_this_epoch": prompt_this_epoch,
+                    "guidance_this_epoch": guidance_this_epoch,
+                    "prompt_this_epoch": llm.system_prompt,
+                    "system_prompt_this_epoch": llm.system_prompt,
                     "generated_new_prompt": generated,
                     "time_spent_instruction": float(gen_time),
                 },
@@ -727,10 +727,11 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
             if train_metric > best_train_metric:
                 best_train_metric = train_metric
-                best_train_prompt = prompt_this_epoch
+                best_train_prompt = guidance_this_epoch
+                best_train_system_prompt = llm.system_prompt
                 best_train_epoch = epoch
 
-            ranked_train.append((prompt_this_epoch, train_metric, epoch))
+            ranked_train.append((guidance_this_epoch, train_metric, epoch))
             ranked_train.sort(key=lambda x: x[1], reverse=True)
 
             print(f"\n[EPOCH {epoch}] TRAIN={train_metric:.6f} (gen={gen_time:.2f}s, train={t_train:.2f}s)")
@@ -763,7 +764,8 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
                 if val_metric > best_val_metric:
                     best_val_metric = val_metric
-                    best_val_prompt = prompt_this_epoch
+                    best_val_prompt = guidance_this_epoch
+                    best_val_system_prompt = llm.system_prompt
                     best_val_epoch = epoch
 
                 prev_val_before_update = prev_val_metric
@@ -841,7 +843,9 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
                         "val_csv_path": os.path.join(ep_dir, "val_explanations.csv") if ran_val else None,
                     },
                     "meta_prompt_used": meta_prompt_used,
-                    "prompt_this_epoch": prompt_this_epoch,
+                    "guidance_this_epoch": guidance_this_epoch,
+                    "prompt_this_epoch": llm.system_prompt,
+                    "system_prompt_this_epoch": llm.system_prompt,
                     "mmr_selected_reference_epochs": refs_debug if refs_debug else None,
                 }
             )
@@ -853,11 +857,13 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
             "best_train_metric": float(best_train_metric),
             "best_train_epoch": int(best_train_epoch) if best_train_epoch is not None else None,
             "best_train_prompt": best_train_prompt,
+            "best_train_system_prompt": best_train_system_prompt,
         }
         info["best_on_validation"] = {
             "best_val_metric": float(best_val_metric),
             "best_val_epoch": int(best_val_epoch) if best_val_epoch is not None else None,
             "best_val_prompt": best_val_prompt,
+            "best_val_system_prompt": best_val_system_prompt,
         }
         info["run_summary"] = {
             "epochs_completed": int(len(info["epochs_history"])),

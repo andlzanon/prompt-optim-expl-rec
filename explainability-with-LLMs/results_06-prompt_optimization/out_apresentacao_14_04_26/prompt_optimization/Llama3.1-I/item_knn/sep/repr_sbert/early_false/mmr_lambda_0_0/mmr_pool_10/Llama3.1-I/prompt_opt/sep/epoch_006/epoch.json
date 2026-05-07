@@ -1,0 +1,33 @@
+{
+  "epoch": 6,
+  "prompt": {
+    "prompt_this_epoch": "LIST AND CONSIDER ALL PRESENTERD PATHS FOR SELECTION UNDER SPECIFIC CONDITIONS \nWITH EMPHASIS ON SELECTING INDICATORS OF DESCRIPCTIVENESS AND USEFULNESS IN MAKIGN THIS INFORMED DICIISON ; UPON ESTABLISHMENT OF PAREMETERS WEIGH THE RELATIONSHIP BRIGHTNESSES BETWEEN INTERACTED ITEM CONNECT AND RECOMMENDD ITEMS, THEN PROVIDE EN CODED SELETION THROUGH ENUMRETATED POSITION AS THUS:\n\n\nA) Preference towards detailed features where possible and avoid vague descriptors when alternative routes exist.\nB) Optimize explanations according attribute relevance and relationship tightness in case of tied conditions.\nC) When complete criteria met, transmit corresponding numeric designator solely without added verbosity or interpretation",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 18.062681674957275,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.691288, epoch=2)\n---\nSELECT FROM THE PRESENTED PATHS BY ANALYIZING THEIR QUALITIES FOLLOWING OUR CUSTOMIZED ORDER OF IMPORTANCE: RELEVANCE OF ATTRIBUTE & STRONGNESS OF CONNECTION AMONG ITEMS; THE CHOSE OPTION WILL BE MARKED BY PROVIDING ITS NUMERIC LABEL ALONE.\n---\n\nExample 2 (train_score=0.675738, epoch=4)\n---\nENCODE YOUR PREFERRED CHOICE WITHIN THE PROVIDED OPTIONS USING A SINGLE INTEGER VALUE WHILE OBSERVING THESE GUIDELINES TO ARRIVE AT AN INFORMATIVE DECISION AND ENSURE EACH ENUMERATED ITEM IS TREATED EQUIVALIDLY UNLESS CLEARLY OUTSHOWN OTHERWISE. \n\nENSUE TO EVALUATE THE INFORMATION CONTENT CULLED UNDER THE HIERARCHICAL ORDER AS FOLLOWS:\n\n- PROMOTE REFINED EXPERTURES OVER THE LEAST GENERIC ONE(S)\n\nTHEN DELIVER ONLY THE INTEGER DESIGNATING THE OBTAINED OPITIONAL INSTANCE SOLEY.\n---\n\nExample 3 (train_score=0.607815, epoch=5)\n---\nCHOOSE THE PATH THAT OFFERS MAXIMAL CLARITY AND INSIGHT, RESPECTING OUR RANKED CONSTRAINTS: \nPREFER PRACTICAL APPLICATION OF DESCRIPTIVE FEATURE CHARACTERISTICS,\nAVOID GENERALISED TERMINOLOGY WHERE SUFFICIENT DETAILS SURVIVED OR CONTINUE UNTIL A PARADEGMATICAL MERIT EMERGES; NEXT, OUTPUT THE ENUMERATED NUMBER SIGNIFYING YOUR ENDEMICALLY SHAPED PATH ALONE.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6185287448650737,
+    "time_spent_train_eval": 1677.919112443924,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9792307692307692
+  },
+  "val_eval": {
+    "val_metric": 0.613632108622159,
+    "time_spent_val_eval": 411.74883365631104,
+    "val_rows": 980,
+    "val_valid_rate": 0.9785714285714285,
+    "prev_val_metric": 0.6058421932770208,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

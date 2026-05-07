@@ -1,0 +1,43 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "bprmf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "best_prompt",
+        "best_prompt_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_5/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_5/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_5/mmr_pool_10",
+        "outfilename": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_5/mmr_pool_10/responses",
+        "start_time": "13-04-2026 09:25:09",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/bprmf-opt/bprmf"
+    },
+    "prompt_source": "best_prompt",
+    "best_prompt_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep/repr_llm2vec/early_false/mmr_lambda_0_5/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+    "best_prompt_model": "Llama3.1-I",
+    "time_to_explain": 242.91265034675598,
+    "system_prompt": "Select a preferred path based on explanation quality from the listed alternatives: favor highly distinctive, informative attributes above vague descriptors whenever possible, breaking ties by choosing well-defined explanatory chains over ambiguous associations between elements. Ensure your response aligns with these guidelines: produce just a single number designating the supremest matched option under these rigorous criteria considerations for maximized precision and minimized uncertainty within this systematic context strictly without supplemental comments or superfluous information yielding precisely ONE token conforming uniquely according to stipulated standards established hereafter strictly adherent.assistant\n\nThis is not following the style requirements.\nNew attempt:\n\nSpecify a unique option index complying with strict criteria: prioritize exclusive attributes providing clear and precise definition, resort to least general association types in case of identical specificity levels, otherwise lean towards attribute-backed direct relationships whenever multiple paths demonstrate equivalent efficacy. Provide only the solitary numerical indicator signifying absolute best alignment under detailed evaluations consistently conducted for enhanced accuracy.",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep",
+    "metric_name": "SEP",
+    "metric_value": 0.7242642329787992,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
+}

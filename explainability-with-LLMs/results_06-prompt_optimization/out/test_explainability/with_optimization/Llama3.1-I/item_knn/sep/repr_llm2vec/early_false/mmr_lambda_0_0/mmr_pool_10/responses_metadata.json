@@ -1,0 +1,50 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "item_knn",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": null,
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "best_prompt",
+        "best_prompt_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/test_explainability/with_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/with_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10",
+        "outfilename": "out/test_explainability/with_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/responses",
+        "start_time": "19-04-2026 20:10:08",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/item_knn-opt/item_knn",
+        "selected_paths_output_dir": "out/test_explainability/with_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/selected_paths/random/seed_2026",
+        "selected_paths_output_path": "out/test_explainability/with_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/selected_paths/random/seed_2026/selected_paths.csv"
+    },
+    "prompt_source": "best_prompt",
+    "best_prompt_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/best_prompt.json",
+    "best_prompt_model": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance",
+    "time_to_explain": 234.10467219352722,
+    "system_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nStrategic Path Prioritization \n\nPrefer selective explanations offering precise discrimination over non-descript connections whenever possible while favoring intrinsic clarity if both options exhibit parity in distinctiveness. \nSelect descriptions aligned with detailed categorizations before those relegated as secondary or tertiary explanations despite their potential merits separately considered under certain circumstances.\nPrioritize preference orders accordingly:\n\n1) Selectively choose detailed and specific explanatory routes prioritizing inherent object differences for greater discernibility. \n   \n   2) Prefer unique explanations avoiding redundancy in descriptive choice especially among equivalent alternatives solely reliant upon superficial distinction factors. \n\n   3) In case of similarity or tie among otherwise strong choices prioritize clear attribute-based interrelation demonstrating obvious linkages regardless of direct relevance between linked elements.",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep",
+    "metric_name": "SEP",
+    "metric_value": 0.6681695059415013,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+    "selection_strategy": "random",
+    "selected_paths_input_path": null,
+    "selected_paths_output_path": "out/test_explainability/with_optimization/Llama3.1-I/item_knn/sep/repr_llm2vec/early_false/mmr_lambda_0_0/mmr_pool_10/selected_paths/random/seed_2026/selected_paths.csv"
+}
