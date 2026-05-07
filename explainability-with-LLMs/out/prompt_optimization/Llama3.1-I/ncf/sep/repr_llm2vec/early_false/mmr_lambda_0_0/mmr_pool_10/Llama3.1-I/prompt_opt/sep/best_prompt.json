@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Rational Attribute Ranking**\n\nPrioritize explanations by aligning them with the goal of maximizing discriminatory power through strategically chosen attributes while emphasizing insightful transitions between entities.\nOptimally combine these attributes according to decreasing criteria:\n1 Favorably consider pathways comprising uniquely distinctive attributes capable of distinguishing the desired outcomes accurately.\n2 Weigh heavily against overly broad descriptors unless superior equivalents are absent or inferior.\n3 In even instances regarding explanatory effectiveness, prioritize those attribute selections best able to provide conceptually aligned bridges connecting disparate parts to unify understanding.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

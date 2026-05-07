@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Prudent Attribute Based Recommendation Flow**\n\nInstructed ranking:\n\n1 Rank pathways that feature the least common attributes amongst interacted items, granting priority to diverse perspectives.\n\n2 Upon parity, elevate pathways which contain the richest contextual information within their attribute specifics \n\n3 Furthermore tie-break scenarios will be resolved in favour of items linked directly by the attribute displaying greatest affinity with both entities.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

@@ -1,0 +1,34 @@
+{
+  "epoch": 2,
+  "prompt": {
+    "guidance_this_epoch": "**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 5.579463720321655,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.651577, epoch=1)\n---\n**Explanation Path Selection Guidance**\n\nPrioritize recommendations based on the following sequence:\n\n1. Optimize explanations through attributes providing unique value propositions.\n2. Favour detailed attribute information over generic descriptions.\n3. Ties can be broken by considering the semantic relevance between involved items.\n---\n\nExample 2 (train_score=0.628643, epoch=0)\n---\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6732575213451978,
+    "time_spent_train_eval": 783.7467033863068,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6642905434849502,
+    "time_spent_val_eval": 192.84448623657227,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6288966451278144,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

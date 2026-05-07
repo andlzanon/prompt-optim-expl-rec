@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Informed Attribute Prioritization**\nPrioritize explanation paths according to their attribute's level of information content: select the highest-specificity option first, then favor attributes avoiding extremely broad definitions that might conceal critical detail within equivalently detailed pathways. Within parity, prefer structural linkages explicitly clarifying connections among interactive elements as such offerings foster superior interpretability regarding intrinsic dependencies.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

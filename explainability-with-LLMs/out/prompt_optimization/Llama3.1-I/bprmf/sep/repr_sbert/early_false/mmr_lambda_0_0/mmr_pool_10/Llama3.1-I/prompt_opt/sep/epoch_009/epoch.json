@@ -1,0 +1,34 @@
+{
+  "epoch": 9,
+  "prompt": {
+    "guidance_this_epoch": "**Discerning Pathway Prioritization Criterion**\n\nOptimise explanations through the hierarchical application of these criteria:\n\nSelect pathways featuring detailed descriptions over superficial relationships when choosing between them. \nConsider the specificity of associated attributes, selecting options yielding a greater number of precise and actionable features whenever viable alternatives exist.\nAvoid ambiguous options unless they contain notably distinct characterisations superior to their non-descript counterparts; then prefer such attributes offering richer and well-defined insights even as ties arise during evaluations.\n\n\nWhen reconciling competing paths, settle on options demonstrating strong associations rather than superficial connections.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n**Discerning Pathway Prioritization Criterion**\n\nOptimise explanations through the hierarchical application of these criteria:\n\nSelect pathways featuring detailed descriptions over superficial relationships when choosing between them. \nConsider the specificity of associated attributes, selecting options yielding a greater number of precise and actionable features whenever viable alternatives exist.\nAvoid ambiguous options unless they contain notably distinct characterisations superior to their non-descript counterparts; then prefer such attributes offering richer and well-defined insights even as ties arise during evaluations.\n\n\nWhen reconciling competing paths, settle on options demonstrating strong associations rather than superficial connections.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 11.965163469314575,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.682662, epoch=8)\n---\n**Optimised Explanation Path Selection Criteria**\n\nEmploy the following prioritisation framework to inform your choices among viable explanation paths:\n\n1 Select pathways showcasing attributes capable of rendering comprehensive summaries or revealing profound contrasts between interrelated items, thereby substantiating distinctions inherent to both entities.\n2 Resort to alternative paths incorporating supplementary information necessary to avoid ambiguity, provided it does not compromise critical contextual insight derived from original distinctions.\n3 When faced with concurrent evaluation scenarios lacking decisive differentiation in criteria, establish a relative precedence hierarchy reliant on intrinsic coherence – primarily focusing on pathway comprehensiveness, secondarily leaning towards interpretability, but ultimately breaking further stalemates based on quantifiable significance metrics amongst the interdependencies present within said interactions.\n---\n\nExample 2 (train_score=0.673258, epoch=2)\n---\n**Recommender Attribute Optimization**\nPrioritise selections based on attribute quality and relationship strength: \n1) Prioritise recommendation paths leading to the most distinctive and informative attributes about interacting items.\n2) Favour paths containing less general, highly explanatory attributes when options exist.\n3) Break ties by preferring paths where connecting attribute significance is highest across related interaction pairs.\n---\n\nExample 3 (train_score=0.639346, epoch=7)\n---\n**Guided Recommendation Inference**\n\nTo navigate differing explanation paths, adhere to this ordered set of priorities:\n\n1) Emphasise preference towards attributes providing unique characteristics that highlight distinctions between involved items throughout every chosen route.\n2) When presented with alternative routes featuring equivalent distinction points, opt instead for those exhibiting specificity through concise description or particular relevance alongside connected elements under consideration wherever applicable. \n\nNote: As you face equalising situations, select accordingly based on clear and unambiguous connections between all relevant entities.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6702436770386957,
+    "time_spent_train_eval": 805.113676071167,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6709839292098934,
+    "time_spent_val_eval": 197.87533044815063,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6856877031126956,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

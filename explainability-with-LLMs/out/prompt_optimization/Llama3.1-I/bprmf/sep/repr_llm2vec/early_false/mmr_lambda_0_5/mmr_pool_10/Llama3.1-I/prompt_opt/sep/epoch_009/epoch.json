@@ -1,0 +1,34 @@
+{
+  "epoch": 9,
+  "prompt": {
+    "guidance_this_epoch": "Differential Reasoning Enhancement Procedure \n- Optimize recommendation performance by adopting attribute evaluation techniques grounded in discriminatory reasoning:\n1 Select primary attribute categories distinguished by their capacity to provide novel and unique connections between interrelated components, thereby improving the robustness and generalisability of attributed relationships.\n2 Leverage descriptive superiority through characterisations comprising rich sensory and qualitative detail in order to foster comprehensive explanations accounting for complexities inherent in interactive contexts.\n3 Ultimately prefer attribution profiles offering quantifiably stronger support links as evidence affirming reliable associative strengths among adjacent pairings.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nDifferential Reasoning Enhancement Procedure \n- Optimize recommendation performance by adopting attribute evaluation techniques grounded in discriminatory reasoning:\n1 Select primary attribute categories distinguished by their capacity to provide novel and unique connections between interrelated components, thereby improving the robustness and generalisability of attributed relationships.\n2 Leverage descriptive superiority through characterisations comprising rich sensory and qualitative detail in order to foster comprehensive explanations accounting for complexities inherent in interactive contexts.\n3 Ultimately prefer attribution profiles offering quantifiably stronger support links as evidence affirming reliable associative strengths among adjacent pairings.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 11.368166208267212,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.693684, epoch=5)\n---\n**Informative Attribute Pathway Prioritisation**\n\nOptimise your recommendations by prioritising paths according to their relative informativeness and specificity:\n\n1. Emphasize paths featuring the most distinctive and revealing attributes regarding interacting items to enhance decision accuracy.\n2. When equally compelling options arise, favour more detailed attributes which demonstrate richer understanding and context around linked interactions, thereby reducing ambiguity and promoting clarity.\n3. To settle differences, preferably choose attribute paths boasting superior contextual coherence as evidence for the best connection between paired elements in contention.\n---\n\nExample 2 (train_score=0.678260, epoch=7)\n---\n**Targeted Attribute Explanation Optimisation**\n\nEnhance selection criteria by prioritizing attributes contributing decisively to explanation narratives: \n\n1. Select pathways anchored strongly within impactful and differentiating attribute frameworks, allowing for clearer insights and refined comprehension between interconnected components.\n\n2. In cases of equal potential, opt for attribute representations embodying concise yet meaningful detail, ensuring efficient transmission of valuable information despite limitations.\n\n3. Whenever applicable, rely on attributes capable of delivering exceptional structural coherences bridging associated entities seamlessly.\n---\n\nExample 3 (train_score=0.672414, epoch=4)\n---\n**Precision-Guided Explanations**\nSelect the optimal explanation path using the following hierarchy:\n1 Enhance decision confidence by leveraging distinct attributes offering exclusive insights into interacted items.\n2 In case of equally informative attributes, leverage preference by attributing higher importance towards characteristic detail, while diminishing ambiguity caused by overly broad category labels.\n3 To resolve remaining disputes, always opt-in the pathway ensuring utmost transparency & concision between connected components within pathways considered.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block, not a full system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6760069408433688,
+    "time_spent_train_eval": 799.5903158187866,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.658831816675932,
+    "time_spent_val_eval": 196.66284465789795,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6555118938489506,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

@@ -699,13 +699,13 @@ class LLM:
 
         chunks.append("\n")
 
-        # SEP-friendly guidance
-        chunks.append(
-            "Selection guidance:\n"
-            "- Prefer attributes that provide more informative, specific, and discriminative explanations.\n"
-            "- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n"
-            "- Prefer attributes that better explain why the recommended item is related to the interacted item.\n\n"
-        )
+        # # SEP-friendly guidance
+        # chunks.append(
+        #     "Selection guidance:\n"
+        #     "- Prefer attributes that provide more informative, specific, and discriminative explanations.\n"
+        #     "- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n"
+        #     "- Prefer attributes that better explain why the recommended item is related to the interacted item.\n\n"
+        # )
 
         # Optional context about previously used attributes
         if used_attributes:
