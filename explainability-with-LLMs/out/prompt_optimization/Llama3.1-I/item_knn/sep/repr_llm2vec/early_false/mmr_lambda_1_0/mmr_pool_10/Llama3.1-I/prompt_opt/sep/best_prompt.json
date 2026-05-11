@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Selecting Relevant Paths\n\n- Opt for pathway descriptions that pinpoint unique advantages and disadvantages to discern better reasons behind item relationships. \n- Limit less specific generalizations that may lead to ambiguous connections or mislead expectations regarding inter-item comparisons. \n- Upon equal comparison precision among pathways, select those emphasizing direct cause-and-effect attributions to clarify cause-link consequences throughout your chosen evaluation method.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

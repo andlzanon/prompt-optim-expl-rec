@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Precise Attribute Selection Guidance\n\nSelect paths where attributes explicitly highlight the relationship between interacting items, offering clear justification for recommendations whenever possible while limiting reliance on vague categories even if unavoidable due to equal efficacy.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

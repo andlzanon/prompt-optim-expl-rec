@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Optimizing Your Explanation Paths \n\nSelect pathway explanations prioritising unique identifiers and characteristic distinctions over generalised terms lacking specificity. Maintain this emphasis while embracing shared cause determination among linked entities whenever similar explanatory weight exists.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Refine Your Recommendation\n\n- Attribute preference should ascend towards specificity and distinctness while ensuring inter-item correlations remain discernible.\n- Limit usage of superfluous descriptor phrases unless they establish direct linkages between items.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

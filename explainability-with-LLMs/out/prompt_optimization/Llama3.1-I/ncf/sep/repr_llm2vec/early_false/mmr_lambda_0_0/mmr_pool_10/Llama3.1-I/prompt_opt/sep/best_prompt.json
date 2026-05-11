@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Optimize Insightful Connections\n\nSelect paths based on the depth and nuance of their underlying explanatory mechanisms, especially when seeking precise correlations between seemingly unrelated entities. Whenever feasible, prioritize relationships offering quantifiable ties or context-specific justifications, rather than simply citing common characteristics shared among multiple instances.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

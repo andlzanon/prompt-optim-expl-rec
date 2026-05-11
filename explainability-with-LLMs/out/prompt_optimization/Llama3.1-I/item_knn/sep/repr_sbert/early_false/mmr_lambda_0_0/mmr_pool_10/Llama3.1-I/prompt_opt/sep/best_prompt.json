@@ -1,0 +1,5 @@
+{
+    "best_prompt": "To refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

@@ -1,0 +1,5 @@
+{
+    "best_prompt": "For Optimal Explanation Paths\n-\nPrefer narrower, item-specific characteristics over broader categories.\nPrioritize pathways where recommended items exhibit distinct properties.\nIn cases of parity, favor options bridging items through direct connections.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

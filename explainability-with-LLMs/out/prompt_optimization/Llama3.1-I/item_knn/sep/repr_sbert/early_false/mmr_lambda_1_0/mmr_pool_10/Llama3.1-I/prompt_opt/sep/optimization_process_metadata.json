@@ -1,0 +1,461 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "item_knn",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": null,
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "epochs": 10,
+        "total_instructions_per_iteration": 1,
+        "meta_prompt_instruction_quantity": 3,
+        "eval_every": 1,
+        "patience": 3,
+        "min_delta": 0.03,
+        "early_stopping": false,
+        "mmr_lambda_quality": 1.0,
+        "mmr_pool_multiplier": 10,
+        "representation_model": "sbert",
+        "metric": "sep",
+        "sep_beta": 0.3,
+        "etd_k": 5,
+        "out": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "explanation_paths_prefix": "../datasets/explanation_paths/item_knn-opt/item_knn",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "outputdir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep",
+        "outfilename": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/optimization_process",
+        "start_time": "09-05-2026 18:38:54"
+    },
+    "baseline_prompt": "Selection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n",
+    "baseline_system_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+    "baseline_metric_selection_guidance": "Selection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n",
+    "selected_paths_input_path": null,
+    "final_meta_prompt_template": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\n{instructions}\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+    "settings": {
+        "epochs": 10,
+        "meta_prompt_instruction_quantity": 3,
+        "eval_every": 1,
+        "patience": 3,
+        "min_delta": 0.03,
+        "early_stopping": false,
+        "mmr_lambda_quality": 1.0,
+        "mmr_pool_multiplier": 10,
+        "representation_model": "sbert",
+        "representation_kwargs": {}
+    },
+    "epochs_history": [
+        {
+            "epoch": 0,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000",
+            "generated_new_prompt": false,
+            "time_spent_instruction": 0.0,
+            "train_metric": 0.6279956897543563,
+            "time_spent_train_eval": 750.99609541893,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6356393617259195,
+            "time_spent_val_eval": 184.58796191215515,
+            "prev_val_metric": null,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_000/val_explanations.csv"
+            },
+            "meta_prompt_used": null,
+            "guidance_this_epoch": "Selection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n",
+            "selection_guidance_this_epoch": "Selection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n",
+            "prompt_this_epoch": "Selection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": null
+        },
+        {
+            "epoch": 1,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 3.2775652408599854,
+            "train_metric": 0.6460772873142875,
+            "time_spent_train_eval": 749.7215974330902,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6279560118168178,
+            "time_spent_val_eval": 184.40358543395996,
+            "prev_val_metric": 0.6356393617259195,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_001/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "To refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.",
+            "selection_guidance_this_epoch": "To refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.",
+            "prompt_this_epoch": "To refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 0,
+                    "train_score": 0.6279956897543563
+                }
+            ]
+        },
+        {
+            "epoch": 2,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 8.01352834701538,
+            "train_metric": 0.6205250405953208,
+            "time_spent_train_eval": 772.0509014129639,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.624264311800265,
+            "time_spent_val_eval": 188.9161274433136,
+            "prev_val_metric": 0.6279560118168178,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_002/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.646077, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 2 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Recommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.",
+            "selection_guidance_this_epoch": "Recommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.",
+            "prompt_this_epoch": "Recommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.6460772873142875
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6279956897543563
+                }
+            ]
+        },
+        {
+            "epoch": 3,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 8.043597936630249,
+            "train_metric": 0.6366836816551565,
+            "time_spent_train_eval": 762.7988443374634,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6195426848960824,
+            "time_spent_val_eval": 187.87094044685364,
+            "prev_val_metric": 0.624264311800265,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_003/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.646077, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 2 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Refining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.",
+            "selection_guidance_this_epoch": "Refining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.",
+            "prompt_this_epoch": "Refining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.6460772873142875
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6279956897543563
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        },
+        {
+            "epoch": 4,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 5.425439119338989,
+            "train_metric": 0.6369099267623374,
+            "time_spent_train_eval": 751.3354213237762,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6263505490112189,
+            "time_spent_val_eval": 184.82695055007935,
+            "prev_val_metric": 0.6195426848960824,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_004/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.646077, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 2 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Refining Recommendation Choices\n\n- Opt for pathway elements that enhance discrimination power and uniqueness through attribute-specific reasoning.\n- Set aside attributes with undifferentiated generalizations unless proven essential context linkers.\n- Resolve ties by prioritizing pathways with unambiguous connectors that distinctly bridge interrelated objects.",
+            "selection_guidance_this_epoch": "Refining Recommendation Choices\n\n- Opt for pathway elements that enhance discrimination power and uniqueness through attribute-specific reasoning.\n- Set aside attributes with undifferentiated generalizations unless proven essential context linkers.\n- Resolve ties by prioritizing pathways with unambiguous connectors that distinctly bridge interrelated objects.",
+            "prompt_this_epoch": "Refining Recommendation Choices\n\n- Opt for pathway elements that enhance discrimination power and uniqueness through attribute-specific reasoning.\n- Set aside attributes with undifferentiated generalizations unless proven essential context linkers.\n- Resolve ties by prioritizing pathways with unambiguous connectors that distinctly bridge interrelated objects.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.6460772873142875
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6279956897543563
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        },
+        {
+            "epoch": 5,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 5.521240711212158,
+            "train_metric": 0.6108465584152446,
+            "time_spent_train_eval": 754.5742771625519,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6251641795994417,
+            "time_spent_val_eval": 184.4705741405487,
+            "prev_val_metric": 0.6263505490112189,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_005/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.646077, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 2 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Enhanced Selection Guidance\n\nFor optimal choice, prioritize pathways driven by \nattributes offering exclusive, descriptive justifications.\nAvoid broadly applicable features unless they're uniquely \nlinked to your desired interaction outcomes.\nIn case of equal justification strength, emphasize \nattributing causal associations over coincidental pairings.",
+            "selection_guidance_this_epoch": "Enhanced Selection Guidance\n\nFor optimal choice, prioritize pathways driven by \nattributes offering exclusive, descriptive justifications.\nAvoid broadly applicable features unless they're uniquely \nlinked to your desired interaction outcomes.\nIn case of equal justification strength, emphasize \nattributing causal associations over coincidental pairings.",
+            "prompt_this_epoch": "Enhanced Selection Guidance\n\nFor optimal choice, prioritize pathways driven by \nattributes offering exclusive, descriptive justifications.\nAvoid broadly applicable features unless they're uniquely \nlinked to your desired interaction outcomes.\nIn case of equal justification strength, emphasize \nattributing causal associations over coincidental pairings.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.6460772873142875
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6279956897543563
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        },
+        {
+            "epoch": 6,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 3.8098859786987305,
+            "train_metric": 0.663707750064421,
+            "time_spent_train_eval": 745.2237031459808,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6658984807954179,
+            "time_spent_val_eval": 182.9722490310669,
+            "prev_val_metric": 0.6251641795994417,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_006/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.646077, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 2 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+            "selection_guidance_this_epoch": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+            "prompt_this_epoch": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.6460772873142875
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.6279956897543563
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        },
+        {
+            "epoch": 7,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 9.73570990562439,
+            "train_metric": 0.6348873909110565,
+            "time_spent_train_eval": 768.8732705116272,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6432866609458595,
+            "time_spent_val_eval": 189.67066645622253,
+            "prev_val_metric": 0.6658984807954179,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_007/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.663708, epoch=6)\n---\nRefine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.\n---\n\nExample 2 (train_score=0.636684, epoch=3)\n---\nRefining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Focus Attribute Comparison\n\nTo effectively evaluate your explanation preferences choose pathways where explanatory attributes demonstrate substantial dissimilarities between recommendable objects and interactible items at hand select options embodying refined distinctive descriptions offering greater differentiation through highlighting distinctiating qualities exhibited by the connected entities thereby facilitating better interpretation when considering both object pairings while avoiding common oversimplified characterizations unless absolutely necessary then allow lesser specific alternatives when constrained by comparably diminished overall clarity yet remain guided towards the selection displaying enhanced unique characteristics under such instances.",
+            "selection_guidance_this_epoch": "Focus Attribute Comparison\n\nTo effectively evaluate your explanation preferences choose pathways where explanatory attributes demonstrate substantial dissimilarities between recommendable objects and interactible items at hand select options embodying refined distinctive descriptions offering greater differentiation through highlighting distinctiating qualities exhibited by the connected entities thereby facilitating better interpretation when considering both object pairings while avoiding common oversimplified characterizations unless absolutely necessary then allow lesser specific alternatives when constrained by comparably diminished overall clarity yet remain guided towards the selection displaying enhanced unique characteristics under such instances.",
+            "prompt_this_epoch": "Focus Attribute Comparison\n\nTo effectively evaluate your explanation preferences choose pathways where explanatory attributes demonstrate substantial dissimilarities between recommendable objects and interactible items at hand select options embodying refined distinctive descriptions offering greater differentiation through highlighting distinctiating qualities exhibited by the connected entities thereby facilitating better interpretation when considering both object pairings while avoiding common oversimplified characterizations unless absolutely necessary then allow lesser specific alternatives when constrained by comparably diminished overall clarity yet remain guided towards the selection displaying enhanced unique characteristics under such instances.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 6,
+                    "train_score": 0.663707750064421
+                },
+                {
+                    "epoch": 3,
+                    "train_score": 0.6366836816551565
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        },
+        {
+            "epoch": 8,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 7.5208094120025635,
+            "train_metric": 0.6482981327125158,
+            "time_spent_train_eval": 761.0253367424011,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6546577649667256,
+            "time_spent_val_eval": 186.73323965072632,
+            "prev_val_metric": 0.6432866609458595,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_008/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.663708, epoch=6)\n---\nRefine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.\n---\n\nExample 2 (train_score=0.636684, epoch=3)\n---\nRefining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Optimise Explanation Pathways\n\nTo strengthen your recommendation rationale opt for explanation pathways displaying unique combinations of inter-related traits, thus creating better discernible boundaries among categories. Prioritise selection according to the level of trait specificity offered while avoiding common broad descriptions seen across equivalent alternatives. In close cases select preferences aligning most precisely to causal explanations connecting items through clear factor-driven causality.",
+            "selection_guidance_this_epoch": "Optimise Explanation Pathways\n\nTo strengthen your recommendation rationale opt for explanation pathways displaying unique combinations of inter-related traits, thus creating better discernible boundaries among categories. Prioritise selection according to the level of trait specificity offered while avoiding common broad descriptions seen across equivalent alternatives. In close cases select preferences aligning most precisely to causal explanations connecting items through clear factor-driven causality.",
+            "prompt_this_epoch": "Optimise Explanation Pathways\n\nTo strengthen your recommendation rationale opt for explanation pathways displaying unique combinations of inter-related traits, thus creating better discernible boundaries among categories. Prioritise selection according to the level of trait specificity offered while avoiding common broad descriptions seen across equivalent alternatives. In close cases select preferences aligning most precisely to causal explanations connecting items through clear factor-driven causality.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 6,
+                    "train_score": 0.663707750064421
+                },
+                {
+                    "epoch": 3,
+                    "train_score": 0.6366836816551565
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        },
+        {
+            "epoch": 9,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 4.874746561050415,
+            "train_metric": 0.6326655194364491,
+            "time_spent_train_eval": 748.2041990756989,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6416563791378107,
+            "time_spent_val_eval": 183.89727878570557,
+            "prev_val_metric": 0.6546577649667256,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/item_knn/sep/repr_sbert/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/sep/epoch_009/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.663708, epoch=6)\n---\nRefine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.\n---\n\nExample 2 (train_score=0.636684, epoch=3)\n---\nRefining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n",
+            "guidance_this_epoch": "Fine-Tune Intermediary Attributes to Enhance Recommendations\n\nFocus on pathways exhibiting attributes demonstrating discernible traits distinguishing one item from another in your network before justifying why certain factors influence relationships, specifying preference towards attributes capable of highlighting significant disparities where possible.",
+            "selection_guidance_this_epoch": "Fine-Tune Intermediary Attributes to Enhance Recommendations\n\nFocus on pathways exhibiting attributes demonstrating discernible traits distinguishing one item from another in your network before justifying why certain factors influence relationships, specifying preference towards attributes capable of highlighting significant disparities where possible.",
+            "prompt_this_epoch": "Fine-Tune Intermediary Attributes to Enhance Recommendations\n\nFocus on pathways exhibiting attributes demonstrating discernible traits distinguishing one item from another in your network before justifying why certain factors influence relationships, specifying preference towards attributes capable of highlighting significant disparities where possible.",
+            "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 6,
+                    "train_score": 0.663707750064421
+                },
+                {
+                    "epoch": 3,
+                    "train_score": 0.6366836816551565
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.6205250405953208
+                }
+            ]
+        }
+    ],
+    "best_on_train": {
+        "best_train_metric": 0.663707750064421,
+        "best_train_epoch": 6,
+        "best_train_prompt": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+        "best_train_selection_guidance": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+        "best_train_system_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n"
+    },
+    "best_on_validation": {
+        "best_val_metric": 0.6658984807954179,
+        "best_val_epoch": 6,
+        "best_val_prompt": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+        "best_val_selection_guidance": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+        "best_val_system_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n"
+    },
+    "run_summary": {
+        "epochs_completed": 10,
+        "early_stopped": false,
+        "embedding_cache_size": 9
+    },
+    "time_prompt_optimization": 9840.141195058823
+}

@@ -1,0 +1,36 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "guidance_this_epoch": "Detailed Attribute Review Protocol\n\nPrioritize investigation pathways featuring attributes explicitly identifying key distinctions between interacted and presented items. \nTarget explanations leveraging tangible details specifying precise links between these entities rather than general classifications alone. In instances where classification consistency is maintained across multiple descriptions, emphasize the relative importance towards clarifying inherent relationships through quantitative measure reinforcement whenever applicable.",
+    "selection_guidance_this_epoch": "Detailed Attribute Review Protocol\n\nPrioritize investigation pathways featuring attributes explicitly identifying key distinctions between interacted and presented items. \nTarget explanations leveraging tangible details specifying precise links between these entities rather than general classifications alone. In instances where classification consistency is maintained across multiple descriptions, emphasize the relative importance towards clarifying inherent relationships through quantitative measure reinforcement whenever applicable.",
+    "prompt_this_epoch": "Detailed Attribute Review Protocol\n\nPrioritize investigation pathways featuring attributes explicitly identifying key distinctions between interacted and presented items. \nTarget explanations leveraging tangible details specifying precise links between these entities rather than general classifications alone. In instances where classification consistency is maintained across multiple descriptions, emphasize the relative importance towards clarifying inherent relationships through quantitative measure reinforcement whenever applicable.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 6.476275682449341,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.671376, epoch=4)\n---\nFocusing Your Recommendation Evaluation\n\n- Concentrate on explanation paths involving distinct, meaningful attributes separating interacted and recommended items.\n- Limit analysis to pathway segments incorporating detailed descriptors that justify linkages between these items uniquely.\n- If alternative pathways remain ambiguous, selectively apply primary weightage to direct inter-item relations providing clear, empirically supported substantiation.\n---\n\nExample 2 (train_score=0.664996, epoch=5)\n---\nPrecise Attribute Consideration \n\nCarefully assess interaction paths via distinctive features distinguishing interacted from recommended items. Prioritize segment examinations where attributes specify critical differences facilitating informed evaluation choices between connected items. When similarity persists despite attribute application focus direct correlation strengths to support relationship legitimacies.\n---\n\nExample 3 (train_score=0.661586, epoch=6)\n---\nFocused Analysis Directions\n\nDelineate your assessment approach by prioritizing attributes that create sharp distinctions between interacted and recommended items. Leverage unique descriptors wherever possible to clarify connections. When ambiguity persists due to similar characteristics, concentrate direct examination focus areas on attribute-rich paths demonstrating compelling evidence-based justification supporting relatedness assessments.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6632973834863526,
+    "time_spent_train_eval": 751.8191475868225,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6727159517212947,
+    "time_spent_val_eval": 185.33171606063843,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6769921499471285,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

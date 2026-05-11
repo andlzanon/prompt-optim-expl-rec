@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Refine Your Recommendation Selections\n\nPrefer intermediary attributes yielding robust distinctions between items before selecting paths justifying interactions, prioritizing routes conveying causal links between factors driving the connection between interrelated items.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

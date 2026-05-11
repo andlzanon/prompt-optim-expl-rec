@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Target Attribute Precision \n\n- Rank pathways based on their unique contributing factors.\nSelect the option exhibiting highest differentiation capability from other pathways if equally informative routes exist prioritize clarity & coherence of intra-attribute links.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

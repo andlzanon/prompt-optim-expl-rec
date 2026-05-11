@@ -1,0 +1,36 @@
+{
+  "epoch": 3,
+  "prompt": {
+    "guidance_this_epoch": "Refining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.",
+    "selection_guidance_this_epoch": "Refining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.",
+    "prompt_this_epoch": "Refining Your Recommendation Selection\n\nPrioritize pathway selections based on how well attributes \nspecifically highlight distinct characteristics. \nIn cases of comparable levels of description  \nspecifyity avoid broadly applicable traits which don't offer strong differences within related groups of objects \nInstead give preference to more targeted traits enabling stronger associations by distinguishing clearer lines of connection \nbetween involved elements. When choosing amongst equally relevant links prioritize paths demonstrating causal impact.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 8.079198598861694,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.646077, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 2 (train_score=0.627996, epoch=0)\n---\nSelection guidance:\n- Prefer attributes that provide more informative, specific, and discriminative explanations.\n- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n- Prefer attributes that better explain why the recommended item is related to the interacted item.\n---\n\nExample 3 (train_score=0.620525, epoch=2)\n---\nRecommendation Guidance:\n\nWhen evaluating different pathways, focus on \nattributes that offer precise distinctions between the \nrecommended item and other interacted objects, as these \nyield stronger explanations. Prioritize paths based on the \ndegree of specificity provided by the intermediate attribute \nbefore selecting the final route to justify connections between items. \n\nHowever, if multiple paths show similar specificity \nlevels consider those explaining 'why' the interacting items \nare linked via more clear cause-and-effect relationships between their attributes and associated interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6366836816551565,
+    "time_spent_train_eval": 761.584588766098,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6195426848960824,
+    "time_spent_val_eval": 186.88897109031677,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.624264311800265,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

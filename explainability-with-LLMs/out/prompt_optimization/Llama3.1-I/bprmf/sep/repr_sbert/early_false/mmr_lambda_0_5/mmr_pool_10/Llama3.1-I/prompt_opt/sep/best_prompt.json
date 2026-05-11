@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Optimize Relevant Explanations\n\nTailor your selections toward richer detail-oriented representations. Ensure preferred characteristics don't resort solely to broad class definitions but rather embrace specificity whenever feasible choices present themselves. Failing such differentiation criteria, seek attribute alignment fostering smoother inter-item transitions.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

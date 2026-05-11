@@ -1,0 +1,36 @@
+{
+  "epoch": 8,
+  "prompt": {
+    "guidance_this_epoch": "Precise Explanation Selection \n- To optimise recommendations effectively, focus on paths characterised by distinctive connections and avoid those relying on vague associations. \n- Select paths that establish meaningful correlations through specific attributes instead of general classifications. \n- In cases of equal justification strength, choose pathways presenting clearer causal links between items, thereby justifying their connection reliably.",
+    "selection_guidance_this_epoch": "Precise Explanation Selection \n- To optimise recommendations effectively, focus on paths characterised by distinctive connections and avoid those relying on vague associations. \n- Select paths that establish meaningful correlations through specific attributes instead of general classifications. \n- In cases of equal justification strength, choose pathways presenting clearer causal links between items, thereby justifying their connection reliably.",
+    "prompt_this_epoch": "Precise Explanation Selection \n- To optimise recommendations effectively, focus on paths characterised by distinctive connections and avoid those relying on vague associations. \n- Select paths that establish meaningful correlations through specific attributes instead of general classifications. \n- In cases of equal justification strength, choose pathways presenting clearer causal links between items, thereby justifying their connection reliably.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 6.129319906234741,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.666892, epoch=6)\n---\nRefinement Guidance \n- Select preferences by prioritizing pathway detail, leveraging specific attributes to define relationships between interacted and recommended items effectively.\n---\n\nExample 2 (train_score=0.665453, epoch=1)\n---\nTo refine your recommendation,\n- Highlight unique attributes that set the recommended item apart.\n- Leverage detailed information over vague descriptions whenever possible.\n- When several options match, select the path where interactions between items are best justified.\n---\n\nExample 3 (train_score=0.646814, epoch=7)\n---\nEnhanced Rationale Selection \n\n- Choose preferences aligned with discernible, unique attributes driving explanations – \n    Prioritise information-rich paths where possible, but otherwise select options enabling clear relational justifications across pathways; Consider detailed context whenever similar relevancy is present in the interactions.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6565025343522218,
+    "time_spent_train_eval": 753.4622192382812,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6518881305932642,
+    "time_spent_val_eval": 184.25392198562622,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6715740796499656,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

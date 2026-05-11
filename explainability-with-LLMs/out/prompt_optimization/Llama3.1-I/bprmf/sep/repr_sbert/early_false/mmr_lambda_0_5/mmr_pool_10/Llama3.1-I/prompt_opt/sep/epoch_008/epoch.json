@@ -1,0 +1,36 @@
+{
+  "epoch": 8,
+  "prompt": {
+    "guidance_this_epoch": "Define Precise Reasoning Trails \n Prioritize distinctive feature descriptions and discernable characteristics, leaning towards narrow, yet accurate, representation of interconnected entities, even if it entails selecting somewhat less broad classifications under comparable conditions, prioritize connecting factors among items whenever such instances prevail.",
+    "selection_guidance_this_epoch": "Define Precise Reasoning Trails \n Prioritize distinctive feature descriptions and discernable characteristics, leaning towards narrow, yet accurate, representation of interconnected entities, even if it entails selecting somewhat less broad classifications under comparable conditions, prioritize connecting factors among items whenever such instances prevail.",
+    "prompt_this_epoch": "Define Precise Reasoning Trails \n Prioritize distinctive feature descriptions and discernable characteristics, leaning towards narrow, yet accurate, representation of interconnected entities, even if it entails selecting somewhat less broad classifications under comparable conditions, prioritize connecting factors among items whenever such instances prevail.",
+    "system_prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\n",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 5.015670299530029,
+    "meta_prompt_used": "You generate ONE new candidate selection-guidance block for the USER message of an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE GUIDANCE BLOCKS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing guidance blocks and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.680864, epoch=7)\n---\nOptimize Relevant Explanations\n\nTailor your selections toward richer detail-oriented representations. Ensure preferred characteristics don't resort solely to broad class definitions but rather embrace specificity whenever feasible choices present themselves. Failing such differentiation criteria, seek attribute alignment fostering smoother inter-item transitions.\n---\n\nExample 2 (train_score=0.677570, epoch=5)\n---\nFor Optimal Attribute Selections\n—\n\nPrioritize informative pathways leveraging distinctive features. \n\nSelect attributes leading to detailed explanations of entity relationships.\nWhenever feasible, opt for specific descriptors instead of general labels.\nIn case of equal suitability, give preference to options facilitating clearer linkages between involved items.\n---\n\nExample 3 (train_score=0.675052, epoch=1)\n---\nFor Optimal Explanation Paths\n-\nPrefer narrower, item-specific characteristics over broader categories.\nPrioritize pathways where recommended items exhibit distinct properties.\nIn cases of parity, favor options bridging items through direct connections.\n---\n\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Write only the selection-guidance block that will be inserted into the user message, not a system prompt.\n- Start with a short heading or label for the guidance block.\n- Use imperative language and explicit constraints when useful.\n- Avoid single-sentence guidance.\n- Different wording/structure than the reference.\n\nReturn ONLY the new selection-guidance block text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6757142989388261,
+    "time_spent_train_eval": 748.3076956272125,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6703000825684668,
+    "time_spent_val_eval": 184.11020684242249,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6667920491273932,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

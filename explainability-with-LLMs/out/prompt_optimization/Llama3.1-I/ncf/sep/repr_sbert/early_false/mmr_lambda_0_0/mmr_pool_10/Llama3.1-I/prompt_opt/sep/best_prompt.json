@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Precision Explanation Selection\n\nPrioritize clear explanations backed by concrete attributes connecting interacted and recommended items. \nWhen multiple options exist, opt for the pathway that offers the most distinct insights and justification through its chosen attribute and supporting rationale. In cases of parity across different options consider how precisely they address contrasting features, behaviors, or properties before choosing the optimal explanatory framework.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

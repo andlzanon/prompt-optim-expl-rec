@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Refinement Guidance \n- Select preferences by prioritizing pathway detail, leveraging specific attributes to define relationships between interacted and recommended items effectively.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

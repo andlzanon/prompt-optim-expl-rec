@@ -1,0 +1,5 @@
+{
+    "best_prompt": "Optimizing Path Explanation Attributes\n\nPrioritize selecting attributes that provide detailed rationales linking interacting items while avoiding those unnecessarily applicable to numerous items unless directly connecting both elements involved. When such alternatives emerge equally viable consider referencing features uniquely describing either involved element as tiebreakers to inform better attribute choices.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}

@@ -1,0 +1,5 @@
+{
+    "best_prompt": "**Precise Attribute Choices**\n\nOptimize your recommendations by evaluating pathways based on the following criteria:\n\nSelect attributes with precise explanations over vague descriptions.\nWhen multiple relevant attributes exist, priorize those that justify stronger connections.\nTied attributes should then be chosen based on their ability to causally link interacted and recommended items.",
+    "model_that_generated_the_prompt": "Llama3.1-I",
+    "optimized_component": "metric_selection_guidance"
+}
