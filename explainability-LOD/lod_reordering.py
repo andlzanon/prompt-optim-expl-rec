@@ -5,89 +5,48 @@ import networkx as nx
 
 class LODPersonalizedReordering(object):
 
-    def __init__(self, train_file: str, output_rec_file: str, output_name: str, prop_path: str, prop_cols: list, cols_used: list,
-                n_reorder: int, hybrid: bool, n_sentences: int):
+    def __init__(self, train_file: str, recs_file: str, prop_path: str, prop_cols: list, cols_used: list, user_list: list):
         """
         LOD personalized reordering class does not extend the base recommender because it does not recommend items.
         Instead it reorders them based on the best explanations to the item. Therefore, initially a semantic profile
         (favorite properties) of the user is obtained based on a policy that will use 'all' items of the historic,
         'random' items 'last' items or 'first' n_moives percentage of total from the user.
-
         :param train_file: train file in which the recommendations of where computed
-        :param output_rec_file: output file of the recommendation algorithm
+        :param recs_file: output file of the recommendation algorithm
         :param prop_path: path to the properties on dbpedia or wikidata
         :param prop_cols: columns of the property set
         :param cols_used: columns used from the test and train set
-        :param hybrid: if the reorder of the recommendations should [True] or not consider the score from the recommender
-        :param n_sentences: number of paths to generate the sentence of explanation
+        :param user_list: list to represent which users to run the explod algorithm
         """
         self.cols_used = cols_used
-        self.n_reorder = n_reorder
 
         self.train_file = train_file
         self.train_set = pd.read_csv(self.train_file, header=None)
         self.train_set.columns = self.cols_used
+        # Filtrar dataset para apenas usuários do user_list
+        self.train_set = self.train_set[self.train_set["user_id"].isin(user_list)]
         self.train_set = self.train_set.set_index(self.cols_used[0])
 
         self.output_cols = ['user_id', 'item_id', 'score']
-        self.output_rec_file = output_rec_file
-        self.output_rec_set = pd.read_csv(self.output_rec_file, header=None)
-        self.output_rec_set.columns = self.output_cols
-        self.output_rec_set = self.output_rec_set.set_index(self.cols_used[0])
+        self.recs_file = recs_file
+        self.recs_set = pd.read_csv(self.recs_file, header=None)
+        self.recs_set.columns = self.output_cols
+        # Filtrar dataset para apenas usuários do user_list
+        self.recs_set = self.recs_set[self.recs_set["user_id"].isin(user_list)]
+        self.recs_set = self.recs_set.set_index(self.cols_used[0])
+
 
         self.prop_path = prop_path
         self.prop_cols = prop_cols
         self.prop_set = pd.read_csv(self.prop_path, usecols=self.prop_cols)
         self.prop_set = self.prop_set.dropna()
         self.prop_set = self.prop_set.set_index(self.prop_cols[0])
-
-        self.hybrid = hybrid
-        self.n_sentences = n_sentences
-
-        self.output_name = output_name
-        s = output_rec_file.split(".")
-        self.output_path = "." + str(s[1]) + "_lodreorder_" + self.output_name + ".csv"
+        
 
         self.graph = self.__build_graph()
-
-    def __build_graph(self) -> nx.Graph:
-        """
-        Build a graph with the information from the test set and the wikidata or dbpedia set to create
-        a graph with users, items and property nodes e.g.: user 1 interacted the item Inception with Di Caprio as an actor
-        therefore, on the graph there is a three nodes, one for each entity (user, item and actor/property) and three
-        edges, one connecting user to item and other item to property: user 1 --> Inception --> Di Caprio
-        :return: networkx graph with users, items and properties from the dbpedia or wikidata
-        """
-
-        user_item_set = self.train_set.copy()
-        edgelist = pd.DataFrame(columns=['origin', 'destination'])
-
-        user_item_set['origin'] = ['U' + x for x in user_item_set.index.astype(str)]
-        user_item_set['destination'] = ['I' + x for x in user_item_set[user_item_set.columns[0]].astype(str)]
-
-        edgelist = pd.concat([edgelist, user_item_set[['origin', 'destination']]], ignore_index=True)
-
-        item_prop_copy = self.prop_set.copy()
-        item_prop_copy['origin'] = ['I' + x for x in item_prop_copy.index.astype(str)]
-        item_prop_copy['destination'] = item_prop_copy[self.prop_set.columns[-1]]
-
-        edgelist = pd.concat([edgelist, item_prop_copy[['origin', 'destination']]], ignore_index=True)
-
-        G = nx.from_pandas_edgelist(edgelist, 'origin', 'destination')
-
-        return G
-
-    def reorder(self):
-        """
-        Function that reorders the recommendations made by the recommendation algorithm based on an adapted TF-IDF to
-        the LOD, where the words of a document are the values of properties of the items the user iteracted and all the
-        documents are all items properties
-        :return: file with recommendations for every user reordered
-        """
-        pass
+        self.user_list = user_list
 
 
-# CALCULAR SCORE EXPLODDDDDDDD
     def user_semantic_profile(self, historic: list) -> dict:
         """
         Generate the user semantic profile, where all the values of properties (e.g.: George Lucas, action films, etc)
@@ -123,3 +82,32 @@ class LODPersonalizedReordering(object):
         fav_prop = interacted_props['score'].to_dict()
 
         return fav_prop
+
+
+    def __build_graph(self) -> nx.Graph:
+        """
+        Build a graph with the information from the test set and the wikidata or dbpedia set to create
+        a graph with users, items and property nodes e.g.: user 1 interacted the item Inception with Di Caprio as an actor
+        therefore, on the graph there is a three nodes, one for each entity (user, item and actor/property) and three
+        edges, one connecting user to item and other item to property: user 1 --> Inception --> Di Caprio
+        :return: networkx graph with users, items and properties from the dbpedia or wikidata
+        """
+
+
+        user_item_set = self.train_set.copy()
+        edgelist = pd.DataFrame(columns=['origin', 'destination'])
+
+        user_item_set['origin'] = ['U' + x for x in user_item_set.index.astype(str)]
+        user_item_set['destination'] = ['I' + x for x in user_item_set[user_item_set.columns[0]].astype(str)]
+
+        edgelist = pd.concat([edgelist, user_item_set[['origin', 'destination']]], ignore_index=True)
+
+        item_prop_copy = self.prop_set.copy()
+        item_prop_copy['origin'] = ['I' + x for x in item_prop_copy.index.astype(str)]
+        item_prop_copy['destination'] = item_prop_copy[self.prop_set.columns[-1]]
+
+        edgelist = pd.concat([edgelist, item_prop_copy[['origin', 'destination']]], ignore_index=True)
+
+        G = nx.from_pandas_edgelist(edgelist, 'origin', 'destination')
+
+        return G

@@ -1,159 +1,48 @@
-# from preprocessing import movielens_small_utils as ml_small
-# from preprocessing import lastfm_utils as fm
-# from evaluation_utils import statistical_relevance, statistical_relevance_explanations, maut
-# from caserec.recommenders.item_recommendation.userknn import UserKNN
-# from caserec.recommenders.item_recommendation.bprmf import BprMF
-# from recommenders import NCF as ncf
+# python run_LOD.py --mode=explanation --dataset=ml --begin=0 --end=0 --reord="BPRMF" --nreorder=0 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod --reordered_recs=0 --n_explain=5
+# python main.py --mode=explanation --dataset=ml --begin=0 --end=9 --reord="MostPop BPRMF UserKNN PageRank NCF EASE" --nreorder=10 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod_v2 --reordered_recs=0 --n_explain=5
+
 from path_reordering import PathReordering
-# from recommenders.path_reordering import PathReordering
-# from evaluation_utils import evaluate
-import argparse
+import pandas as pd
 
 
-# def run_experiments_ml(fold: str, start_fold: int, end_fold: int, baselines: list, reorders=None, n_reorder=10,
-#                        p_items=0.1, policy='last'):
-#     """
-#     Run experiments for the movie-lens 100k dataset for the quantity of folds passed by in the parameter n_folds.
-#     E.g. if 9 then will run for all folds if 6 it will run from fold 0 to 5, etc
-#     :param fold: path of the folds
-#     :param start_fold: folds to start evaluation to evaluate
-#     :param end_fold: fold to end evaluation
-#     :param baselines: list for evaluating the current 6 recsys (MostPop, BPRMF, UserKNN, PageRank, NCF and EASE).
-#     :param reorders: list to reorder recommender algorithms that had run already
-#     :param n_reorder: quantity of items to reorder
-#     :param p_items: percentage of items from historic to build semantic profile
-#     :param policy: policy to choose items
-#     :return: folds evaluated by accuracy and diversity metrics
-#     """
-
-#     output_names = set([])
-
-#     # BASELINES
-#     for i in range(start_fold, end_fold + 1):
-#         train_file = fold + str(i) + "/train.dat"
-#         test_file = fold + str(i) + "/test.dat"
-
-#         # 2 - BPR MF
-#         bprmf_output_file = fold + str(i) + "/outputs/bprmf.csv"
-#         if 'BPRMF' in baselines:
-#             BprMF(train_file, test_file, sep=',', output_file=bprmf_output_file, rank_length=20, factors=32,
-#                   random_seed=42).compute()
-#             evaluate("BPR-MF Algorithm", bprmf_output_file, train_file, test_file)
-#         if reorders is not None and 'BPRMF' in reorders:
-#             output_names.add(bprmf_output_file.split("/")[-1])
-
-#         # 3 - User KNN
-#         knn_output_file = fold + str(i) + "/outputs/userknn.csv"
-#         if 'UserKNN' in baselines:
-#             UserKNN(train_file, test_file, sep=",", output_file=knn_output_file, rank_length=20).compute()
-#             evaluate("User KNN Algorithm", knn_output_file, train_file, test_file)
-#         if reorders is not None and 'UserKNN' in reorders:
-#             output_names.add(knn_output_file.split("/")[-1])
-
-       
-
-#         # 5 - Neural Collaborative Filtering
-#         ncf_rec = ncf.NCF(fold + str(i), "ncf.csv", rank_size=20, factors=32, layers=[64, 32, 16, 8],
-#                           epochs=10, neg_smp_train=4, neg_smp_test=100, cols_used=[0, 1, 2],
-#                           col_names=['user_id', 'movie_id', 'feedback'],
-#                           model_path=folds_path_ml + str(0) + "/model.pt", batch_size=256, seed=42, model_disk='w')
-#         if 'NCF' in baselines:
-#             ncf_rec.train()
-#             ncf_rec.run()
-#             evaluate("Neural Collaborative Filtering", ncf_rec.output_path, train_file, test_file)
-#         if reorders is not None and 'NCF' in reorders:
-#             output_names.add(ncf_rec.output_path.split("/")[-1])
-
-
-#     # REORDERS
-#     for i in range(start_fold, end_fold + 1):
-
-#         train_file = fold + str(i) + "/train.dat"
-#         test_file = fold + str(i) + "/test.dat"
-#         output_files = [fold + str(i) + "/outputs/" + name for name in output_names]
-
-#         # Path reorder
-#         for output_file in output_files:
-#             path_reord = PathReordering(train_file, output_file,
-#                                         "./generated_files/wikidata/props_wikidata_movielens_small.csv",
-#                                         cols_used=['user_id', 'movie_id', 'interaction', 'timestamp'],
-#                                         prop_cols=['movieId', 'title', 'prop', 'obj'], n_reorder=n_reorder,
-#                                         p_items=p_items, policy=policy, hybrid=True)
-#             path_reord.reorder()
-#             evaluate("Reorder Path Algorithm p_items=" + str(p_items) + "policy=" + str(policy) + "n_reorder=" + str(
-#                 n_reorder),
-#                      path_reord.output_path, train_file, test_file)
-
-
-
-def run_explanations_experiments_ml(fold: str, start_fold: int, end_fold: int, reorders=None, n_reorder=10, p_items=0.1, policy='last', h_min=0,
-                        h_max=0, max_users=1, expl_alg='diverse', reorder=1, n_explain=5):
+def run_explod(rec_algs=None, expl_alg='explod', n_explain=10):
     """
-    Run explanation experiments for the movie-lens 100k dataset for the quantity of folds passed by in the parameter n_folds.
-    E.g. if 9 then will run for all folds if 6 it will run from fold 0 to 5, etc.
-    :param fold: path of the folds
-    :param start_fold: folds to start evaluation to evaluate
-    :param end_fold: fold to end evaluation
-    :param reorders: list to reorder recommender algorithms that had run already
-    :param n_reorder: quantity of items to reorder
+    Run explanation experiments for the movielens-latest-small
+    :param rec_algs: list to reorder recommender algorithms that had run already
     :param n_explain: quantity of items to explain
-    :param p_items: percentage of items from historic to build semantic profile
-    :param policy: policy to choose items
-    :param: h_min: minimum number of users' historic items to generate the recommendations and explanations to, if a
-        user has a smaller number of interacted items than this parameter the algorithm will not generate explanations
-    :param: h_max: maximum number of users' historic items to generate the recommendations and explanations to, if a
-        user has a bigger number of interacted items than this parameter the algorithm will not generate explanations
-    :param: max_users: maximum number of user to generate explanations to, when the program reaches max_number it stops
     :param: expl_alg: explanation algorithm to run experiments. Either 'diverse', 'max' or 'explod'
-    :param: reorder: if reorder is 1 then the explanation module will explain the reordered recommendations
-        if is 0 then the explations will be generated for the base recommendation algorithm
     :return: users are displayed on console with interacted items, recommended items, semantic profile, reordered items
         and explanation paths for each recommended item
     """
 
-    output_names = set([])
+    recs_files = []
 
-    # BASELINES
+    if rec_algs is not None and 'BPRMF' in rec_algs:
+        recs_files.append("../datasets/recommendation_files/recommendation_lists/bprmf/params_optimized/K=20/optimized_bprmf_K=20_recs.csv")
 
+    if rec_algs is not None and 'UserKNN' in rec_algs:
+        recs_files.append("../datasets/recommendation_files/recommendation_lists/user_knn/params_optimized/K=20/optimized_user_knn_K=20_recs.csv")
 
-    # 2 - BPR MF
-    if reorders is not None and 'BPRMF' in reorders:
-        for f in range(start_fold, end_fold+1):
-            bprmf_output_file = fold + str(f) + "/outputs/bprmf.csv"
-            output_names.add(bprmf_output_file.split("/")[-1])
+    if rec_algs is not None and 'ItemKNN' in rec_algs:
+        recs_files.append("../datasets/recommendation_files/recommendation_lists/item_knn/params_optimized/K=20/optimized_item_knn_K=20_recs.csv")
 
-    # 3 - User KNN
-    if reorders is not None and 'UserKNN' in reorders:
-        for f in range(start_fold, end_fold+1):
-            knn_output_file = fold + str(f) + "/outputs/userknn.csv"
-            output_names.add(knn_output_file.split("/")[-1])
+    if rec_algs is not None and 'NCF' in rec_algs:
+        recs_files.append("../datasets/recommendation_files/recommendation_lists/ncf/params_optimized/K=20/optimized_ncf_K=20_recs.csv")
 
 
-    # 5 - Neural Collaborative Filtering
-    if reorders is not None and 'NCF' in reorders:
-        for f in range(start_fold, end_fold+1):
-            ncf_rec = ncf.NCF(fold + str(f), "ncf.csv", rank_size=20, factors=32, layers=[64, 32, 16, 8],
-                              epochs=10, neg_smp_train=4, neg_smp_test=100, cols_used=[0, 1, 2],
-                              col_names=['user_id', 'movie_id', 'feedback'],
-                              model_path=folds_path_ml + str(0) + "/model.pt", batch_size=256, seed=42, model_disk='w')
-            output_names.add(ncf_rec.output_path.split("/")[-1])
+    train_file = "../datasets/recommender_train_test_oficial/train.csv"
 
+    user_list_path = "../datasets/explanation_raw_files/user_split_train_val_test/test_users.csv"
+    users = pd.read_csv(user_list_path)
+    user_list = users["userId"].values
 
-    # REORDERS
-    for f in range(start_fold, end_fold+1):
-        # train_file = fold + str(f) + "/train.dat"
-        train_file = "../datasets/recommender_train_test_oficial/train.csv"
-        # output_files = [fold + str(f) + "/outputs/" + name for name in output_names]
-        output_files = ["../datasets/recommendation_files/recommendation_lists/bprmf/params_optimized/K=20/optimized_bprmf_K=20_recs.csv"]
-
-        # Path reorder
-        for output_file in output_files:
-            path_reord = PathReordering(train_file, output_file,
-                                        "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
-                                        cols_used=['user_id', 'movie_id', 'interaction', 'timestamp'],
-                                        prop_cols=['movieId', 'title', 'prop', 'obj'], n_reorder=n_reorder,
-                                        p_items=p_items, policy=policy, hybrid=True)
-            path_reord.reorder_with_path(fold + str(f), h_min, h_max, max_users, expl_alg, reorder, n_explain)
+    # Path reorder
+    for rec_file in recs_files:
+        path_reord = PathReordering(train_file, rec_file,
+                                    "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+                                    cols_used=['user_id', 'movie_id', 'interaction', 'timestamp'],
+                                    prop_cols=['movieId', 'title', 'prop', 'obj'], user_list=user_list)
+        path_reord.prepare_data(expl_alg, n_explain)
 
 
 
@@ -164,168 +53,21 @@ def run_explanations_experiments_ml(fold: str, start_fold: int, end_fold: int, r
 
 
 
-
-
-parser = argparse.ArgumentParser()
-
-# required arguments
-parser.add_argument("--mode",
-                    type=str,
-                    default="run",
-                    required=True,
-                    help="Set 'run' to run experiments, 'validate' to run statistical relevance tests, "
-                         "'explanation' to generate explanation paths to users and explanation_sample"
-                         " to run the explanation experiments")
-parser.add_argument("--dataset",
-                    type=str,
-                    default="ml",
-                    required=True,
-                    help="Data set. Either 'ml' for the movielens dataset or 'lastfm' for the lastfm dataset")
-
-# run commands
-parser.add_argument("--begin",
-                    type=int,
-                    default=0,
-                    help="Fold to start the experiment")
-parser.add_argument("--end",
-                    type=int,
-                    default=9,
-                    help="Fold to end the experiment")
-parser.add_argument("--alg",
-                    type=str,
-                    default="None",
-                    help="Algoritms to run separated by space. E.g.: MostPop BPRMF UserKNN PageRank NCF EASE."
-                         "Only works on the 'run' and 'maut' mode")
-parser.add_argument("--reord",
-                    type=str,
-                    default="None",
-                    help="Algoritms to reorder separated by space. E.g.: MostPop BPRMF UserKNN PageRank NCF EASE."
-                         "Only works on the 'run' mode")
-parser.add_argument("--nreorder",
-                    type=int,
-                    default=10,
-                    help="Number of recommendations to reorder. Only works on the 'run' and 'explanation' modes.")
-parser.add_argument("--pitems",
-                    type=float,
-                    default=0.1,
-                    help="Set of items to build user semantic profile. Only works on the 'run' and 'explanation' modes.")
-parser.add_argument("--policy",
-                    type=str,
-                    default='last',
-                    help="Policy to extract set of items to build semantic profile. 'all' to get all items, 'last' for"
-                         "the last interacted, 'first' for the first interacted, 'random' for random items."
-                         "Only works on the 'run' and 'explanation' modes.")
-
-# validate commands
-parser.add_argument("--baseline",
-                    type=str,
-                    default="userknn",
-                    help="Name of the file without extension of the baseline to validate results. "
-                         "E.g.: 'bprmf'. Only works on the 'validation' mode.")
-parser.add_argument("--sufix",
-                    type=str,
-                    default="path[policy=last_items=01_reorder=10_hybrid]",
-                    help="Reorder sufix on result file after the string of the baseline. "
-                         "E.g.: path[policy=last_items=01_reorder=10_hybrid]. Only works on the 'validation' mode.")
-parser.add_argument("--metrics",
-                    type=str,
-                    default="PREC RECALL MAP NDCG GINI ENTROPY AGG_DIV COVERAGE",
-                    help="Metrics to evaluate the statistical relevance. "
-                         "E.g.: PREC RECALL MAP NDCG GINI ENTROPY AGG_DIV COVERAGE."
-                         "Only works on the 'validation' mode.")
-parser.add_argument("--method",
-                    type=str,
-                    default='wilcoxon',
-                    help="Statistical relevance test. Either 'ttest', 'wilcoxon' or 'both'. "
-                         "Only works on the 'validation' mode.")
-parser.add_argument("--save",
-                    type=int,
-                    default=0,
-                    help="Boolean argument to save or not result in file. Only works on the 'validation' mode.")
-
-# reorder and explainability commands
-
-parser.add_argument("--min",
-                    type=int,
-                    default=0,
-                    help="Minimum number of user interacted items to explain. Works on the 'explanation' mode")
-
-parser.add_argument("--max",
-                    type=int,
-                    default=0,
-                    help="Maximum number of user interacted items to explain. Works on the 'explanation' mode")
-
-parser.add_argument("--max_users",
-                    type=int,
-                    default=0,
-                    help="Maximum number of users to generate explanations to. Works on the 'explanation' mode.")
-
-
-parser.add_argument("--reordered_recs",
-                    type=int,
-                    default=1,
-                    help="Explain baseline or reordered algorithm. Works on the 'explanation' mode.")
-
-parser.add_argument("--expl_alg",
-                    type=str,
-                    default="diverse",
-                    help="Algorithm to explain recommendations. Either max, diverse, explod or pem. Works only on "
-                         "'explanation' mode.")
-
-parser.add_argument("--n_explain",
-                    type=int,
-                    default=5,
-                    help="Quantity of items to explain. Works only on 'explanation and maut mode'")
-
-# mault commands
-parser.add_argument("--fold",
-                    type=int,
-                    default=0,
-                    help="Number of the fold to check mault. Works only on 'maut_expl mode'")
-
-parser.add_argument("--expl_algs",
-                    type=str,
-                    default="explod explod_v2 pem word2vec rotate",
-                    help="Algoritms to compare. Works only on 'maut_expl mode'")
-
-parser.add_argument("--expl_metrics",
-                    type=str,
-                    default="",
-                    help="Metrics to use as features on MAUT. Usage eg.: \"SEP ETD LIR\" Works only on 'maut_expl mode'")
-
-parser.add_argument("--weights",
-                    type=str,
-                    default="",
-                    help="Weights to use e.g.: \"0.3 0.3 0.3\". Works only on 'maut_expl mode'")
-
-# parse arguments
-args = parser.parse_args()
-
-folds_path_ml = "./datasets/ml-latest-small/folds/"
-
-
-# if args.mode == "run" and args.dataset == "ml":
-#     run_experiments_ml(folds_path_ml, args.begin, args.end, args.alg.split(), args.reord.split(),
-#                        args.nreorder, args.pitems, args.policy)
-
-
-# if args.mode == "validate" and args.dataset == "ml":
-#     statistical_relevance(args.sufix, args.baseline, folds_path_ml,
-#                           args.metrics.split(), method=args.method, save=args.save)
 
 
 # python run_LOD.py --mode=explanation --dataset=ml --begin=0 --end=0 --reord="BPRMF" --nreorder=0 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod --reordered_recs=0 --n_explain=5
-# python main.py --mode=explanation --dataset=ml --begin=0 --end=9 --reord="MostPop BPRMF UserKNN PageRank NCF EASE" --nreorder=10 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod_v2 --reordered_recs=0 --n_explain=5
+explanation_configs = {
+    "rec_algs": "BPRMF NCF UserKNN ItemKNN",
+    # "rec_algs": "NCF",
+    "pitems": 0.1 ,
+    "policy": "last" ,
+    "expl_alg": "explod" ,
+    "n_explain": 10
+}
 
 
-if args.mode == "explanation" and args.dataset == "ml":
-    run_explanations_experiments_ml(folds_path_ml, args.begin, args.end, args.reord.split(), args.nreorder, args.pitems, args.policy, args.min,
-                        args.max, args.max_users, args.expl_alg, args.reordered_recs, args.n_explain)
-
-
-# if args.mode == "validate_expl" and args.dataset == "ml":
-#     statistical_relevance_explanations(args.baseline, args.dataset, args.reordered_recs, args.n_explain)
-
-
-# if args.mode == "maut":
-#     maut(args.dataset, args.fold, args.expl_algs, args.alg, args.expl_metrics, args.weights, args.n_explain)
+run_explod(
+    explanation_configs["rec_algs"].split(),
+    explanation_configs["expl_alg"],
+    explanation_configs["n_explain"]
+    )
