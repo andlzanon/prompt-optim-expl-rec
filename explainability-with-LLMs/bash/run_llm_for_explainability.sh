@@ -8,6 +8,7 @@ cd "$REPO_DIR"
 
 DATA_DIR="../datasets"
 KG_PATH="../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
+SELECTED_PATHS_ROOT="../datasets/preselected_explanation_paths"
 PROMPT_OPT_ROOT="out/prompt_optimization"
 TEST_USERS_PATH="$DATA_DIR/user_split_train_val_test/test_users.csv"
 TEST_EXPLAINABILITY_ROOT="out/test_explainability"
@@ -30,6 +31,7 @@ SELECTION_STRATEGY="random"
 NUM_RECOMMENDATIONS=10
 NUM_PATHS_PER_RECOMMENDATION=10
 INCLUDE_USER_HISTORY="true"
+SEED=2026
 SEP_BETA=0.3
 ETD_K=5
 
@@ -52,6 +54,7 @@ run_explainability() {
   local out_dir="$4"
   local metric="$5"
   local best_prompt_path="${6:-}"
+  local selected_paths_input_path="${SELECTED_PATHS_ROOT}/${algorithm}/explainability/${SELECTION_STRATEGY}/recs_${NUM_RECOMMENDATIONS}_paths_${NUM_PATHS_PER_RECOMMENDATION}/seed_${SEED}/selected_paths.csv"
 
   local cmd=(
     python3.10 run_llm_explainability.py
@@ -63,6 +66,7 @@ run_explainability() {
     --num_recommendations "$NUM_RECOMMENDATIONS"
     --num_paths_per_recommendation "$NUM_PATHS_PER_RECOMMENDATION"
     --include_user_history "$INCLUDE_USER_HISTORY"
+    --selected_paths_input_path "$selected_paths_input_path"
     --prompt_source "$prompt_source"
     --metric "$metric"
     --out "$out_dir"
@@ -88,6 +92,7 @@ run_explainability() {
   echo "Num recommendations=${NUM_RECOMMENDATIONS}"
   echo "Num paths per recommendation=${NUM_PATHS_PER_RECOMMENDATION}"
   echo "Include user history=${INCLUDE_USER_HISTORY}"
+  echo "Selected paths input=${selected_paths_input_path}"
   echo "Best prompt path=${best_prompt_path:--}"
   echo "Output directory=${out_dir}"
   echo "========================================"
@@ -95,6 +100,12 @@ run_explainability() {
   if compgen -G "${out_dir}/responses*" > /dev/null; then
     echo "Skipping because output already exists under ${out_dir}"
     return 0
+  fi
+
+  if [ ! -f "$selected_paths_input_path" ]; then
+    echo "Missing selected paths file: $selected_paths_input_path"
+    echo "Run bash/run_prepare_selected_paths.sh before explainability."
+    exit 1
   fi
 
   "${cmd[@]}"

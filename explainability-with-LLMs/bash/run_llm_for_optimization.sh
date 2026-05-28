@@ -1,8 +1,15 @@
 #!/bin/bash
 
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_DIR"
+
 # Paths
 DATA_DIR="../datasets"
 KG_PATH="../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
+SELECTED_PATHS_ROOT="../datasets/preselected_explanation_paths"
 
 # Models & Algorithms
 MODELS=("Llama3.1-I")
@@ -52,6 +59,7 @@ for model in "${MODELS[@]}"; do
 
               lambda_tag="${mmr_lambda_quality/./_}"
               OUT_DIR="out/prompt_optimization/${model}/${algorithm}/${metric}/repr_${representation_model}/early_${early_stopping}/mmr_lambda_${lambda_tag}/mmr_pool_${mmr_pool_multiplier}"
+              SELECTED_PATHS_INPUT_PATH="${SELECTED_PATHS_ROOT}/${algorithm}/optimization/${SELECTION_STRATEGY}/recs_${NUM_RECOMMENDATIONS}_paths_${NUM_PATHS_PER_RECOMMENDATION}/seed_${SEED}/selected_paths.csv"
 
               echo "========================================"
               echo "Model: $model"
@@ -62,7 +70,14 @@ for model in "${MODELS[@]}"; do
               echo "MMR lambda quality: $mmr_lambda_quality"
               echo "MMR pool multiplier: $mmr_pool_multiplier"
               echo "Output directory: $OUT_DIR"
+              echo "Selected paths input: $SELECTED_PATHS_INPUT_PATH"
               echo "========================================"
+
+              if [ ! -f "$SELECTED_PATHS_INPUT_PATH" ]; then
+                echo "Missing selected paths file: $SELECTED_PATHS_INPUT_PATH"
+                echo "Run bash/run_prepare_selected_paths.sh before optimization."
+                exit 1
+              fi
 
               COMMON_ARGS=(
                 --datain "$DATA_DIR"
@@ -74,6 +89,7 @@ for model in "${MODELS[@]}"; do
                 --num_recommendations "$NUM_RECOMMENDATIONS"
                 --num_paths_per_recommendation "$NUM_PATHS_PER_RECOMMENDATION"
                 --include_user_history "$INCLUDE_USER_HISTORY"
+                --selected_paths_input_path "$SELECTED_PATHS_INPUT_PATH"
 
                 # seed/model
                 --seed "$SEED"

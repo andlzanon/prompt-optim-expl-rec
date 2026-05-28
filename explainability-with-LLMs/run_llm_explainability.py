@@ -4,6 +4,7 @@ from src.utils.geral import (
     build_metric_fn,
     explanations_df_to_blocks,
     load_best_prompt,
+    load_required_selected_paths_csv,
     prepare_explainability_inputs,
     save_explanations_csv,
     save_metadata_json,
@@ -26,6 +27,9 @@ if __name__ == "__main__":
 
     # Load the interaction data and the users that will be processed.
     interactions_df, users = prepare_explainability_inputs(args)
+    selected_paths_input_df = load_required_selected_paths_csv(
+        args.selected_paths_input_path
+    )
     
     props_df = pd.read_csv(args.kg_path)
     metric_name, metric_fn = build_metric_fn(
@@ -59,8 +63,10 @@ if __name__ == "__main__":
         users=users,
         interactions_df=interactions_df,
         explanation_paths_prefix=args.explanation_paths_prefix,
+        selection_strategy=args.selection_strategy,
         num_recommendations=args.num_recommendations,
         num_paths_per_recommendation=args.num_paths_per_recommendation,
+        selected_paths_df=selected_paths_input_df,
         include_user_history=args.include_user_history 
     )
 
@@ -78,6 +84,8 @@ if __name__ == "__main__":
     info["metric_value"] = metric_value
     info["metric_params"] = args.metric_params
     info["kg_path"] = args.kg_path
+    info["selection_strategy"] = args.selection_strategy
+    info["selected_paths_input_path"] = args.selected_paths_input_path
 
     # Persist metadata and generated explanations as separate artifacts.
     output_json = args.outfilename + "_metadata.json"

@@ -6,6 +6,7 @@ from src.utils.geral import (
     save_metadata_json,
     save_best_prompt,
     build_metric_fn,
+    load_required_selected_paths_csv,
 )
 
 import time
@@ -21,6 +22,9 @@ if __name__ == "__main__":
     """
 
     args, info = args_prompt_optimizer()
+    selected_paths_input_df = load_required_selected_paths_csv(
+        args.selected_paths_input_path
+    )
 
     # Load the datasets and auxiliary data required by the optimization flow.
     data = prepare_optimization_inputs(args)
@@ -39,6 +43,7 @@ if __name__ == "__main__":
 
     # Record the initial system prompt before optimization starts.
     info["baseline_prompt"] = llm.system_prompt
+    info["selected_paths_input_path"] = args.selected_paths_input_path
 
     # Configure the optimizer controller with the requested runtime settings.
     prompt_optimizer = PromptOptimizer(
@@ -61,8 +66,10 @@ if __name__ == "__main__":
     # Pack the explanation-generation arguments reused at each epoch.
     explain_kwargs = dict(
         explanation_paths_prefix=args.explanation_paths_prefix,
+        selection_strategy=args.selection_strategy,
         num_recommendations=args.num_recommendations,
         num_paths_per_recommendation=args.num_paths_per_recommendation,
+        selected_paths_df=selected_paths_input_df,
         include_user_history=args.include_user_history,
     )
 
