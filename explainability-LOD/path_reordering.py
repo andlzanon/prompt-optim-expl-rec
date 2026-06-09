@@ -43,9 +43,11 @@ class PathReordering(LODPersonalizedReordering):
         total_props = {}
         total_etd = []
         total_sep = []
+        total_f1 = []
         memo_sep = {}
         usep = -1
         uetd = -1
+        uf1 = -1
 
         individual_metrics_data = []
         for u in self.recs_set.index.unique():
@@ -102,7 +104,7 @@ class PathReordering(LODPersonalizedReordering):
 
             items, props = [], []
             if expl_alg == 'explod':
-                items, props, (usep, uetd) = self.__explod_ranked_paths(item_rank, items_historic,
+                items, props, (usep, uetd, uf1) = self.__explod_ranked_paths(item_rank, items_historic,
                                                                         user_semantic_profile, u, f, memo_sep)
 
             f.write("\n")
@@ -113,11 +115,13 @@ class PathReordering(LODPersonalizedReordering):
             m_props.append(len(props))
             total_sep.append(usep)
             total_etd.append(uetd)
-
+            total_f1.append(uf1)
+            
             individual_metrics_data.append({
                 'userId': str(u),
                 'sep': usep,
                 'etd': uetd,
+                'f1': uf1,
             })
 
         f.close()
@@ -126,7 +130,7 @@ class PathReordering(LODPersonalizedReordering):
         individual_metrics_df.to_csv(individual_metrics_path, index=False)
 
         eval.evaluate_explanations(average_metrics_path, m_items, m_props, total_items, total_props,
-                                   total_sep, total_etd)
+                                   total_sep, total_etd, total_f1)
 
 
 
@@ -200,8 +204,16 @@ class PathReordering(LODPersonalizedReordering):
 
         sep = eval.sep_metric(0.3, prop_lists, self.prop_set, memo_sep)
         etd = eval.etd_metric(list(nodes.keys()), len(ranked_items), len(self.prop_set['obj'].unique()))
+        f1 = eval.f1_metric(sep, etd)
 
-        return hist_items, nodes, (sep, etd)
+        print()
+        print()
+        print(len(self.prop_set['obj'].unique()))
+        print((self.prop_set['obj'].unique()))
+        print()
+        print()
+
+        return hist_items, nodes, (sep, etd, f1)
 
    
 

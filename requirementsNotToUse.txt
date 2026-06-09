@@ -1,0 +1,7 @@
+pandas
+numpy
+scipy
+networkx
+tqdm
+recommenders
+caserecommender

@@ -1,6 +1,3 @@
-# python run_LOD.py --mode=explanation --dataset=ml --begin=0 --end=0 --reord="BPRMF" --nreorder=0 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod --reordered_recs=0 --n_explain=5
-# python main.py --mode=explanation --dataset=ml --begin=0 --end=9 --reord="MostPop BPRMF UserKNN PageRank NCF EASE" --nreorder=10 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod_v2 --reordered_recs=0 --n_explain=5
-
 from path_reordering import PathReordering
 import pandas as pd
 
@@ -8,9 +5,9 @@ import pandas as pd
 def run_explod(rec_algs=None, expl_alg='explod', n_explain=10):
     """
     Run explanation experiments for the movielens-latest-small
-    :param rec_algs: list to reorder recommender algorithms that had run already
+    :param rec_algs: list recommender algorithms that has recommendations to be explained
     :param n_explain: quantity of items to explain
-    :param: expl_alg: explanation algorithm to run experiments. Either 'diverse', 'max' or 'explod'
+    :param: expl_alg: explanation algorithm to run experiments.
     :return: users are displayed on console with interacted items, recommended items, semantic profile, reordered items
         and explanation paths for each recommended item
     """
@@ -54,8 +51,6 @@ def run_explod(rec_algs=None, expl_alg='explod', n_explain=10):
 
 
 
-
-# python run_LOD.py --mode=explanation --dataset=ml --begin=0 --end=0 --reord="BPRMF" --nreorder=0 --pitems=0.1 --policy=last --min=0 --max=0 --max_users=0 --expl_alg=explod --reordered_recs=0 --n_explain=5
 explanation_configs = {
     "rec_algs": "BPRMF NCF UserKNN ItemKNN",
     # "rec_algs": "NCF",

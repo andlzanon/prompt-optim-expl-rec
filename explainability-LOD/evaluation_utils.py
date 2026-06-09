@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 def evaluate_explanations(file_name: str, m_items: list, m_props: list, total_items: dict, total_props: dict,
-                          all_sep: list, all_etd: list):
+                          all_sep: list, all_etd: list, all_f1: list):
     """
     Diversity of explanation metrics. We will use 10 metrics: mean and std item and prop user diversity
     total item and prop aggregate diversity and entropy and gini
@@ -26,8 +26,10 @@ def evaluate_explanations(file_name: str, m_items: list, m_props: list, total_it
     total_props_str = "Total property aggregate diversity: " + str(len(total_props))
     mean_etd = "ETD metric: " + str(np.array(all_etd).mean())
     mean_sep = "SEP metric: " + str(np.array(all_sep).mean())
+    mean_f1 = "f1 metric: " + str(np.array(all_f1).mean())
     std_etd = "std ETD metric: " + str(np.array(all_etd).std())
     std_sep = "std SEP metric: " + str(np.array(all_sep).std())
+    std_f1 = "std F1 metric: " + str(np.array(all_f1).std())
 
     f = open(file_name, mode="w", encoding='utf-8')
     f.write(file_name + "\n")
@@ -39,8 +41,10 @@ def evaluate_explanations(file_name: str, m_items: list, m_props: list, total_it
     f.write(total_props_str + "\n")
     f.write(mean_etd + "\n")
     f.write(mean_sep + "\n")
+    f.write(mean_f1 + "\n")
     f.write(std_etd + "\n")
     f.write(std_sep + "\n")
+    f.write(std_f1 + "\n")
     f.close()
 
     print("\n" + file_name)
@@ -52,8 +56,10 @@ def evaluate_explanations(file_name: str, m_items: list, m_props: list, total_it
     print(total_props_str)
     print(mean_etd)
     print(mean_sep)
+    print(mean_f1)
     print(std_etd)
     print(std_sep)
+    print(std_f1)
 
 
 
@@ -149,3 +155,8 @@ def etd_metric(explanation_types: list, k: int, total_types: int):
     :return: the division between the explanation types in the explanations and the minimum between the k and total_types
     """
     return len(set(explanation_types)) / (min(k, total_types))
+
+def f1_metric(sep_value: float, etd_value: float):
+    if sep_value + etd_value == 0:
+        return 0
+    return (2 * sep_value * etd_value) / (sep_value + etd_value)
