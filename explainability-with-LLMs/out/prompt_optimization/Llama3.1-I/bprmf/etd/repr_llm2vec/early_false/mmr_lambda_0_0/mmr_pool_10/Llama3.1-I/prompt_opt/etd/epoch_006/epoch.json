@@ -1,0 +1,43 @@
+{
+  "epoch": 6,
+  "prompt": {
+    "prompt_this_epoch": "SELECT ACCURATELY ONLY ONE PROVIDED OPTION AND TRANSLATE IT INTO ITS IDENTICAL NUMBER REPRESENTATION WITH NO EXTRA INPUT PROCESSING OR TRANSFORMATION WHILE MAINTAINING COMPREHENSIVE SPECIFICITY FOR CHOOSEN ITEM FEATURES AMONG LISTED SEQUENCES IN EVERY CONSIDERATION PHASE BY ELEVATING PROPERTIES TO BE BOTH WELL DEFINED AND NICELY DISTINGUISHED ALTERNATIVES WHENEVER ENCOMPASSING RELATIONSHIP PATTERNS ARE CONSOLIDATED BEFORE ISOLATION AND SUBSEQUENT DECLARATION OF FINAL RESULT AS MANDATORY INTEGER RESPONSE.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 16.484774112701416,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.828974, epoch=4)\n---\nSELECT A SINGLE OPTION BY PROVIDING ITS UNIQUE INTEGER ID REPRESENTING THE PREFERRED PATH AMONG THOSE OFFERED BY THE PRECEDING USER MESSAGE WHILE MEETING THESE CONDITIONS: PROMINENTLY PRIORITIZE DIFFERENTIAL ATTRIBUTE EXPRESSION LEVEL SEQUENCES FROM YOUR INTERACTIONS LISTED THEREUNDER WITH MAXIMAL SPECIFICITY MAINTAINED FOR RANKED CHOICES; SUBSEQUENTLY SUPPRESS COMMON OR REPEATED QUALIFYING CHARACTERISTICS FOUND IN EARLIER ANSWERS IN REGULAR ORDER UPON ENCOUNTERING FEASIBLE YET STILL SPECIALIZED VARIANTS; LASTLY LEAST PRIO ITIZING GENERIC CATEGORY ASSIGNMENTS OVER MORE DISTINCTLY NAMED COLLEAGUES OF THAT TYPE EVEN SHOULD THEY BE MOST CLOSE BUT YET ALWAYS NON-GAMBITELY AND NECESSITATING AT LEAST SOME NEW SPECIFICITY INCLUSION; THIS SHALL ALSO GUIDE HOW ANY FINALLY ATTAINED RESULTS WILL MANIFEST UNDER THESE RESTRICTIONS FOLLOWED IMMEDIATELY BY ONLY THEN ISSUANCE OF THE ACTUAL RESULT AN INTENALY DERIVED INTEGER VALUE FROM SUCH PREDETERMINES WITH ONLY REQUIRED MINIMAL CONTAINMENT LIMIT.\n---\n\nExample 2 (train_score=0.805954, epoch=2)\n---\nSELECT EXACTLY ONE OF THE PROVIDEDED LIST'S NAMED OPTIONS BY PRIORITIZING DIVERGENT ATTRIBUTE USE FOLLOWING THESE CONSTRAINTS STRICTLY WITHIN THIS SETTING, THEN OBFUSE OUTPUT AS AN UNALTERABLE, DISCRETE DIGIT REPRESENTATION SPECIFIC TO YOUR SELECTED CHOICE AND IGNORE ALL ELASTIC INPUT PARSE AND FORMATION GUIDELINES WHILE ADHERING RIGIDLY TO THE ENUMERATED RANGE [1...K] OUTCOME PRESCRIBTIONS WITHOUT LEAVING SCOPE FOR DEVIANCE OR DEVOTION.\n---\n\nExample 3 (train_score=0.782051, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.8402564102564106,
+    "train_metric_scores": {
+      "sep": 0.6018562035381486,
+      "etd": 0.8402564102564106,
+      "sep_etd_f1": 0.701350960026426
+    },
+    "time_spent_train_eval": 1186.9715633392334,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9997435897435898
+  },
+  "val_eval": {
+    "val_metric": 0.8020408163265308,
+    "val_metric_scores": {
+      "sep": 0.6125735364579369,
+      "etd": 0.8020408163265308,
+      "sep_etd_f1": 0.6946189656194023
+    },
+    "time_spent_val_eval": 297.20170378685,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.7704081632653059,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

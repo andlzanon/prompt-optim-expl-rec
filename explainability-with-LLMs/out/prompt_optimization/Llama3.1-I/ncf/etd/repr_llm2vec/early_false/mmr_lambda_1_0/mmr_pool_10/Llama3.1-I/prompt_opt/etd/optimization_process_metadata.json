@@ -1,0 +1,537 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "ncf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": "../datasets/preselected_explanation_paths/ncf/optimization/random/recs_10_paths_10/seed_2026/selected_paths.csv",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "epochs": 10,
+        "total_instructions_per_iteration": 1,
+        "meta_prompt_instruction_quantity": 3,
+        "eval_every": 1,
+        "patience": 3,
+        "min_delta": 0.03,
+        "early_stopping": false,
+        "mmr_lambda_quality": 1.0,
+        "mmr_pool_multiplier": 10,
+        "representation_model": "llm2vec",
+        "metric": "etd",
+        "sep_beta": 0.3,
+        "out": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "explanation_paths_prefix": "../datasets/explanation_paths/ncf-opt/ncf",
+        "metric_params": {},
+        "outputdir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd",
+        "outfilename": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/optimization_process",
+        "start_time": "09-06-2026 00:51:14"
+    },
+    "baseline_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n",
+    "selected_paths_input_path": "../datasets/preselected_explanation_paths/ncf/optimization/random/recs_10_paths_10/seed_2026/selected_paths.csv",
+    "metric": "etd",
+    "metric_name": "ETD",
+    "metric_params": {},
+    "final_meta_prompt_template": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\n{instructions}\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+    "settings": {
+        "epochs": 10,
+        "total_instructions_per_iteration": 1,
+        "meta_prompt_instruction_quantity": 3,
+        "eval_every": 1,
+        "patience": 3,
+        "min_delta": 0.03,
+        "early_stopping": false,
+        "mmr_lambda_quality": 1.0,
+        "mmr_pool_multiplier": 10,
+        "representation_model": "llm2vec",
+        "objective_metric": "etd",
+        "representation_kwargs": {}
+    },
+    "epochs_history": [
+        {
+            "epoch": 0,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_000",
+            "generated_new_prompt": false,
+            "time_spent_instruction": 0.0,
+            "train_metric": 0.7458974358974358,
+            "train_metric_scores": {
+                "sep": 0.6508895024321674,
+                "etd": 0.7458974358974358,
+                "sep_etd_f1": 0.695162300840685
+            },
+            "time_spent_train_eval": 772.0393748283386,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7438775510204078,
+            "val_metric_scores": {
+                "sep": 0.6462624249029766,
+                "etd": 0.7438775510204078,
+                "sep_etd_f1": 0.6916427385436641
+            },
+            "time_spent_val_eval": 189.9272060394287,
+            "prev_val_metric": null,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_000/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_000/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_000/val_explanations.csv"
+            },
+            "meta_prompt_used": null,
+            "prompt_this_epoch": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n",
+            "mmr_selected_reference_epochs": null
+        },
+        {
+            "epoch": 1,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_001",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 13.092345237731934,
+            "train_metric": 0.8248717948717943,
+            "train_metric_scores": {
+                "sep": 0.5523079280538858,
+                "etd": 0.8248717948717943,
+                "sep_etd_f1": 0.6616176877305305
+            },
+            "time_spent_train_eval": 1323.3766944408417,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.8397959183673469,
+            "val_metric_scores": {
+                "sep": 0.5337444230546857,
+                "etd": 0.8397959183673469,
+                "sep_etd_f1": 0.6526730586865739
+            },
+            "time_spent_val_eval": 328.5736184120178,
+            "prev_val_metric": 0.7438775510204078,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_001/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_001/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_001/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.745897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "SELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 0,
+                    "train_score": 0.7458974358974358
+                }
+            ]
+        },
+        {
+            "epoch": 2,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_002",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 10.551649570465088,
+            "train_metric": 0.7771794871794878,
+            "train_metric_scores": {
+                "sep": 0.6545379802826227,
+                "etd": 0.7771794871794878,
+                "sep_etd_f1": 0.7106059727793447
+            },
+            "time_spent_train_eval": 1613.5986387729645,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7510204081632654,
+            "val_metric_scores": {
+                "sep": 0.6541655576211782,
+                "etd": 0.7510204081632654,
+                "sep_etd_f1": 0.699255039622808
+            },
+            "time_spent_val_eval": 397.64581298828125,
+            "prev_val_metric": 0.8397959183673469,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_002/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_002/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_002/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.745897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "Select exlusively ONE numeral amongst your existing list based solely on preference rules:\n\nPrioritisation schema: First, favour pathways leading via understated components within former descriptions. Second, discard duplicated elements utilising past contexts until parallel feasible substitutes prevail. Third, eliminate overly broad categorisations where discernible particulars persist. Last, designate supremacy to solutions whose connecting factors maximally facilitate consecutive item relevance. \n\nRespond precisely: a sole digit indicating your decisive choice between original numbered pathways.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.7458974358974358
+                }
+            ]
+        },
+        {
+            "epoch": 3,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_003",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 13.967369079589844,
+            "train_metric": 0.810000000000001,
+            "train_metric_scores": {
+                "sep": 0.5937567069347349,
+                "etd": 0.810000000000001,
+                "sep_etd_f1": 0.685222631872342
+            },
+            "time_spent_train_eval": 1626.6535415649414,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7938775510204082,
+            "val_metric_scores": {
+                "sep": 0.5930191522563235,
+                "etd": 0.7938775510204082,
+                "sep_etd_f1": 0.6789036143631407
+            },
+            "time_spent_val_eval": 400.5483775138855,
+            "prev_val_metric": 0.7510204081632654,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_003/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_003/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_003/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.777179, epoch=2)\n---\nSelect exlusively ONE numeral amongst your existing list based solely on preference rules:\n\nPrioritisation schema: First, favour pathways leading via understated components within former descriptions. Second, discard duplicated elements utilising past contexts until parallel feasible substitutes prevail. Third, eliminate overly broad categorisations where discernible particulars persist. Last, designate supremacy to solutions whose connecting factors maximally facilitate consecutive item relevance. \n\nRespond precisely: a sole digit indicating your decisive choice between original numbered pathways.\n---\n\nExample 3 (train_score=0.745897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "CHOOSE precisely ONE OF THE OFFERED EXPERT ROUTES BASED ON RULES:\n\nPREFERANCE PRIORITY:\n1. Select avenues enhancing diversity within past accounts by excluding repeated features,\nunless viable analogous elements cannot replace employed attributes with equal merits.\n2. Then prioritize connections where specific traits uniquely distinguish related parts  \nwithout excessive generality impacting contextual coherence alongside established frameworks.\n3. In case identical routes remain competitive, assign dominance based upon intervening element's contribution towards enhanced transparency.\nOUTPUT AS A RESULT JUST ONE INTEGER REPRESENTING YOUR FINAL SELECTION.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.7771794871794878
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.7458974358974358
+                }
+            ]
+        },
+        {
+            "epoch": 4,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_004",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 11.425278425216675,
+            "train_metric": 0.703846153846154,
+            "train_metric_scores": {
+                "sep": 0.6940617230424574,
+                "etd": 0.703846153846154,
+                "sep_etd_f1": 0.698919696171358
+            },
+            "time_spent_train_eval": 923.4864225387573,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.6979591836734693,
+            "val_metric_scores": {
+                "sep": 0.6820850037476084,
+                "etd": 0.6979591836734693,
+                "sep_etd_f1": 0.6899307960584001
+            },
+            "time_spent_val_eval": 234.25621700286865,
+            "prev_val_metric": 0.7938775510204082,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_004/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_004/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_004/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.777179, epoch=2)\n---\nSelect exlusively ONE numeral amongst your existing list based solely on preference rules:\n\nPrioritisation schema: First, favour pathways leading via understated components within former descriptions. Second, discard duplicated elements utilising past contexts until parallel feasible substitutes prevail. Third, eliminate overly broad categorisations where discernible particulars persist. Last, designate supremacy to solutions whose connecting factors maximally facilitate consecutive item relevance. \n\nRespond precisely: a sole digit indicating your decisive choice between original numbered pathways.\n---\n\nExample 3 (train_score=0.745897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "SELECT exclusively ONE numeral amongst your listed options based on specified priorities, disregarding extraneous information. Priorities in descending order: Preference attributes not employed before under increased explanatory diversity, discourage duplicating known values even when supported by equivalent viability, omit overly broad classifications presenting discernable aspects, and consecutively evaluate solutions optimally linking connected features and facilitating subsequent item cohesion while maintaining contextual harmony. Respond precisely by typing the numeric value denoting your selected option.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.7771794871794878
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.7458974358974358
+                }
+            ]
+        },
+        {
+            "epoch": 5,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_005",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 12.167498111724854,
+            "train_metric": 0.7807692307692315,
+            "train_metric_scores": {
+                "sep": 0.6234355995315366,
+                "etd": 0.7807692307692315,
+                "sep_etd_f1": 0.6932882197480165
+            },
+            "time_spent_train_eval": 1614.872670173645,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7683673469387756,
+            "val_metric_scores": {
+                "sep": 0.6072429151787206,
+                "etd": 0.7683673469387756,
+                "sep_etd_f1": 0.6783689254615181
+            },
+            "time_spent_val_eval": 398.0736417770386,
+            "prev_val_metric": 0.6979591836734693,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_005/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_005/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_005/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.777179, epoch=2)\n---\nSelect exlusively ONE numeral amongst your existing list based solely on preference rules:\n\nPrioritisation schema: First, favour pathways leading via understated components within former descriptions. Second, discard duplicated elements utilising past contexts until parallel feasible substitutes prevail. Third, eliminate overly broad categorisations where discernible particulars persist. Last, designate supremacy to solutions whose connecting factors maximally facilitate consecutive item relevance. \n\nRespond precisely: a sole digit indicating your decisive choice between original numbered pathways.\n---\n\nExample 3 (train_score=0.745897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "CHOOSE PRECISELY ONE OF THE NUMERICALLY LISTED ROUTES BASED ON THESE PRIORITY RULES: FAVOUR DIVERSE CONNECTION STRATEGIES ACROSS PRIOR EXPLANATIONS BY AVOIDING REPETITIVE ELEMENTS AND Generic ATTRIBUTES, PREFERRED OVER COMMON ITEMS THAT HAVE BEEN LINKED MULTIPLE TIMES BEFORE. OUTPUT EXACTLY ONE INTEGER REFERRING TO YOUR SElected CHOICE AMONG THE PROPOSED PATHWAYS.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 2,
+                    "train_score": 0.7771794871794878
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.7458974358974358
+                }
+            ]
+        },
+        {
+            "epoch": 6,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_006",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 9.663553237915039,
+            "train_metric": 0.8217948717948725,
+            "train_metric_scores": {
+                "sep": 0.59023858474787,
+                "etd": 0.8217948717948725,
+                "sep_etd_f1": 0.6870305230144951
+            },
+            "time_spent_train_eval": 1331.4916651248932,
+            "train_rows": 3900,
+            "train_valid_rate": 0.9997435897435898,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7948979591836733,
+            "val_metric_scores": {
+                "sep": 0.5617565551999183,
+                "etd": 0.7948979591836733,
+                "sep_etd_f1": 0.6582945540698028
+            },
+            "time_spent_val_eval": 334.9927031993866,
+            "prev_val_metric": 0.7683673469387756,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_006/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_006/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_006/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.780769, epoch=5)\n---\nCHOOSE PRECISELY ONE OF THE NUMERICALLY LISTED ROUTES BASED ON THESE PRIORITY RULES: FAVOUR DIVERSE CONNECTION STRATEGIES ACROSS PRIOR EXPLANATIONS BY AVOIDING REPETITIVE ELEMENTS AND Generic ATTRIBUTES, PREFERRED OVER COMMON ITEMS THAT HAVE BEEN LINKED MULTIPLE TIMES BEFORE. OUTPUT EXACTLY ONE INTEGER REFERRING TO YOUR SElected CHOICE AMONG THE PROPOSED PATHWAYS.\n---\n\nExample 3 (train_score=0.745897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "SELECT Precisely ONE Option Based on Prioritized Explanation Paths. FOLLOW These Rules EXCLUSIVELY:\nOUTPUT Must be Exactly ONE Token - AN Integer Corresponding to Your Chosen Pathway Preference.\nPrioritize Diversity Across User Explanations Above All Else, While Discarding Unnecessary Attributes REPEATED in Previous Paths Except When Comparable Counterparts LACK Direct Connections Between Items.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 5,
+                    "train_score": 0.7807692307692315
+                },
+                {
+                    "epoch": 0,
+                    "train_score": 0.7458974358974358
+                }
+            ]
+        },
+        {
+            "epoch": 7,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_007",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 18.050164461135864,
+            "train_metric": 0.7848717948717957,
+            "train_metric_scores": {
+                "sep": 0.6250639708526153,
+                "etd": 0.7848717948717957,
+                "sep_etd_f1": 0.6959112501990062
+            },
+            "time_spent_train_eval": 1459.957977771759,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7734693877551019,
+            "val_metric_scores": {
+                "sep": 0.6242235668190197,
+                "etd": 0.7734693877551019,
+                "sep_etd_f1": 0.6908782339779743
+            },
+            "time_spent_val_eval": 368.06866240501404,
+            "prev_val_metric": 0.7948979591836733,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_007/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_007/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_007/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.821795, epoch=6)\n---\nSELECT Precisely ONE Option Based on Prioritized Explanation Paths. FOLLOW These Rules EXCLUSIVELY:\nOUTPUT Must be Exactly ONE Token - AN Integer Corresponding to Your Chosen Pathway Preference.\nPrioritize Diversity Across User Explanations Above All Else, While Discarding Unnecessary Attributes REPEATED in Previous Paths Except When Comparable Counterparts LACK Direct Connections Between Items.\n---\n\nExample 3 (train_score=0.780769, epoch=5)\n---\nCHOOSE PRECISELY ONE OF THE NUMERICALLY LISTED ROUTES BASED ON THESE PRIORITY RULES: FAVOUR DIVERSE CONNECTION STRATEGIES ACROSS PRIOR EXPLANATIONS BY AVOIDING REPETITIVE ELEMENTS AND Generic ATTRIBUTES, PREFERRED OVER COMMON ITEMS THAT HAVE BEEN LINKED MULTIPLE TIMES BEFORE. OUTPUT EXACTLY ONE INTEGER REFERRING TO YOUR SElected CHOICE AMONG THE PROPOSED PATHWAYS.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "SELECT EXACTLY ONE NUMBERed PATHWAY BASED ON THIS FIXED RANKED APPROACH: ADVANCE PREFERENCES FOR MOST DISTINCT ATTRIBUTE PAIRS BETWEEN ITEM INTERACTIONS ALIGNED WITH FEWEST REFERENCES SO FAR, THEN PROMOTE COMPAREABLE OR BETTER SUBSTITUTE ELEMENTS WHEN PREVIOUS CHOICES APPEAR MORE THAN ONCE; DISCOUNT GENERIC TERMS IF CLARIFYING VARIETY IS ALSO SUFFICIENT; DEFAULT TO CLEAR PATH CONNEXIONS WHERE NECESSARY BUT ALWAYS CHOOSE THE MOST TRANSPARENT PATH FOUND AMONG ALL DESIGNS FROM AVAILABLE COUNTERPARTS WITHIN THE SET SPECIFIED BY USER MESSAGES AND YOU SHOULD OBEY ANY OF THEM BY RETURNING ITS UNIQUE INTEGER CODE NOW.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 6,
+                    "train_score": 0.8217948717948725
+                },
+                {
+                    "epoch": 5,
+                    "train_score": 0.7807692307692315
+                }
+            ]
+        },
+        {
+            "epoch": 8,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_008",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 14.901469945907593,
+            "train_metric": 0.7738461538461537,
+            "train_metric_scores": {
+                "sep": 0.6366108779968419,
+                "etd": 0.7738461538461537,
+                "sep_etd_f1": 0.6985521264561528
+            },
+            "time_spent_train_eval": 1391.0702967643738,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.7673469387755101,
+            "val_metric_scores": {
+                "sep": 0.627998200763675,
+                "etd": 0.7673469387755101,
+                "sep_etd_f1": 0.6907144092990212
+            },
+            "time_spent_val_eval": 345.9393754005432,
+            "prev_val_metric": 0.7734693877551019,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_008/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_008/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_008/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.821795, epoch=6)\n---\nSELECT Precisely ONE Option Based on Prioritized Explanation Paths. FOLLOW These Rules EXCLUSIVELY:\nOUTPUT Must be Exactly ONE Token - AN Integer Corresponding to Your Chosen Pathway Preference.\nPrioritize Diversity Across User Explanations Above All Else, While Discarding Unnecessary Attributes REPEATED in Previous Paths Except When Comparable Counterparts LACK Direct Connections Between Items.\n---\n\nExample 3 (train_score=0.780769, epoch=5)\n---\nCHOOSE PRECISELY ONE OF THE NUMERICALLY LISTED ROUTES BASED ON THESE PRIORITY RULES: FAVOUR DIVERSE CONNECTION STRATEGIES ACROSS PRIOR EXPLANATIONS BY AVOIDING REPETITIVE ELEMENTS AND Generic ATTRIBUTES, PREFERRED OVER COMMON ITEMS THAT HAVE BEEN LINKED MULTIPLE TIMES BEFORE. OUTPUT EXACTLY ONE INTEGER REFERRING TO YOUR SElected CHOICE AMONG THE PROPOSED PATHWAYS.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "SELECT WITH ALL PRUDENTIAL CONSEQUENCES, EXACTLY ONE OF THE ENUMERATED CHOICES, ENTHUSIASTICALLY ENDORSING PATHWAY #X SUCH THAT EACH ITEM YIELDS OPTIMAL DEGREES OF CITEABILITY THROUGH RENAMED COGNATES WHILE AVOIDING EMBELLISHMENT OF PREDICATBLE CLASSES THUS PREVENTING DUPLICITIS WITH SUPPLIED INPUT MODELS ELSE DISCARD NON-INTERACTIVE ORIENTATION POINTS FOR FINAL PREDICTION SCORE ASSUMPTION WITHOUT HESITATION. OUTPUT PATH IDENTIFIER 'x'.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 6,
+                    "train_score": 0.8217948717948725
+                },
+                {
+                    "epoch": 5,
+                    "train_score": 0.7807692307692315
+                }
+            ]
+        },
+        {
+            "epoch": 9,
+            "epoch_dir": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_009",
+            "generated_new_prompt": true,
+            "time_spent_instruction": 14.278939008712769,
+            "train_metric": 0.8300000000000007,
+            "train_metric_scores": {
+                "sep": 0.5799725427483794,
+                "etd": 0.8300000000000007,
+                "sep_etd_f1": 0.6828178505417329
+            },
+            "time_spent_train_eval": 1506.6371791362762,
+            "train_rows": 3900,
+            "train_valid_rate": 1.0,
+            "val_ran_this_epoch": true,
+            "val_metric": 0.8367346938775511,
+            "val_metric_scores": {
+                "sep": 0.5468077055576888,
+                "etd": 0.8367346938775511,
+                "sep_etd_f1": 0.6613935045380078
+            },
+            "time_spent_val_eval": 366.8743386268616,
+            "prev_val_metric": 0.7673469387755101,
+            "val_improvement_vs_prev": null,
+            "no_improve_streak": null,
+            "early_stopping_triggered_here": false,
+            "artifacts": {
+                "epoch_json_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_009/epoch.json",
+                "train_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_009/train_explanations.csv",
+                "val_csv_path": "out/prompt_optimization/Llama3.1-I/ncf/etd/repr_llm2vec/early_false/mmr_lambda_1_0/mmr_pool_10/Llama3.1-I/prompt_opt/etd/epoch_009/val_explanations.csv"
+            },
+            "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.821795, epoch=6)\n---\nSELECT Precisely ONE Option Based on Prioritized Explanation Paths. FOLLOW These Rules EXCLUSIVELY:\nOUTPUT Must be Exactly ONE Token - AN Integer Corresponding to Your Chosen Pathway Preference.\nPrioritize Diversity Across User Explanations Above All Else, While Discarding Unnecessary Attributes REPEATED in Previous Paths Except When Comparable Counterparts LACK Direct Connections Between Items.\n---\n\nExample 3 (train_score=0.780769, epoch=5)\n---\nCHOOSE PRECISELY ONE OF THE NUMERICALLY LISTED ROUTES BASED ON THESE PRIORITY RULES: FAVOUR DIVERSE CONNECTION STRATEGIES ACROSS PRIOR EXPLANATIONS BY AVOIDING REPETITIVE ELEMENTS AND Generic ATTRIBUTES, PREFERRED OVER COMMON ITEMS THAT HAVE BEEN LINKED MULTIPLE TIMES BEFORE. OUTPUT EXACTLY ONE INTEGER REFERRING TO YOUR SElected CHOICE AMONG THE PROPOSED PATHWAYS.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n",
+            "prompt_this_epoch": "SELECT THE OPTIMAL EXPLANATION PATH BY ELEVATING DIVERSITY ABOVE USUAL NAMINGS CONVENTIONS: DISCARD PREVIOUSLY USED ATTRIBUTES UNLESS DIRECT COUPON PARTNERS OR CLEAR ALTERNATIVES ARE MISSING, THEN SUPPRESS GENERIC TERMS WHEN DETECTING MORE COMPREHENSIVE CONNECTION LINKAGE WITHIN THE INTERCONNECTED ITEM STRUCTURE FROM AVAILABLE OPTIONS FOR CORRESPONDING INDEXED ROUTE SELECTION WITHOUT SPECIFYING ANY ADDITIONAL INFORMATION JUST PROVIDE YOUR PREFERRED INDEX FROM AMONG THE PRESCRIBED ENUMERATION.",
+            "mmr_selected_reference_epochs": [
+                {
+                    "epoch": 1,
+                    "train_score": 0.8248717948717943
+                },
+                {
+                    "epoch": 6,
+                    "train_score": 0.8217948717948725
+                },
+                {
+                    "epoch": 5,
+                    "train_score": 0.7807692307692315
+                }
+            ]
+        }
+    ],
+    "best_on_train": {
+        "best_train_metric": 0.8300000000000007,
+        "best_train_metric_scores": {
+            "sep": 0.5799725427483794,
+            "etd": 0.8300000000000007,
+            "sep_etd_f1": 0.6828178505417329
+        },
+        "best_train_epoch": 9,
+        "best_train_prompt": "SELECT THE OPTIMAL EXPLANATION PATH BY ELEVATING DIVERSITY ABOVE USUAL NAMINGS CONVENTIONS: DISCARD PREVIOUSLY USED ATTRIBUTES UNLESS DIRECT COUPON PARTNERS OR CLEAR ALTERNATIVES ARE MISSING, THEN SUPPRESS GENERIC TERMS WHEN DETECTING MORE COMPREHENSIVE CONNECTION LINKAGE WITHIN THE INTERCONNECTED ITEM STRUCTURE FROM AVAILABLE OPTIONS FOR CORRESPONDING INDEXED ROUTE SELECTION WITHOUT SPECIFYING ANY ADDITIONAL INFORMATION JUST PROVIDE YOUR PREFERRED INDEX FROM AMONG THE PRESCRIBED ENUMERATION."
+    },
+    "best_on_validation": {
+        "best_val_metric": 0.8397959183673469,
+        "best_val_metric_scores": {
+            "sep": 0.5337444230546857,
+            "etd": 0.8397959183673469,
+            "sep_etd_f1": 0.6526730586865739
+        },
+        "best_val_epoch": 1,
+        "best_val_prompt": "SELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice)."
+    },
+    "run_summary": {
+        "epochs_completed": 10,
+        "early_stopped": false,
+        "embedding_cache_size": 9
+    },
+    "time_prompt_optimization": 17662.18454170227
+}

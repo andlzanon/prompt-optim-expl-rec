@@ -1,0 +1,43 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "prompt_this_epoch": "SELECT precisely ONE OF THE LISTED PATHWAYS TO OPTIMIZE DIVERSITY ACROSS PRIOR EXPLANATIONS BY CHOOSING:\n\n1. Attributes seldomly featured among comparable explanations (highest priority), unless\n2. a comparable, similarly viable alternative is lacking or significantly improves over reuse criteria exceeding acceptable thresholds,\nthen choose according to highest perceived clarity and direct interconnectedness between involved items while avoiding generic phrasing and repetitive feature usage when more nuanced and informative descriptions become readily available, until last evaluation steps lead towards equally valued pathways whereafter preference may rest solely upon attribute performance in overall connectivity and object correlation context thereby producing one optimally ranked outcome adhering strictly to given ordering and rationalising justification procedures above ensuring coherent comprehension amongst distinct yet complementary constituent parts without further ambiguity thereby validating a definitive answer within proposed bounds.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 21.41584277153015,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.824872, epoch=1)\n---\nSELECT precisely ONE OF THE PROVIDED NUMERICAL OPTIONS as your preferred explanation pathway based on the given rules: \n\nPreference ORDER:\n1. Favor diversification with attributes least mentioned across prior explanations.\n2. Suppress repetition of used attributes unless equal credibility counterparts lack \n   and an adjacent feasible attribute can emerge without diminishing usability.\n3. Discard common phrases which could instead opt more detailed clarification alternatives \n    considering their direct links between items in proposed pathways.\n4. Tied scenarios should then emphasize the connection clarity primarily through used items' interactions.\n\n\n\nOBTAIN AS RESPONSE A SINGLE INTENDED EXPLANATION PATH INDICATOR (i.e., SELECTED numerical choice).\n---\n\nExample 2 (train_score=0.810000, epoch=3)\n---\nCHOOSE precisely ONE OF THE OFFERED EXPERT ROUTES BASED ON RULES:\n\nPREFERANCE PRIORITY:\n1. Select avenues enhancing diversity within past accounts by excluding repeated features,\nunless viable analogous elements cannot replace employed attributes with equal merits.\n2. Then prioritize connections where specific traits uniquely distinguish related parts  \nwithout excessive generality impacting contextual coherence alongside established frameworks.\n3. In case identical routes remain competitive, assign dominance based upon intervening element's contribution towards enhanced transparency.\nOUTPUT AS A RESULT JUST ONE INTEGER REPRESENTING YOUR FINAL SELECTION.\n---\n\nExample 3 (train_score=0.796154, epoch=6)\n---\nSELECT precisely ONE explanation pathway index from the set of provided options (1..K). \n\nBased on the constrained ruleset below, align your response accordingly:\n\nPRINCIPAL GOALS:\nEnsure maximized variability across all presented reasoning components \nby favouring lesser utilized trait sets and discarding redundancies whenever viable \nalternatives appear. Prioritize clearness whenever equivalent outcomes result \nto ensure coherent integration within examined contexts.\n\nDECISION PROCEDURE:\nOrder primary attribute selection based on these strict conditions applied iteratively in this sequence - unless contradicted directly elsewhere; i'll leave out further redundancy statements afterwards since they're pretty apparent already:\n- Give utmost value preference to novel attribute participation not extensively cited beforehand except perhaps in conjunction demonstrations demonstrating both individual merit via complementary pairs alike effectively maintaining consistent engagement.\n    \nIn event parity among remaining candidates is met following exhaustive process steps, resolve competition by assigning decisive importance on tangible link establishment capabilities connecting associated subject matter objects accurately through interaction analysis pathways leading conclusively into final preferred recommendation outputs hence rendering optimal result herebelow simply through singular identifier referencing corresponding choice selected initially at step completion following rigorous method execution procedure above - simply declare as follows in response format:\n\n\nCHOOSING AND REPORTING OPTIMAL RESULT DIRECTED ACCORDING ABOVE FOLLOWING CAREFUL EVALUATIONS.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.78923076923077,
+    "train_metric_scores": {
+      "sep": 0.6226337046063272,
+      "etd": 0.78923076923077,
+      "sep_etd_f1": 0.6961031837566503
+    },
+    "time_spent_train_eval": 1671.4365260601044,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.7632653061224488,
+    "val_metric_scores": {
+      "sep": 0.6382187973254287,
+      "etd": 0.7632653061224488,
+      "sep_etd_f1": 0.6951634549621722
+    },
+    "time_spent_val_eval": 411.53482389450073,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.7836734693877554,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

@@ -5,12 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_DIR"
-
-DATA_DIR="../datasets"
-SELECTED_PATHS_ROOT="../datasets/preselected_explanation_paths"
-
-# Algorithms covered by the preselection batch
-ALGORITHMS=("user_knn" "item_knn" "ncf" "bprmf")
+source "$SCRIPT_DIR/shared_llm_batch_config.sh"
 
 # User scopes:
 # - "optimization" -> train + val users
@@ -18,18 +13,16 @@ ALGORITHMS=("user_knn" "item_knn" "ncf" "bprmf")
 # - "all" -> train + val + test users
 USER_SCOPES=("optimization" "explainability")
 
-# Path-selection settings
-SELECTION_STRATEGY="random"
-NUM_RECOMMENDATIONS=10
-NUM_PATHS_PER_RECOMMENDATION=10
-SEED=2026
-
 run_prepare_selected_paths() {
   local algorithm="$1"
   local user_scope="$2"
-  local out_root="$3"
 
-  local out_dir="${out_root}/${algorithm}/${user_scope}/${SELECTION_STRATEGY}/recs_${NUM_RECOMMENDATIONS}_paths_${NUM_PATHS_PER_RECOMMENDATION}/seed_${SEED}"
+  local out_dir
+  local selected_paths_csv
+  local selected_paths_metadata_json
+  out_dir="$(selected_paths_dir "$algorithm" "$user_scope")"
+  selected_paths_csv="$(selected_paths_csv_path "$algorithm" "$user_scope")"
+  selected_paths_metadata_json="$(selected_paths_metadata_path "$algorithm" "$user_scope")"
 
   echo "========================================"
   echo "Preparing selected candidate paths"
@@ -42,8 +35,12 @@ run_prepare_selected_paths() {
   echo "Output directory=${out_dir}"
   echo "========================================"
 
-  if [ -f "${out_dir}/selected_paths.csv" ]; then
-    echo "Skipping because selected_paths.csv already exists under ${out_dir}"
+  if ! prepare_output_slot \
+    "selected_paths" \
+    "$out_dir" \
+    "$out_dir" \
+    "$selected_paths_csv" \
+    "$selected_paths_metadata_json"; then
     return 0
   fi
 
@@ -55,7 +52,7 @@ run_prepare_selected_paths() {
     --num_paths_per_recommendation "$NUM_PATHS_PER_RECOMMENDATION" \
     --user_scope "$user_scope" \
     --seed "$SEED" \
-    --out "$out_root"
+    --out "$SELECTED_PATHS_ROOT"
 }
 
 echo "Algorithms configured in this batch: ${ALGORITHMS[*]}"
@@ -63,6 +60,6 @@ echo "User scopes configured in this batch: ${USER_SCOPES[*]}"
 
 for algorithm in "${ALGORITHMS[@]}"; do
   for user_scope in "${USER_SCOPES[@]}"; do
-    run_prepare_selected_paths "$algorithm" "$user_scope" "$SELECTED_PATHS_ROOT"
+    run_prepare_selected_paths "$algorithm" "$user_scope"
   done
 done

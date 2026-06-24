@@ -14,12 +14,12 @@
         "outputdir": "../datasets/preselected_explanation_paths/user_knn/optimization/random/recs_10_paths_10/seed_2026",
         "outfilename": "../datasets/preselected_explanation_paths/user_knn/optimization/random/recs_10_paths_10/seed_2026/selected_paths",
         "selected_paths_output_path": "../datasets/preselected_explanation_paths/user_knn/optimization/random/recs_10_paths_10/seed_2026/selected_paths.csv",
-        "start_time": "28-05-2026 14:39:15"
+        "start_time": "29-05-2026 02:34:00"
     },
     "user_scope": "train_val",
     "split_dir": "../datasets/user_split_train_val_test",
     "n_users": 488,
     "selection_strategy": "random",
     "selected_paths_output_path": "../datasets/preselected_explanation_paths/user_knn/optimization/random/recs_10_paths_10/seed_2026/selected_paths.csv",
-    "time_to_prepare_selected_paths": 19.98961091041565
+    "time_to_prepare_selected_paths": 19.914137363433838
 }

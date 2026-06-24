@@ -1,0 +1,52 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "bprmf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths.csv",
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "default",
+        "best_prompt_path": null,
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep_etd_f1",
+        "sep_beta": 0.3,
+        "out": "out/test_explainability/without_optimization/Llama3.1-I/bprmf/sep_etd_f1",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/without_optimization/Llama3.1-I/bprmf/sep_etd_f1",
+        "outfilename": "out/test_explainability/without_optimization/Llama3.1-I/bprmf/sep_etd_f1/responses",
+        "start_time": "15-06-2026 12:37:48",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/bprmf-opt/bprmf"
+    },
+    "prompt_source": "default",
+    "best_prompt_path": null,
+    "time_to_explain": 226.34599256515503,
+    "system_prompt": "You are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (balance all of the following):\n1) Prefer attributes that jointly provide an informative, specific, and discriminative explanation while also increasing diversity across this user's explanations.\n2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n3) Avoid overly generic attributes, but do not choose novelty if it substantially weakens the explanation.\n4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep_etd_f1",
+    "metric_name": "SEP_ETD_F1",
+    "metric_value": 0.7184406430806026,
+    "metric_scores": {
+        "sep": 0.6621111464938596,
+        "etd": 0.7852459016393445,
+        "sep_etd_f1": 0.7184406430806026
+    },
+    "sep_value": 0.6621111464938596,
+    "etd_value": 0.7852459016393445,
+    "sep_etd_f1_value": 0.7184406430806026,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+    "selection_strategy": "random",
+    "selected_paths_input_path": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths.csv"
+}

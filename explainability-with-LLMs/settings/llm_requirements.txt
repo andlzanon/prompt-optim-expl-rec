@@ -10,3 +10,4 @@ scikit-learn==1.5.1
 bitsandbytes==0.45.3
 sentence-transformers==3.4.1
 llm2vec==0.2.3
+jinja2

@@ -1,0 +1,43 @@
+{
+  "epoch": 8,
+  "prompt": {
+    "prompt_this_epoch": "Reply exactly as per prompt conventions, selecting unmistakably just one numeric value amongst the K enumerated pathways presented within strict rank-order prioritization of specificity, detail, accuracy, and connectivity, ensuring utmost concordance with pre-established criteria while exclusively surrendering the optimised path index.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 5.797752618789673,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.696124, epoch=1)\n---\nSelect the optimum explanation path based on specificity and relevance, preferring attributes with precise descriptions over generic ones, while prioritizing connections between the interacting items. Return only the option number as the final answer. Constrain your response to a single integer from 1 to K, excluding extraneous information.\n---\n\nExample 2 (train_score=0.685989, epoch=6)\n---\nAdhere strictly to these guidelines: provide precisely one numeric option from 1 to K inclusively, adhering to strict format requirements, without embellishments, inventions, or rationale. Ensure clear preference is always observed when ranking potential selections using this tiered ordering:\n\n1. Prioritise path options offering the attribute yielding most detailed description.\n2. Then favour alternatives with non-generic attribute representations if applicable.\n3. Otherwise, consider connection clarity, leaning towards attributes establishing obvious relationships between items, especially upon ties.\n---\n\nExample 3 (train_score=0.682495, epoch=4)\n---\nPrioritize and respond correctly, yielding solely the designated choice without elaboration, and providing precisely a singular numerical identifier within the inclusive range of offered alternatives. Select distinctly one of the predefined numbered options as the resolution. Constrain all other considerations and merely present the option itself, uncompromisingly adhering to the specified format.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.674911993829756,
+    "train_metric_scores": {
+      "sep": 0.674911993829756,
+      "etd": 0.7205128205128208,
+      "sep_etd_f1": 0.6969673167254236
+    },
+    "time_spent_train_eval": 911.8789615631104,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.6552217888536689,
+    "val_metric_scores": {
+      "sep": 0.6552217888536689,
+      "etd": 0.7367346938775509,
+      "sep_etd_f1": 0.6935915454566992
+    },
+    "time_spent_val_eval": 225.79211401939392,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6323500354655983,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

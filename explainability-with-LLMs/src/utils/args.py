@@ -8,6 +8,34 @@ from typing import Tuple, Dict, Any
 import numpy as np
 import os, torch, random, socket, argparse
 
+def _build_metric_params(
+    metric: str,
+    sep_beta: float,
+) -> Dict[str, Any]:
+    """
+    Build the metric-parameter payload shared by optimization and evaluation.
+
+    The graph metrics now consume the full set of generated explanations for
+    each user. Only SEP keeps a dedicated scalar parameter (``beta``).
+    """
+
+    metric = str(metric).lower()
+
+    if metric == "sep":
+        return {
+            "beta": float(sep_beta),
+        }
+
+    if metric == "etd":
+        return {}
+
+    if metric == "sep_etd_f1":
+        return {
+            "beta": float(sep_beta),
+        }
+
+    raise ValueError(f"Unsupported metric: {metric}")
+
 def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
     """
     Build and parse CLI arguments for the LLM explanation-path selection runner.
@@ -154,7 +182,8 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         default=None,
         help=(
             "Path to the knowledge-graph properties file used when computing "
-            "SEP or ETD. Defaults to <datain>/knowledge-graphs/"
+            "SEP, ETD, or the combined SEP_ETD_F1 objective. Defaults to "
+            "<datain>/knowledge-graphs/"
             "props_wikidata_movielens_small.csv."
         ),
     )
@@ -162,9 +191,9 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
     parser.add_argument(
         "--metric",
         type=str,
-        choices=["sep", "etd"],
+        choices=["sep", "etd", "sep_etd_f1"],
         default="sep",
-        help="Metric used to score the generated explanations (default: sep).",
+        help="Metric/objective used to score the generated explanations (default: sep).",
     )
 
     parser.add_argument(
@@ -172,13 +201,6 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         type=float,
         default=0.3,
         help="(SEP only) Exponential decay parameter beta.",
-    )
-
-    parser.add_argument(
-        "--etd_k",
-        type=int,
-        default=5,
-        help="(ETD only) Number of explanations (k) considered.",
     )
 
     # Output
@@ -222,10 +244,10 @@ def args_llm() -> Tuple[argparse.Namespace, Dict[str, Any]]:
     if args.prompt_source == "best_prompt" and not args.best_prompt_path:
         parser.error("--best_prompt_path is required when --prompt_source best_prompt.")
 
-    if args.metric == "sep":
-        args.metric_params = {"beta": float(args.sep_beta)}
-    else:
-        args.metric_params = {"k": int(args.etd_k)}
+    args.metric_params = _build_metric_params(
+        metric=args.metric,
+        sep_beta=args.sep_beta,
+    )
 
     # Build the shared prefix used to locate the explanation-path files.
     args.explanation_paths_prefix = os.path.join(
@@ -396,7 +418,10 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         "--total_instructions_per_iteration",
         type=int,
         default=1,
-        help="Candidate prompts per iteration.",
+        help=(
+            "Reserved for future support of multiple candidate prompts per "
+            "optimization iteration."
+        ),
     )
 
     parser.add_argument(
@@ -461,9 +486,9 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
     parser.add_argument(
         "--metric",
         type=str,
-        choices=["sep", "etd"],
+        choices=["sep", "etd", "sep_etd_f1"],
         required=True,
-        help="Metric used to score explanations during prompt optimization.",
+        help="Metric/objective used to score explanations during prompt optimization.",
     )
 
     parser.add_argument(
@@ -471,13 +496,6 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
         type=float,
         default=0.3,
         help="(SEP only) Exponential decay parameter beta.",
-    )
-
-    parser.add_argument(
-        "--etd_k",
-        type=int,
-        default=5,
-        help="(ETD only) Number of explanations (k) considered.",
     )
 
     # Output
@@ -514,10 +532,10 @@ def args_prompt_optimizer() -> Tuple[argparse.Namespace, Dict[str, Any]]:
     )
 
     # Convert metric-specific CLI options into the compact structure used later.
-    if args.metric == "sep":
-        args.metric_params = {"beta": float(args.sep_beta)}
-    else:
-        args.metric_params = {"k": int(args.etd_k)}
+    args.metric_params = _build_metric_params(
+        metric=args.metric,
+        sep_beta=args.sep_beta,
+    )
 
     # Output dirs/files
     args.outputdir = os.path.join(args.out, args.llm_method, "prompt_opt", args.metric)

@@ -1,0 +1,43 @@
+{
+  "epoch": 6,
+  "prompt": {
+    "prompt_this_epoch": "Designate solely the numeric enumeration identifier representing the maximally discriminative explanation pathway within the set by prioritizing the most distinctive connection facilitating the specified interaction.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 3.1087300777435303,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.713002, epoch=2)\n---\nSpecify precisely which explanation path's superiority will yield the highest explanatory power, specificity, and clarity amongst the enumerated pathways provided, giving preference to distinct connections over overly general characteristics wherever possible. \n\nEnsure the output comprises solely a numeral representing your chosen enumeration number, without any supplementary information or extraneous data. Select this unique identifier exclusively from the sequence '1',..., 'k' where 'k' signifying all offered pathways.\n---\n\nExample 2 (train_score=0.653592, epoch=4)\n---\nDesignate uniquely the preferred enumeration index pinpointing the chosen explanatory pathway from the curated collection, thereby validating precisely the superior attribute dependency amongst provided choices while guaranteeing alignment with integer value restrictions spanning exhaustively defined enumerative indices 1 through K.\n---\n\nExample 3 (train_score=0.569444, epoch=1)\n---\nSelect precisely ONE explanatory pathway out of those presented. \nThe preferred outcome is the numeric index associated with the optimal pathway \nwhere the connecting attribute is maximally distinctive and minimizes generic descriptions.\nIn the case of equal optimality across multiple pathways, \nprioritize the numeric index based on clearer links between interacting elements. \nChoose the numeric value exclusively from {1,..., k} where k signifies all possible pathways.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.5987269938230049,
+    "train_metric_scores": {
+      "sep": 0.5987269938230049,
+      "etd": 0.8466666666666667,
+      "sep_etd_f1": 0.7014313151639837
+    },
+    "time_spent_train_eval": 1542.171667098999,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.5887472950184357,
+    "val_metric_scores": {
+      "sep": 0.5887472950184357,
+      "etd": 0.833673469387755,
+      "sep_etd_f1": 0.6901235025707408
+    },
+    "time_spent_val_eval": 381.0700218677521,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.5785423249624608,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

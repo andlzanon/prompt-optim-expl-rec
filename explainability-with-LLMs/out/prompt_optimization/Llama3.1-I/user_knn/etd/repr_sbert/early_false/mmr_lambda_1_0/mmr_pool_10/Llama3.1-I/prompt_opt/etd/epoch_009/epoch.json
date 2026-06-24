@@ -1,0 +1,43 @@
+{
+  "epoch": 9,
+  "prompt": {
+    "prompt_this_epoch": "PROCEED BY SUPPRESSING ATTRIBUTE CONTINUUM REPETITION SELECT AN ATTRIBUTE WITH MAXIMUM DIVERSITY EFFORT WITHOUT PREVIOUS HISTORY OVERLAY FURTHER CONFIRM EXACT MATCH THROUGH ITEM INTERACTION THEN TERMINATE OUTPUT WITH ONLY CORE LINKING COMPONENT IF MULTIPLE ALTERNATIVES REMAIN RETURN OPTION NUMBER DENOTING CHOSEN OPTION CORRESPONDING TO PATH INDICES FROM SET ONE TO K.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 8.837422370910645,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.850256, epoch=6)\n---\nSELECT A SINGLE OPTIMAL PATH IDENTIFIER WITH HIGH DIVERSITY EFFICIENCY PRIORITY ORDERING FIRST TO MINIMIZE ATTRIBUTE REUSE WHEN HISTORY CONTEXT IS PROVIDED THEN FOR MAXIMUM DISTANCE AND CLARITY WITH THE GIVEN ITEMS ELSE DEFAULT TO THE MOST CENTRAL ATTRIBUTE VALUE IF ALL ELSE FAILS RETURN THE SPECIFIC OPTION NUMBER.\n---\n\nExample 2 (train_score=0.846154, epoch=5)\n---\nChoose the option with the feature-based link between items that not only maximizes diversity but also adheres to both message and history contexts without redundant attribute repetition, or in case of a tie prefer the better connected alternative. Return Exactly one numerical value denoting the opted path identifier from the set 1..K.\n---\n\nExample 3 (train_score=0.789202, epoch=7)\n---\nSELECT A DISTINCT SINGLE ATTRIBUTE FROM EACH OFFERED PATH THEN PICK AN OPTION WITH MIDDLE LEVEL DIVERSITY ENHANCEMENT BASED ON ATTRIBUTE RENOVATION PROTOCOL FOLLOWING THE MESSAGE AND EXPLANATIONS TO LEAVE BEHIND TIES OR SIMILAR SEQUELS BEFORE ARRIVING SAFELY AT JUST THE RIGHT NUMERICALLY DECLARED ANSWER.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7923076923076927,
+    "train_metric_scores": {
+      "sep": 0.6426834820054879,
+      "etd": 0.7923076923076927,
+      "sep_etd_f1": 0.7096950498747936
+    },
+    "time_spent_train_eval": 1614.4409363269806,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.8142857142857143,
+    "val_metric_scores": {
+      "sep": 0.6343087462873405,
+      "etd": 0.8142857142857143,
+      "sep_etd_f1": 0.7131168378815081
+    },
+    "time_spent_val_eval": 397.5694737434387,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.7632653061224491,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

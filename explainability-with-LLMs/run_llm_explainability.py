@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     # Initialize and load the LLM wrapper before generating explanations.
     llm = LLM(llm_method=args.llm_method, seed=args.seed)
-    llm.set_model()
+    llm.set_model(metric=args.metric)
 
     if args.prompt_source == "best_prompt":
         best_prompt_payload = load_best_prompt(args.best_prompt_path)
@@ -72,7 +72,9 @@ if __name__ == "__main__":
 
     end_time = time.time()
     explanation_blocks = explanations_df_to_blocks(user_explanations)
-    metric_value = float(metric_fn(explanation_blocks))
+    metric_payload = metric_fn(explanation_blocks)
+    metric_value = float(metric_payload["objective_value"])
+    metric_scores = metric_payload["scores"]
 
     # Record summary metadata about the run for later inspection.
     info["time_to_explain"] = float(end_time - start_time)
@@ -82,6 +84,10 @@ if __name__ == "__main__":
     info["metric"] = args.metric
     info["metric_name"] = metric_name
     info["metric_value"] = metric_value
+    info["metric_scores"] = metric_scores
+    info["sep_value"] = float(metric_scores["sep"])
+    info["etd_value"] = float(metric_scores["etd"])
+    info["sep_etd_f1_value"] = float(metric_scores["sep_etd_f1"])
     info["metric_params"] = args.metric_params
     info["kg_path"] = args.kg_path
     info["selection_strategy"] = args.selection_strategy
@@ -96,4 +102,10 @@ if __name__ == "__main__":
 
     print(f"\nExplanations saved to {output_csv}")
     print(f"{metric_name}={metric_value:.6f}")
+    print(
+        "Score breakdown: "
+        f"SEP={metric_scores['sep']:.6f}, "
+        f"ETD={metric_scores['etd']:.6f}, "
+        f"SEP_ETD_F1={metric_scores['sep_etd_f1']:.6f}"
+    )
     print(f"Metadata saved to {output_json}")

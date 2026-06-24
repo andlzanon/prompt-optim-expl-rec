@@ -5,10 +5,19 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_DIR"
+source "$SCRIPT_DIR/shared_llm_batch_config.sh"
 
-DATA_DIR="../datasets"
-KG_PATH="../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
-SELECTED_PATHS_ROOT="../datasets/preselected_explanation_paths"
+# Script-specific configuration for explainability runs.
+KG_PATH="${DATA_DIR}/knowledge-graphs/props_wikidata_movielens_small.csv"
+MODELS=("Llama3.1-I")
+METRICS=("sep_etd_f1" "sep" "etd")
+INCLUDE_USER_HISTORY="true"
+SEP_BETA=0.3
+
+if [ -n "${METRICS_OVERRIDE:-}" ]; then
+  IFS=',' read -r -a METRICS <<< "$METRICS_OVERRIDE"
+fi
+
 PROMPT_OPT_ROOT="out/prompt_optimization"
 TEST_USERS_PATH="$DATA_DIR/user_split_train_val_test/test_users.csv"
 TEST_EXPLAINABILITY_ROOT="out/test_explainability"
@@ -19,32 +28,37 @@ WITH_OPT_ROOT="${TEST_EXPLAINABILITY_ROOT}/with_optimization"
 RUN_DEFAULT="true"
 RUN_OPTIMIZED="true"
 
-# Algorithms covered by the explainability batch
-ALGORITHMS=("user_knn" "item_knn" "ncf" "bprmf")
-
 # Default run configuration
-DEFAULT_MODEL="Llama3.1-I"
-DEFAULT_METRIC="sep"
+DEFAULT_MODELS=("${MODELS[@]}")
+DEFAULT_METRICS=("${METRICS[@]}")
 
-# Explainability settings
-SELECTION_STRATEGY="random"
-NUM_RECOMMENDATIONS=10
-NUM_PATHS_PER_RECOMMENDATION=10
-INCLUDE_USER_HISTORY="true"
-SEED=2026
-SEP_BETA=0.3
-ETD_K=5
+contains_value() {
+  local target="$1"
+  shift
+  local value
 
-is_selected_algorithm() {
-  local algorithm="$1"
-
-  for selected_algorithm in "${ALGORITHMS[@]}"; do
-    if [ "$selected_algorithm" = "$algorithm" ]; then
+  for value in "$@"; do
+    if [ "$value" = "$target" ]; then
       return 0
     fi
   done
 
   return 1
+}
+
+is_selected_model() {
+  local model="$1"
+  contains_value "$model" "${MODELS[@]}"
+}
+
+is_selected_algorithm() {
+  local algorithm="$1"
+  contains_value "$algorithm" "${ALGORITHMS[@]}"
+}
+
+is_selected_metric() {
+  local metric="$1"
+  contains_value "$metric" "${METRICS[@]}"
 }
 
 run_explainability() {
@@ -54,7 +68,12 @@ run_explainability() {
   local out_dir="$4"
   local metric="$5"
   local best_prompt_path="${6:-}"
-  local selected_paths_input_path="${SELECTED_PATHS_ROOT}/${algorithm}/explainability/${SELECTION_STRATEGY}/recs_${NUM_RECOMMENDATIONS}_paths_${NUM_PATHS_PER_RECOMMENDATION}/seed_${SEED}/selected_paths.csv"
+  local selected_paths_input_path
+  local responses_csv
+  local responses_metadata_json
+  selected_paths_input_path="$(selected_paths_csv_path "$algorithm" "explainability")"
+  responses_csv="${out_dir}/responses.csv"
+  responses_metadata_json="${out_dir}/responses_metadata.json"
 
   local cmd=(
     python3.10 run_llm_explainability.py
@@ -72,10 +91,8 @@ run_explainability() {
     --out "$out_dir"
   )
 
-  if [ "$metric" = "sep" ]; then
+  if [ "$metric" = "sep" ] || [ "$metric" = "sep_etd_f1" ]; then
     cmd+=( --sep_beta "$SEP_BETA" )
-  elif [ "$metric" = "etd" ]; then
-    cmd+=( --etd_k "$ETD_K" )
   fi
 
   if [ "$prompt_source" = "best_prompt" ]; then
@@ -97,8 +114,12 @@ run_explainability() {
   echo "Output directory=${out_dir}"
   echo "========================================"
 
-  if compgen -G "${out_dir}/responses*" > /dev/null; then
-    echo "Skipping because output already exists under ${out_dir}"
+  if ! prepare_output_slot \
+    "explainability" \
+    "$out_dir" \
+    "$out_dir" \
+    "$responses_csv" \
+    "$responses_metadata_json"; then
     return 0
   fi
 
@@ -113,7 +134,9 @@ run_explainability() {
 
 mapfile -t BEST_PROMPT_FILES < <(find "$PROMPT_OPT_ROOT" -path '*/best_prompt.json' | sort)
 
-echo "Algorithms configured in this batch: ${ALGORITHMS[*]}"
+echo "Models configured in this script: ${MODELS[*]}"
+echo "Algorithms configured in this script: ${ALGORITHMS[*]}"
+echo "Metrics configured in this script: ${DEFAULT_METRICS[*]}"
 
 if [ "${#BEST_PROMPT_FILES[@]}" -eq 0 ]; then
   echo "No best_prompt.json files found under ${PROMPT_OPT_ROOT}."
@@ -121,16 +144,30 @@ if [ "${#BEST_PROMPT_FILES[@]}" -eq 0 ]; then
 fi
 
 if [ "$RUN_DEFAULT" = "true" ]; then
+  if [ "${#DEFAULT_MODELS[@]}" -eq 0 ]; then
+    echo "MODELS is empty. Cannot run the default explainability pass."
+    exit 1
+  fi
+
   if [ "${#ALGORITHMS[@]}" -eq 0 ]; then
     echo "ALGORITHMS is empty. Cannot run the default explainability pass."
     exit 1
   fi
 
+  if [ "${#DEFAULT_METRICS[@]}" -eq 0 ]; then
+    echo "METRICS is empty. Cannot run the default explainability pass."
+    exit 1
+  fi
+
   # The built-in prompt must also be evaluated per algorithm because the
   # explanation paths and recommendation context depend on the recommender.
-  for algorithm in "${ALGORITHMS[@]}"; do
-    out_dir="${WITHOUT_OPT_ROOT}/${DEFAULT_MODEL}/${algorithm}/${DEFAULT_METRIC}"
-    run_explainability "$DEFAULT_MODEL" "$algorithm" "default" "$out_dir" "$DEFAULT_METRIC"
+  for model in "${DEFAULT_MODELS[@]}"; do
+    for algorithm in "${ALGORITHMS[@]}"; do
+      for metric in "${DEFAULT_METRICS[@]}"; do
+        out_dir="${WITHOUT_OPT_ROOT}/${model}/${algorithm}/${metric}"
+        run_explainability "$model" "$algorithm" "default" "$out_dir" "$metric"
+      done
+    done
   done
 fi
 
@@ -139,8 +176,18 @@ if [ "$RUN_OPTIMIZED" = "true" ]; then
     rel_path="${best_prompt_path#${PROMPT_OPT_ROOT}/}"
     IFS='/' read -r model algorithm metric repr_dir early_dir lambda_dir pool_dir _rest <<< "$rel_path"
 
+    if ! is_selected_model "$model"; then
+      echo "Skipping optimized run outside configured model list: ${model}"
+      continue
+    fi
+
     if ! is_selected_algorithm "$algorithm"; then
       echo "Skipping optimized run outside configured algorithm list: ${algorithm}"
+      continue
+    fi
+
+    if ! is_selected_metric "$metric"; then
+      echo "Skipping optimized run outside configured metric list: ${metric}"
       continue
     fi
 

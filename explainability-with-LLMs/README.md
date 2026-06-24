@@ -56,17 +56,21 @@ The Python entry point `run_llm_explainability.py`:
 
 - loads the held-out test users from `../datasets/user_split_train_val_test/test_users.csv`
 - generates explanations for the configured algorithm
-- computes the selected metric (`SEP` or `ETD`)
+- computes the selected objective (`SEP`, `ETD`, or `SEP_ETD_F1`) and stores
+  the full SEP/ETD breakdown in the metadata
 - writes the explanations CSV and a metadata JSON
 
 ### Orchestration scripts
 
-Two helper scripts were added to chain both workflows:
+The main orchestration entry point is:
 
-- `bash/run_optimization_then_explainability.sh`
-- `bash/run_explainability_then_optimization.sh`
+- `bash/run.sh`
 
-Use `run_optimization_then_explainability.sh` when you want to generate optimized prompts first and immediately consume them in the explainability batch.
+It runs, in sequence:
+
+1. `bash/run_prepare_selected_paths.sh`
+2. `bash/run_llm_for_optimization.sh`
+3. `bash/run_llm_for_explainability.sh`
 
 ## Environment setup
 
@@ -137,9 +141,10 @@ Main batch runner for prompt optimization.
 Current defaults in the script:
 
 - models: `Llama3.1-I`
-- algorithms: `user_knn`, `item_knn`, `ncf`, `bprmf`
+- algorithms: configured inside `bash/run_llm_for_optimization.sh`
 - representation models: `llm2vec`, `sbert`
-- metric: `sep`
+- metrics/objectives: configured inside `bash/run_llm_for_optimization.sh`
+- supported metrics/objectives: `sep`, `etd`, `sep_etd_f1`
 - explainability settings: `10` recommendations and `10` candidate paths per recommendation
 
 Important parameters already exposed near the top of the script:
@@ -179,9 +184,10 @@ Main batch runner for explainability generation.
 
 Current defaults in the script:
 
-- algorithms: `user_knn`, `item_knn`, `ncf`, `bprmf`
-- model: `Llama3.1-I`
-- metric: `sep`
+- algorithms: configured inside `bash/run_llm_for_explainability.sh`
+- models: configured inside `bash/run_llm_for_explainability.sh`
+- metrics/objectives: configured inside `bash/run_llm_for_explainability.sh`
+- supported metrics/objectives: `sep`, `etd`, `sep_etd_f1`
 - both execution modes enabled: `RUN_DEFAULT="true"` and `RUN_OPTIMIZED="true"`
 
 Outputs are separated into two roots:
@@ -196,29 +202,11 @@ Each explainability run writes:
 - `responses.csv`
 - `responses_metadata.json`
 
-The script scans `out/prompt_optimization/**/best_prompt.json` automatically. When optimized prompts are found, it reconstructs the output path for the corresponding explainability run and invokes:
+The script scans `out/prompt_optimization/**/best_prompt.json` automatically. When optimized prompts are found, it reconstructs the output path for the corresponding explainability run, filtering the discovered prompts by the configured `MODELS`, `METRICS`, and `ALGORITHMS`, and invokes:
 
 ```bash
 python3.10 run_llm_explainability.py --prompt_source best_prompt --best_prompt_path ...
 ```
-
-### `bash/run_optimization_then_explainability.sh`
-
-Runs:
-
-1. `bash/run_llm_for_optimization.sh`
-2. `bash/run_llm_for_explainability.sh`
-
-This is the best one-command option when you want the optimized prompts to be generated and then immediately applied to the test explainability batch.
-
-### `bash/run_explainability_then_optimization.sh`
-
-Runs:
-
-1. `bash/run_llm_for_explainability.sh`
-2. `bash/run_llm_for_optimization.sh`
-
-This is useful when you want to produce the baseline explainability outputs first and optimize prompts afterwards.
 
 ## Python entry points
 
@@ -249,8 +237,11 @@ Most relevant CLI arguments:
 - `--mmr_lambda_quality`
 - `--mmr_pool_multiplier`
 - `--metric`
-- `--sep_beta` or `--etd_k`
+- `--sep_beta`
 - `--out`
+
+The graph metrics now evaluate the full set of generated explanations for each
+user, without an additional `@k` cutoff.
 
 ### `run_llm_explainability.py`
 
@@ -271,12 +262,15 @@ Most relevant CLI arguments:
 - `--prompt_source`
 - `--best_prompt_path`
 - `--metric`
-- `--sep_beta` or `--etd_k`
+- `--sep_beta`
 - `--num_recommendations`
 - `--num_paths_per_recommendation`
 - `--include_user_history`
 - `--kg_path`
 - `--out`
+
+The graph metrics now evaluate the full set of generated explanations for each
+user, without an additional `@k` cutoff.
 
 ## Typical usage
 
@@ -304,8 +298,10 @@ bash bash/run_llm_for_explainability.sh
 ### Run the full pipeline in the recommended order
 
 ```bash
-bash bash/run_optimization_then_explainability.sh
+bash bash/run.sh
 ```
+
+`bash/run.sh` just calls the three runner scripts in sequence.
 
 ## Output summary
 
@@ -356,10 +352,11 @@ Each epoch directory contains:
 ```text
 explainability-with-LLMs/
 ├── bash/
-│   ├── run_explainability_then_optimization.sh
+│   ├── run.sh
+│   ├── run_prepare_selected_paths.sh
 │   ├── run_llm_for_explainability.sh
 │   ├── run_llm_for_optimization.sh
-│   └── run_optimization_then_explainability.sh
+│   └── ...
 ├── settings/
 │   ├── .python-version
 │   ├── llm_requirements.txt

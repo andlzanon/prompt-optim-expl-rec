@@ -30,6 +30,7 @@ class LLM:
 
     _YEAR_RE = re.compile(r"\s*\(\d{4}\)$")
     _IDX_RE = re.compile(r"\b(\d{1,6})\b")
+    _SUPPORTED_OBJECTIVES = {"sep", "etd", "sep_etd_f1"}
 
     def __init__(self, llm_method: str = "", seed: int = 2026):
         """
@@ -80,8 +81,83 @@ class LLM:
         self.terminators = None
         self.token_access = None
         self.last_selected_paths_df = pd.DataFrame()
+        self.objective_metric = "sep"
 
-    def set_prompt(self) -> None:
+    @classmethod
+    def normalize_objective_metric(cls, metric: str | None) -> str:
+        """
+        Normalize the configured optimization/explainability objective name.
+        """
+
+        normalized = "sep" if metric is None else str(metric).strip().lower()
+        if normalized not in cls._SUPPORTED_OBJECTIVES:
+            raise ValueError(
+                f"Unsupported objective metric {metric!r}. "
+                f"Expected one of: {sorted(cls._SUPPORTED_OBJECTIVES)}"
+            )
+        return normalized
+
+    def _system_selection_criteria_text(self) -> str:
+        """
+        Return the objective-specific selection criteria used in the system prompt.
+        """
+
+        if self.objective_metric == "sep":
+            return (
+                "Selection criteria (priority order):\n"
+                "1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n"
+                "2) Avoid overly generic attributes when more descriptive ones are available.\n"
+                "3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n"
+            )
+
+        if self.objective_metric == "etd":
+            return (
+                "Selection criteria (priority order):\n"
+                "1) Prefer attributes that increase diversity across this user's explanations.\n"
+                "2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n"
+                "3) Avoid generic attributes when a clearer and still diverse alternative exists.\n"
+                "4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n"
+            )
+
+        return (
+            "Selection criteria (balance all of the following):\n"
+            "1) Prefer attributes that jointly provide an informative, specific, and discriminative explanation while also increasing diversity across this user's explanations.\n"
+            "2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n"
+            "3) Avoid overly generic attributes, but do not choose novelty if it substantially weakens the explanation.\n"
+            "4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n"
+        )
+
+    def _user_selection_guidance_text(self) -> str:
+        """
+        Return the objective-specific guidance inserted into each user message.
+        """
+
+        if self.objective_metric == "sep":
+            return (
+                "Selection guidance:\n"
+                "- Prefer attributes that provide more informative, specific, and discriminative explanations.\n"
+                "- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n"
+                "- Prefer attributes that better explain why the recommended item is related to the interacted item.\n\n"
+            )
+
+        if self.objective_metric == "etd":
+            return (
+                "Selection guidance:\n"
+                "- Prefer attributes that diversify this user's set of explanations across recommendations.\n"
+                "- If the context lists attributes already used for this user, avoid repeating them when a comparably plausible unused attribute exists.\n"
+                "- Avoid generic attributes when a clearer and still diverse alternative exists.\n"
+                "- Prefer attributes that still make sense as a connection between the interacted item and the recommended item.\n\n"
+            )
+
+        return (
+            "Selection guidance:\n"
+            "- Aim for the best balance between explanation specificity and diversity across this user's explanations.\n"
+            "- Prefer attributes that both explain the connection well and improve diversity across the user's explanations.\n"
+            "- If the context lists attributes already used for this user, avoid unnecessary repetition when a similarly informative unused attribute exists.\n"
+            "- Avoid overly generic attributes, but do not choose novelty if it makes the explanation substantially weaker.\n\n"
+        )
+
+    def set_prompt(self, metric: str = "sep") -> None:
         """
         Build the system prompt used for explanation-path selection.
 
@@ -106,6 +182,8 @@ class LLM:
         the explainability flow.
         """
 
+        self.objective_metric = self.normalize_objective_metric(metric)
+
         self.system_prompt = (
             "You are selecting ONE explanation path for the given recommendation.\n"
             "Return ONLY the final answer.\n"
@@ -116,14 +194,11 @@ class LLM:
             "- Do NOT invent items, attributes, or paths.\n"
             "- Do NOT output words, punctuation, or explanations.\n"
             "- Output ONLY the integer corresponding to the chosen option.\n"
-            "Selection criteria (priority order):\n"
-            "1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n"
-            "2) Avoid overly generic attributes when more descriptive ones are available.\n"
-            "3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n"
+            f"{self._system_selection_criteria_text()}"
         )
         self.prompt = [{"role": "system", "content": self.system_prompt}]
 
-    def set_model(self) -> None:
+    def set_model(self, metric: str = "sep") -> None:
         """
         Load the causal language model, tokenizer, and termination tokens.
 
@@ -161,7 +236,7 @@ class LLM:
                 "initializing LLM."
             )
 
-        self.set_prompt()
+        self.set_prompt(metric=metric)
         self.token_access = get_token()
 
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -654,13 +729,7 @@ class LLM:
 
         chunks.append("\n")
 
-        # SEP-friendly guidance
-        chunks.append(
-            "Selection guidance:\n"
-            "- Prefer attributes that provide more informative, specific, and discriminative explanations.\n"
-            "- Avoid attributes that are overly broad or apply to many items when a more specific attribute exists.\n"
-            "- Prefer attributes that better explain why the recommended item is related to the interacted item.\n\n"
-        )
+        chunks.append(self._user_selection_guidance_text())
 
         # Optional context about previously used attributes
         if used_attributes:

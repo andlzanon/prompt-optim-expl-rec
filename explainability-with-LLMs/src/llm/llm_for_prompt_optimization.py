@@ -24,6 +24,7 @@ class PromptOptimizer:
     def __init__(
         self,
         epochs: int = 10,
+        total_instructions_per_iteration: int = 1,
         meta_prompt_instruction_quantity: int = 3,
         eval_every: int = 1,
         patience: int = 3,
@@ -33,6 +34,7 @@ class PromptOptimizer:
         mmr_lambda_quality: float = 1.0,   # 0..1 (higher = more relevance, less diversity)
         mmr_pool_multiplier: int = 10,     # candidate pool size = K * multiplier
         representation_model: str = "llm2vec",
+        objective_metric: str = "sep",
         representation: Optional[BaseRepresentation] = None,
         representation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -43,6 +45,10 @@ class PromptOptimizer:
         ----------
         epochs : int, default=10
             Maximum number of optimization epochs to run.
+        total_instructions_per_iteration : int, default=1
+            Reserved for future support of generating more than one candidate
+            prompt per optimization iteration. The current implementation
+            still evaluates one prompt per epoch.
         meta_prompt_instruction_quantity : int, default=3
             Number of previously ranked prompts used as references when
             generating a new prompt.
@@ -68,6 +74,9 @@ class PromptOptimizer:
         representation_model : str, default="llm2vec"
             Name of the representation backend to build when
             ``representation`` is not provided.
+        objective_metric : str, default="sep"
+            Objective that the prompt optimization should target. Supported
+            values are ``"sep"``, ``"etd"``, and ``"sep_etd_f1"``.
         representation : Optional[BaseRepresentation], default=None
             Prebuilt representation instance. When provided, it is used
             directly instead of constructing one from ``representation_model``.
@@ -98,6 +107,7 @@ class PromptOptimizer:
         """
 
         self.epochs = epochs
+        self.total_instructions_per_iteration = int(total_instructions_per_iteration)
         self.meta_prompt_instruction_quantity = meta_prompt_instruction_quantity
         self.eval_every = eval_every
         self.patience = patience
@@ -107,6 +117,7 @@ class PromptOptimizer:
         self.mmr_lambda_quality = float(mmr_lambda_quality)
         self.mmr_pool_multiplier = int(mmr_pool_multiplier)
         self.representation_model = str(representation_model).lower()
+        self.objective_metric = LLM.normalize_objective_metric(objective_metric)
         self.representation_kwargs = representation_kwargs or {}
         self.representation = representation or build_representation(
             self.representation_model,
@@ -117,39 +128,7 @@ class PromptOptimizer:
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
 
-        # Updated meta-prompt: no user history, no attribute-usage block, SEP-friendly criteria,
-        # and NO anchored formatting examples like "(e.g., 7)" or '"Option 7"'.
-        self.meta_prompt_template = """\
-You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.
-
-TASK CONTEXT (what the user message contains):
-- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:
-  <Interacted Item> -> <Attribute> -> <Recommended Item>
-
-REFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):
-- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.
-{instructions}
-
-HARD REQUIREMENTS (must be explicitly stated in the new instruction):
-- Choose EXACTLY ONE of the numbered options provided by the user (1..K).
-- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).
-- Output ONLY the integer number and nothing else.
-- Do NOT output multiple numbers, ranges, or any additional text.
-- Do NOT invent items, attributes, or paths. Only select among the provided options.
-
-SELECTION CRITERIA (must be included; in priority order):
-1) Prefer attributes that make the explanation more informative, specific, and discriminative.
-2) Avoid overly generic attributes when more descriptive ones are available.
-3) If tied, prefer the option whose attribute most clearly connects the two items in the path.
-
-STYLE REQUIREMENTS:
-- Strict system-prompt style.
-- Use imperative language and explicit constraints.
-- Avoid single-sentence instructions.
-- Different wording/structure than the reference.
-
-Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
-"""
+        self.meta_prompt_template = self._build_meta_prompt_template()
 
         self.gen_cfg = {
             "max_new_tokens": 500,
@@ -159,6 +138,78 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
             "repetition_penalty": 1.15,
             "no_repeat_ngram_size": 6,
         }
+
+    def _meta_prompt_selection_criteria(self) -> str:
+        """
+        Return the objective-specific criteria block for the meta-prompt.
+        """
+
+        if self.objective_metric == "sep":
+            return (
+                "1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n"
+                "2) Avoid overly generic attributes when more descriptive ones are available.\n"
+                "3) If tied, prefer the option whose attribute most clearly connects the two items in the path."
+            )
+
+        if self.objective_metric == "etd":
+            return (
+                "1) Prefer attributes that increase diversity across the user's explanations.\n"
+                "2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n"
+                "3) Avoid generic attributes when a clearer and still diverse alternative exists.\n"
+                "4) If tied, prefer the option whose attribute most clearly connects the two items in the path."
+            )
+
+        return (
+            "1) Prefer attributes that jointly maximize explanation specificity and diversity across the user's explanations.\n"
+            "2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n"
+            "3) Avoid overly generic attributes, but do not favor novelty when it substantially weakens the explanation.\n"
+            "4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user."
+        )
+
+    def _meta_prompt_criteria_heading(self) -> str:
+        """
+        Return the heading that introduces the selection-criteria block.
+        """
+
+        if self.objective_metric == "sep_etd_f1":
+            return "SELECTION CRITERIA (must be included; balance all of the following):"
+
+        return "SELECTION CRITERIA (must be included; in priority order):"
+
+    def _build_meta_prompt_template(self) -> str:
+        """
+        Build the objective-specific meta-prompt template.
+        """
+
+        return f"""\
+You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.
+
+TASK CONTEXT (what the user message contains):
+- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:
+  <Interacted Item> -> <Attribute> -> <Recommended Item>
+
+REFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):
+- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.
+{{instructions}}
+
+HARD REQUIREMENTS (must be explicitly stated in the new instruction):
+- Choose EXACTLY ONE of the numbered options provided by the user (1..K).
+- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).
+- Output ONLY the integer number and nothing else.
+- Do NOT output multiple numbers, ranges, or any additional text.
+- Do NOT invent items, attributes, or paths. Only select among the provided options.
+
+{self._meta_prompt_criteria_heading()}
+{self._meta_prompt_selection_criteria()}
+
+STYLE REQUIREMENTS:
+- Strict system-prompt style.
+- Use imperative language and explicit constraints.
+- Avoid single-sentence instructions.
+- Different wording/structure than the reference.
+
+Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
+"""
 
     def _epoch_dir(self, epoch: int) -> str:
         """
@@ -552,7 +603,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
     def run_optimize_process(
         self,
         llm: LLM,
-        metric_fn: Callable[[Any], float],
+        metric_fn: Callable[[Any], Dict[str, Any]],
         train_user_ids,
         val_user_ids,
         interactions_df_train,
@@ -572,8 +623,9 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
         llm : LLM
             LLM instance used to generate explanations and new prompt
             instructions.
-        metric_fn : Callable[[Any], float]
-            Metric callable that scores a mapping of user explanations.
+        metric_fn : Callable[[Any], Dict[str, Any]]
+            Metric callable that scores a mapping of user explanations and
+            returns both the optimization objective and its component scores.
         train_user_ids : Any
             Collection of user identifiers used for training evaluation.
         val_user_ids : Any
@@ -625,6 +677,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
             "final_meta_prompt_template": self.meta_prompt_template,
             "settings": {
                 "epochs": self.epochs,
+                "total_instructions_per_iteration": self.total_instructions_per_iteration,
                 "meta_prompt_instruction_quantity": self.meta_prompt_instruction_quantity,
                 "eval_every": self.eval_every,
                 "patience": self.patience,
@@ -633,16 +686,19 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
                 "mmr_lambda_quality": self.mmr_lambda_quality,
                 "mmr_pool_multiplier": self.mmr_pool_multiplier,
                 "representation_model": self.representation_model,
+                "objective_metric": self.objective_metric,
                 "representation_kwargs": self._json_safe(self.representation_kwargs),
             },
             "epochs_history": [],
         }
 
         best_train_metric = float("-inf")
+        best_train_scores: Optional[Dict[str, float]] = None
         best_train_prompt: Optional[str] = None
         best_train_epoch: Optional[int] = None
 
         best_val_metric = float("-inf")
+        best_val_scores: Optional[Dict[str, float]] = None
         best_val_prompt: Optional[str] = None
         best_val_epoch: Optional[int] = None
 
@@ -712,12 +768,15 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
             t_train = float(time.time() - t0)
 
             train_blocks = self._df_to_explanation_blocks(df_train)
-            train_metric = float(metric_fn(train_blocks))
+            train_metric_payload = metric_fn(train_blocks)
+            train_metric = float(train_metric_payload["objective_value"])
+            train_scores = train_metric_payload["scores"]
 
             df_train.to_csv(os.path.join(ep_dir, "train_explanations.csv"), index=False)
 
             epoch_json["train_eval"] = {
                 "train_metric": float(train_metric),
+                "train_metric_scores": self._json_safe(train_scores),
                 "time_spent_train_eval": float(t_train),
                 "train_rows": int(df_train.shape[0]),
                 "train_valid_rate": float(df_train["valid"].mean())
@@ -727,6 +786,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
             if train_metric > best_train_metric:
                 best_train_metric = train_metric
+                best_train_scores = dict(train_scores)
                 best_train_prompt = prompt_this_epoch
                 best_train_epoch = epoch
 
@@ -738,6 +798,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
             # ---- VAL + OPTIONAL EARLY STOPPING ----
             ran_val = False
             val_metric: Optional[float] = None
+            val_scores: Optional[Dict[str, float]] = None
             t_val: Optional[float] = None
             val_improvement_vs_prev: Optional[float] = None
             prev_val_before_update: Optional[float] = None
@@ -755,7 +816,9 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
                 t_val = float(time.time() - t0)
 
                 val_blocks = self._df_to_explanation_blocks(df_val)
-                val_metric = float(metric_fn(val_blocks))
+                val_metric_payload = metric_fn(val_blocks)
+                val_metric = float(val_metric_payload["objective_value"])
+                val_scores = val_metric_payload["scores"]
 
                 df_val.to_csv(os.path.join(ep_dir, "val_explanations.csv"), index=False)
 
@@ -763,6 +826,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
                 if val_metric > best_val_metric:
                     best_val_metric = val_metric
+                    best_val_scores = dict(val_scores)
                     best_val_prompt = prompt_this_epoch
                     best_val_epoch = epoch
 
@@ -794,6 +858,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
                 epoch_json["val_eval"] = {
                     "val_metric": float(val_metric),
+                    "val_metric_scores": self._json_safe(val_scores),
                     "time_spent_val_eval": float(t_val),
                     "val_rows": int(df_val.shape[0]),
                     "val_valid_rate": float(df_val["valid"].mean())
@@ -823,6 +888,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
                     "generated_new_prompt": generated,
                     "time_spent_instruction": float(gen_time),
                     "train_metric": float(train_metric),
+                    "train_metric_scores": self._json_safe(train_scores),
                     "time_spent_train_eval": float(t_train),
                     "train_rows": int(df_train.shape[0]),
                     "train_valid_rate": float(df_train["valid"].mean())
@@ -830,6 +896,7 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
                     else None,
                     "val_ran_this_epoch": ran_val,
                     "val_metric": float(val_metric) if val_metric is not None else None,
+                    "val_metric_scores": self._json_safe(val_scores) if ran_val else None,
                     "time_spent_val_eval": float(t_val) if t_val is not None else None,
                     "prev_val_metric": float(prev_val_before_update) if prev_val_before_update is not None else None,
                     "val_improvement_vs_prev": float(val_improvement_vs_prev) if val_improvement_vs_prev is not None else None,
@@ -851,11 +918,13 @@ Return ONLY the new SYSTEM instruction text (no quotes, no markdown).
 
         info["best_on_train"] = {
             "best_train_metric": float(best_train_metric),
+            "best_train_metric_scores": self._json_safe(best_train_scores),
             "best_train_epoch": int(best_train_epoch) if best_train_epoch is not None else None,
             "best_train_prompt": best_train_prompt,
         }
         info["best_on_validation"] = {
             "best_val_metric": float(best_val_metric),
+            "best_val_metric_scores": self._json_safe(best_val_scores),
             "best_val_epoch": int(best_val_epoch) if best_val_epoch is not None else None,
             "best_val_prompt": best_val_prompt,
         }
