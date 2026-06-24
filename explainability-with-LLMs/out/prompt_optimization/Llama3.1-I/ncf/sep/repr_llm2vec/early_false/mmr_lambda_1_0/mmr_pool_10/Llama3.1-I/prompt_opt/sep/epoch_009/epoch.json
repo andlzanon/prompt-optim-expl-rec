@@ -1,0 +1,43 @@
+{
+  "epoch": 9,
+  "prompt": {
+    "prompt_this_epoch": "Given an array of distinct ordered pathways comprising interacting items linked through various attributes concluding at proposed recommendations:\n\nStrictly adhere to explicit ranking criteria prioritising pathway informativity coupled with specificity whereupon avoiding ambiguous associations, followed by distinctly reinforcing connections based on explicitly disclosed relationships amongst items along these specified explanations.\n\n\nEnsure only the maximum preference value corresponds uniquely with the highest positioned ranked attributed distinction directly obtained via examination of interactional descriptions accordingly:\n\n\nPrecisely extract and output an exclusively singular identifier representing optimal ranked placement warranting maximal adherence across established ordering protocols devoid of supplementary extraneous components maintaining indispensable constraint satisfaction precisely at every point adherent solely thereby providing the necessitated correct solitary reply fulfilling stipulations outlined unambiguously hereon thus identifying the preferred selected outcome numerically conforming accurately henceforth adherer.assistant\n\nAdopt SEPARATE CONSTRAINTS as follows.\n\n1  When comparing interactive pathways comprised of connected items through several attributes reaching suggestions for recommendations:\n\n       Discern attributes maximizing informative content ensuring adequate specification is upheld preventing unwarranted ambiguity whenever feasible then establish direct yet distinct relationship fostering understanding through detailed mutual dependencies exhibited.\n\n   Otherwise fall back onto equally discernible preference exhibiting substantial connectivity albeit less informative association.\n\n2  Determine preference value by examining level of distinguishability amongst associated pairs.\n\n    If both have comparable discriminative characteristics prioritize higher relevance even though lacking entirely discriminatively distinguishable instances still retain substantial correlation value although not surpassing certain pre-defined threshold indicating potential disparity arising upon further scrutiny hence validating lower ranked positions occasionally holding inherent superiority sometimes but certainly presenting compelling evidence contradicting immediate assertion establishing inferiority inherently thus negating such unsubstantiated claims.\n\n\n   Conversely prefer slightly inferior association over highly correlated non-preferred counterpart offering minimal distinguishing advantage especially so under circumstances having limited visibility severely diminishing predictive power substantially lowering expectations generally.\n\n\n3  Identify final preference solely on basis of established connection type directly resulting from comparison made against equally valid competing choices displayed prominently prior thereto considering solely actual pairwise interaction strength derived immediately thereafter since being primarily defined hereby effectively eliminating any consideration extending beyond mere abstract hypothetical scenarios previously investigated therefore.\n\nExtract & PROVIDE EXCLUSIVELY SINGLE DIGIT representing OPTIMAL ANSWER after performing thorough evaluation process satisfying prescribed steps.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 55.034908294677734,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.702070, epoch=3)\n---\nAdhere strictly to this selection protocol.\n\nWhen presented with a set of K numbered options:\n\nEach consisting of interacted items connected through distinct attributes leading to suggested recommendations,\n\nCarefully consider all provided information regarding interactions and inherent properties.\n\nOutput exclusively ONE exact token: a unique numeric representation designating the chosen optimal connection within these offered alternatives.\n\n\n\nChoose amongst 1 and K options without inventive additions or descriptive phrases.\n---\n\nExample 2 (train_score=0.602363, epoch=5)\n---\nUpon receipt of explanation paths between interacted items and recommended items distinguished by their respective attributes,\n Prioritize the attributes making connections maximally distinct, avoid excessively general attributes if preferable specifics exist,\n If equal preferences occur due to similar attribute levels of distinctiveness, give precedence to options leveraging concrete correlations,\n Provide exclusively one numerical choice representing the optimised linkage identified among presented alternative pathways, adhering stringently to strict numeric convention by selecting solely the highest rated explanatory path's position index (a unique digit signifying your deliberated decision amidst listed possibilities)\n---\n\nExample 3 (train_score=0.586200, epoch=8)\n---\nPrioritizing explicit analysis: \nOutput exclusively one exact token representing the opted option index, upholding the stipulated criteria - \nDiscerning informativity above generality, utilising preferred discrimination when equivalent, connecting specifically between interlinked items. Select exactly one optimal numeric answer among enumerated possibilities 1 through K adhering to stringent numeric constraints. \n\n Adhere rigorously, input ONE integer following these strict guidelines without inventive expansions.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6154799912895377,
+    "train_metric_scores": {
+      "sep": 0.6154799912895377,
+      "etd": 0.8088319088319089,
+      "sep_etd_f1": 0.6990320816109391
+    },
+    "time_spent_train_eval": 1895.6855182647705,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9966666666666667
+  },
+  "val_eval": {
+    "val_metric": 0.5958307707165171,
+    "val_metric_scores": {
+      "sep": 0.5958307707165171,
+      "etd": 0.8136054421768708,
+      "sep_etd_f1": 0.6878937169866325
+    },
+    "time_spent_val_eval": 468.3581717014313,
+    "val_rows": 980,
+    "val_valid_rate": 0.996938775510204,
+    "prev_val_metric": 0.5763897593712328,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

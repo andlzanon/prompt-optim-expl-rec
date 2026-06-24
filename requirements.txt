@@ -5,3 +5,4 @@ networkx
 tqdm
 recommenders
 caserecommender
+jinja2

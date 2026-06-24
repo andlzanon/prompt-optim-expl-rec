@@ -5,28 +5,22 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_DIR"
+source "$SCRIPT_DIR/shared_llm_batch_config.sh"
 
-# Paths
-DATA_DIR="../datasets"
-KG_PATH="../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
-SELECTED_PATHS_ROOT="../datasets/preselected_explanation_paths"
-
-# Models & Algorithms
+# Script-specific configuration for optimization runs.
+KG_PATH="${DATA_DIR}/knowledge-graphs/props_wikidata_movielens_small.csv"
 MODELS=("Llama3.1-I")
-ALGORITHMS=("user_knn" "item_knn" "ncf" "bprmf")   # ("user_knn" "item_knn" "ncf" "bprmf")
+METRICS=("sep_etd_f1" "sep" "etd")
+INCLUDE_USER_HISTORY="true"
+SEP_BETA=0.3
+
+if [ -n "${METRICS_OVERRIDE:-}" ]; then
+  IFS=',' read -r -a METRICS <<< "$METRICS_OVERRIDE"
+fi
 
 # Representation models
 # REPRESENTATION_MODELS=("sbert")
 REPRESENTATION_MODELS=("llm2vec" "sbert")
-
-# Explainability settings
-SELECTION_STRATEGY="random"
-NUM_RECOMMENDATIONS=10
-NUM_PATHS_PER_RECOMMENDATION=10
-INCLUDE_USER_HISTORY="true"
-
-# Optimization settings
-SEED=2026
 EPOCHS=10
 TOTAL_INSTRUCTIONS_PER_ITERATION=1
 META_PROMPT_INSTRUCTION_QUANTITY=3
@@ -42,12 +36,6 @@ EARLY_STOPPING_VALUES=("false")
 MMR_LAMBDA_QUALITIES=("0.0" "0.5" "1.0")
 MMR_POOL_MULTIPLIERS=(10)
 
-# Metrics
-METRICS=("sep") # ("etd" "sep")
-
-SEP_BETA=0.3
-ETD_K=5
-
 # Main Loop
 for model in "${MODELS[@]}"; do
   for algorithm in "${ALGORITHMS[@]}"; do
@@ -59,7 +47,10 @@ for model in "${MODELS[@]}"; do
 
               lambda_tag="${mmr_lambda_quality/./_}"
               OUT_DIR="out/prompt_optimization/${model}/${algorithm}/${metric}/repr_${representation_model}/early_${early_stopping}/mmr_lambda_${lambda_tag}/mmr_pool_${mmr_pool_multiplier}"
-              SELECTED_PATHS_INPUT_PATH="${SELECTED_PATHS_ROOT}/${algorithm}/optimization/${SELECTION_STRATEGY}/recs_${NUM_RECOMMENDATIONS}_paths_${NUM_PATHS_PER_RECOMMENDATION}/seed_${SEED}/selected_paths.csv"
+              SELECTED_PATHS_INPUT_PATH="$(selected_paths_csv_path "$algorithm" "optimization")"
+              FINAL_OUTPUT_DIR="${OUT_DIR}/${model}/prompt_opt/${metric}"
+              BEST_PROMPT_PATH="${FINAL_OUTPUT_DIR}/best_prompt.json"
+              OPTIMIZATION_METADATA_PATH="${FINAL_OUTPUT_DIR}/optimization_process_metadata.json"
 
               echo "========================================"
               echo "Model: $model"
@@ -77,6 +68,15 @@ for model in "${MODELS[@]}"; do
                 echo "Missing selected paths file: $SELECTED_PATHS_INPUT_PATH"
                 echo "Run bash/run_prepare_selected_paths.sh before optimization."
                 exit 1
+              fi
+
+              if ! prepare_output_slot \
+                "optimization" \
+                "$FINAL_OUTPUT_DIR" \
+                "$FINAL_OUTPUT_DIR" \
+                "$BEST_PROMPT_PATH" \
+                "$OPTIMIZATION_METADATA_PATH"; then
+                continue
               fi
 
               COMMON_ARGS=(
@@ -115,10 +115,8 @@ for model in "${MODELS[@]}"; do
               )
 
               # Metric-specific parameter
-              if [ "$metric" = "sep" ]; then
+              if [ "$metric" = "sep" ] || [ "$metric" = "sep_etd_f1" ]; then
                 COMMON_ARGS+=( --sep_beta "$SEP_BETA" )
-              elif [ "$metric" = "etd" ]; then
-                COMMON_ARGS+=( --etd_k "$ETD_K" )
               fi
 
               python3.10 run_prompt_optimizer.py "${COMMON_ARGS[@]}"

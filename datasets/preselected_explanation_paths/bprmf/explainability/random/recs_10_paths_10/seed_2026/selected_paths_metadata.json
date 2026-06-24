@@ -14,12 +14,12 @@
         "outputdir": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026",
         "outfilename": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths",
         "selected_paths_output_path": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths.csv",
-        "start_time": "28-05-2026 14:41:00"
+        "start_time": "29-05-2026 02:35:46"
     },
     "user_scope": "test",
     "split_dir": "../datasets/user_split_train_val_test",
     "n_users": 122,
     "selection_strategy": "random",
     "selected_paths_output_path": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths.csv",
-    "time_to_prepare_selected_paths": 4.486624002456665
+    "time_to_prepare_selected_paths": 4.4370129108428955
 }

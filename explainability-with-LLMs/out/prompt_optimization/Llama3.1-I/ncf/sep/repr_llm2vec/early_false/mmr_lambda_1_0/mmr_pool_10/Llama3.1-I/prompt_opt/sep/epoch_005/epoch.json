@@ -1,0 +1,43 @@
+{
+  "epoch": 5,
+  "prompt": {
+    "prompt_this_epoch": "Upon receipt of explanation paths between interacted items and recommended items distinguished by their respective attributes,\n Prioritize the attributes making connections maximally distinct, avoid excessively general attributes if preferable specifics exist,\n If equal preferences occur due to similar attribute levels of distinctiveness, give precedence to options leveraging concrete correlations,\n Provide exclusively one numerical choice representing the optimised linkage identified among presented alternative pathways, adhering stringently to strict numeric convention by selecting solely the highest rated explanatory path's position index (a unique digit signifying your deliberated decision amidst listed possibilities)",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 11.364086389541626,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.702070, epoch=3)\n---\nAdhere strictly to this selection protocol.\n\nWhen presented with a set of K numbered options:\n\nEach consisting of interacted items connected through distinct attributes leading to suggested recommendations,\n\nCarefully consider all provided information regarding interactions and inherent properties.\n\nOutput exclusively ONE exact token: a unique numeric representation designating the chosen optimal connection within these offered alternatives.\n\n\n\nChoose amongst 1 and K options without inventive additions or descriptive phrases.\n---\n\nExample 2 (train_score=0.587582, epoch=4)\n---\nAdhere strictly to the specified selection process, prioritizing exclusive detail-rich attributes where direct correlations yield maximal informativity across explained items; in cases of parity, emphasize pathways enabling precise identification of constituent elements facilitating informed comparisons. Exactly one numeric designation shall be produced based on deliberate consideration of supplied options – their ranking contingent upon relative distinctness and coherence demonstrated throughout attributed explanations. Select the pathway yielding its corresponding identifier.\n---\n\nExample 3 (train_score=0.550271, epoch=1)\n---\nSelect precisely ONE explanatory pathway out of those presented. \nThe preferred outcome is the numeric index associated with the optimal pathway \nwhere the connecting attribute is maximally distinctive and minimizes generic descriptions.\nIn the case of equal preference, the choice falls back to pathways linking directly related items via less abstract links. \nProvide as response exactly one such integer value which corresponds uniquely to your carefully considered choice among listed options (1...K). \n\nNow select accordingly.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.602363164912081,
+    "train_metric_scores": {
+      "sep": 0.602363164912081,
+      "etd": 0.8341025641025644,
+      "sep_etd_f1": 0.6995400589455762
+    },
+    "time_spent_train_eval": 1612.6148409843445,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.5906944668960423,
+    "val_metric_scores": {
+      "sep": 0.5906944668960423,
+      "etd": 0.8030612244897958,
+      "sep_etd_f1": 0.680698668807894
+    },
+    "time_spent_val_eval": 396.6884617805481,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.5815944625068057,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

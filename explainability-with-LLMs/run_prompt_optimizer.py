@@ -39,16 +39,19 @@ if __name__ == "__main__":
 
     # Initialize and load the LLM used for explanation-path selection.
     llm = LLM(llm_method=args.llm_method, seed=args.seed)
-    llm.set_model()
+    llm.set_model(metric=args.metric)
 
     # Record the initial system prompt before optimization starts.
     info["baseline_prompt"] = llm.system_prompt
     info["selected_paths_input_path"] = args.selected_paths_input_path
+    info["metric"] = args.metric
+    info["metric_name"] = metric_name
+    info["metric_params"] = args.metric_params
 
     # Configure the optimizer controller with the requested runtime settings.
     prompt_optimizer = PromptOptimizer(
         epochs=args.epochs,
-        # total_instructions_per_iteration=args.total_instructions_per_iteration,
+        total_instructions_per_iteration=args.total_instructions_per_iteration,
         meta_prompt_instruction_quantity=args.meta_prompt_instruction_quantity,
         eval_every=args.eval_every,
         patience=args.patience,
@@ -58,6 +61,7 @@ if __name__ == "__main__":
         mmr_lambda_quality=args.mmr_lambda_quality,
         mmr_pool_multiplier=args.mmr_pool_multiplier,
         representation_model=args.representation_model,
+        objective_metric=args.metric,
     )
 
     print(f"Optimization_process! metric={metric_name}")

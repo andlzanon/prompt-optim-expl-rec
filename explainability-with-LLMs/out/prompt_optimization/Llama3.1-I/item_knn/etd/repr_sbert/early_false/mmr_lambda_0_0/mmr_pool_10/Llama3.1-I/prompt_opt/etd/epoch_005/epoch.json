@@ -1,0 +1,43 @@
+{
+  "epoch": 5,
+  "prompt": {
+    "prompt_this_epoch": "SELECT ONE PRIME PATH, WHICH MEETS AT LEAST THREE OF THE FOLLOWING PREFERENCIAL ORDER WITH CONSTRAINT ADHEREING TO PROVIDED LIST OF NUMEROUS OPTION UP TO YOUR VIEW: PROVIDE ENHANCED DIVERSITY TO USERS' SEEN ANSWERS, REFRAIN FROM UNNECESSARY REPETITION, EMBRACE CLEAR CATEGORIES OVER VAGUE ONES, AND PRACTICAL COMMUNITY STANDARDS BE GUIDELINES WITHOUT FAIL OR ELSE INDICT ERROR STATEMENT.OUTPUT INTEGER ID OF SELECTED PATH ACCORDING TO NEW DISCOVERY AFTER ALL CONSTRAINTS ARE FULLY RESPECTED NOW AS WE WAIT NEXT STEP. \n\nCHOOSE ANY VALID PATH AS DEFINED HERE.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 18.568621158599854,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.853077, epoch=4)\n---\nWITHIN THE SCOPE OF THE ENUMERATED EXPLANATION ROUTES, DESIGNATE A SINGLE PREEMINENT CHOICE FOR THE INTERPRETATION OF RECOMMENDATION MESSAGES. YOUR RESPONSE SHALL CONSIST OF AN INTEGER CORRESPONDING TO THE SELECTED OPTION BASED ON ATTENUATING PREFERENCES AS FOLLOWS:\n\nPRIORIZATION RULE:\nFavor MAXIMIZING UNIQUE ATTRIBUTES WITH HIGHEST RARITY ACROSS USER'S PREVIOUSLY SEEN ANSWERS, THENCE EMPHASIZE PROPERTIES THAT DISTINGUISH OUR OUTPUT FROM ALL PRIOR REFERENCES TAKEN TOGETHER AS CONJOINMENT OF THESE CRITERIA YIELDS PREFERRED ACTION DETERMINE THE DESIRABLE SOLUTION THEN ANNOUNCE ITS SERIAL NUMBER DIRECTLY FOLLOWING.\n---\n\nExample 2 (train_score=0.820000, epoch=3)\n---\nSELECT ONE DIVERSIFIED PATH WITH UNIQUE CONNECTING ATTRIBUTE AMONG GIVEN EXPERTSCHOICED OPTIONS BY SUPPRESSING GENERIC ALTERNATES AND PROMOTING EARLIER UNUSED ITEMS WHEN COMPARABLY PLIABLE. RETURN JUST THE NUMBER OF SELECTED ITEM DIRECTLY AS FOLLOWS 1 TO K, WHERE K IS TOTAL COUNT IN SEEN MESSAGE ORIENTATION WITH COMPLETE ABSENCE OF ELABORATIONS OUTSIDE THIS CONSTRAINT SET.\n---\n\nExample 3 (train_score=0.765897, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that increase diversity across this user's explanations.\n2) When context about previously used attributes is provided, avoid repeating those attributes if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7951282051282056,
+    "train_metric_scores": {
+      "sep": 0.6291795302649489,
+      "etd": 0.7951282051282056,
+      "sep_etd_f1": 0.7024863773064933
+    },
+    "time_spent_train_eval": 1565.6008174419403,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9997435897435898
+  },
+  "val_eval": {
+    "val_metric": 0.7887755102040818,
+    "val_metric_scores": {
+      "sep": 0.6292087848800066,
+      "etd": 0.7887755102040818,
+      "sep_etd_f1": 0.7000140721434239
+    },
+    "time_spent_val_eval": 386.98518681526184,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.8469387755102037,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

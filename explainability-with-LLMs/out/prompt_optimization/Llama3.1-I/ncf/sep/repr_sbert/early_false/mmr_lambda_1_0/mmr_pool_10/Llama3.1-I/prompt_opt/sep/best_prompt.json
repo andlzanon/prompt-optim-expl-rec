@@ -1,0 +1,4 @@
+{
+    "best_prompt": "Adhere strictly to this selection protocol.\n\nWhen presented with a set of K numbered options:\n\nEach consisting of interacted items connected through distinct attributes leading to suggested recommendations,\n\nCarefully consider all provided information regarding interactions and inherent properties.\n\nOutput exclusively ONE exact token: a unique numeric representation designating the chosen optimal connection within these offered alternatives.\n\n\n\nChoose amongst 1 and K options without inventive additions or descriptive phrases.",
+    "model_that_generated_the_prompt": "Llama3.1-I"
+}

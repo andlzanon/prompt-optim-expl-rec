@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from src.metrics.graph_utils import (
-    score_sep_from_explanations,
-    score_etd_from_explanations,
+    score_graph_metrics_from_explanations,
 )
 
 from datetime import datetime, timezone
@@ -1472,14 +1471,14 @@ def build_metric_fn(
     metric: str,
     metric_params: dict,
     props_df: pd.DataFrame,
-) -> Tuple[str, Callable[[Any], float]]:
+) -> Tuple[str, Callable[[Any], Dict[str, Any]]]:
     """
-    Build the metric callable used to score explanations during optimization.
+    Build the metric/objective callable used to score explanations.
 
     Parameters
     ----------
     metric : str
-        Name of the metric ("sep" or "etd").
+        Name of the metric/objective ("sep", "etd", or "sep_etd_f1").
     metric_params : dict
         Parameters associated with the metric.
     props_df : pd.DataFrame
@@ -1490,56 +1489,53 @@ def build_metric_fn(
     Tuple[str, Callable]
         Tuple ``(metric_name, metric_fn)`` where ``metric_name`` is the
         display name of the selected metric and ``metric_fn`` is a callable
-        that receives user explanations and returns a numeric score.
+        that receives user explanations and returns both the optimization
+        objective value and the component scores.
 
     Raises
     ------
     ValueError
         Raised when ``metric`` is not supported.
     KeyError
-        May be raised when the expected metric-specific parameter is missing
+        May be raised when an expected metric-specific parameter is missing
         from ``metric_params``.
 
     Notes
     -----
-    The returned callable closes over metric-specific resources, such as the
-    SEP memoization dictionary or the total number of object types for ETD.
-    This helper is used to convert configuration into a scoring function that
-    can be called repeatedly during prompt search.
+    The returned callable closes over shared resources such as the SEP
+    memoization dictionary and the total number of object types for ETD. This
+    helper is used to convert configuration into a scoring function that can be
+    called repeatedly during prompt search while still exposing SEP and ETD in
+    the saved metadata.
     """
 
     metric = metric.lower()
-
-    if metric == "sep":
-        metric_name = "SEP"
-        memo_sep = {}
-        beta = float(metric_params["beta"])
-
-        def metric_fn(user_explanations):
-            return float(
-                score_sep_from_explanations(
-                    user_explanations=user_explanations,
-                    props_df=props_df,
-                    memo_sep=memo_sep,
-                    beta=beta,
-                )
-            )
-
-    elif metric == "etd":
-        metric_name = "ETD"
-        total_types = int(props_df["obj"].dropna().nunique())
-        k = int(metric_params["k"])
-
-        def metric_fn(user_explanations):
-            return float(
-                score_etd_from_explanations(
-                    user_explanations=user_explanations,
-                    total_types=total_types,
-                    k=k,
-                )
-            )
-
-    else:
+    metric_names = {
+        "sep": "SEP",
+        "etd": "ETD",
+        "sep_etd_f1": "SEP_ETD_F1",
+    }
+    if metric not in metric_names:
         raise ValueError(f"Unsupported metric: {metric}")
+
+    metric_name = metric_names[metric]
+    memo_sep = {}
+    total_types = int(props_df["obj"].dropna().nunique())
+    beta = float(metric_params.get("beta", 0.3))
+
+    def metric_fn(user_explanations):
+        scores = score_graph_metrics_from_explanations(
+            user_explanations=user_explanations,
+            props_df=props_df,
+            memo_sep=memo_sep,
+            total_types=total_types,
+            beta=beta,
+        )
+        return {
+            "objective_key": metric,
+            "objective_name": metric_name,
+            "objective_value": float(scores[metric]),
+            "scores": scores,
+        }
 
     return metric_name, metric_fn

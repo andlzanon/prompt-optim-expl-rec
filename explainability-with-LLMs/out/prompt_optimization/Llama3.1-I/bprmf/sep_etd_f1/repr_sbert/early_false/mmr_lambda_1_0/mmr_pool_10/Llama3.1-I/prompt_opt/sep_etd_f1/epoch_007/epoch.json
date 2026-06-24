@@ -1,0 +1,43 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "prompt_this_epoch": "SELECT A VALUE SUCH THAT ITS ASSOCIATED OPTION HAS THE HIGHEST COMPREHENSIVE QUALITY INDEX WITH BIFURCATED CUTOFF POINTS ALLOCATING SPECIFIC EXPLANATION WEIGHTAGE TO MAJOR CLUTCHES ALIGNED WITH PREFERRED INTERACTIONS DIVERGENCY SCORE FROM FORMER RATINGS WITHOUT REPEATING OVERUSED COMPONENT FEATURES WHEN A SUITABLY INFORMATIE AND JUSTIFIABLE SUBSTITUTION EXISTS ALSO CHECKING FOR INSUFFICIENT AMOUNTS OF DISTINCT CORRELATIONS WHILE MAINTAINING A THRESHOLD BELOW SIMILARITY THRESHOLD AND SUPREME DETERMINISM FOLLOWED IMMEDIATELY BY CHOOSING THAT OPTION WHICH SATISFIES ALL THESE RULE BASED ON ALL CONSTRAINT VIOLATIONS OBSERVED IN PREVIOYUS MODELS DETERMIND BY ESTIMATION.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 22.560147523880005,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.720197, epoch=3)\n---\nRETURN AN INTEGER BETWEEN 1 AND K WHICH INDICATES THE OPTION THAT YIELDS THE HIGHEST AGGREGATE EXPLANATION SCORE ALIGNED WITH MAXIMUM SPECIFICITY DIFFERENCE AND BALANCED INFORMATION COVERAGE UNDER CURRENT CONSTRAINTS SEEN IN PREVIOUS RATING TENDENCIES OF YOUR CHOICES AND PATTERNS BUT AVOID SIMILARITY REPETITION AS MUCH AS POSSIBLE BY CHANGING AND SHIFTING YOUR DECISION TAKING STRATEGY WITH EACH NEW INPUT WHILE ENSURING EVERY CHOSEN ELEMENT CONTRIBUTE POSITIVELY AND SUFFICIENTLY TO TOTAL MODEL OUTPUT STABILITY RELIABILITY ACCURACY.\n---\n\nExample 2 (train_score=0.716094, epoch=5)\n---\nSELECT THE OPTION WHOSE ATTRIBUTE COMBINATION SCORE MAXIMIZES BOTH SPECIFIC EXPLANATION CONTENT DENSITY AND CLARITY WITH MINIMIZED ATTRIBUTE OVERLAP RESIDUE FOR THIS USER GIVEN PREVIOUS KNOWLEDGE AND CURRENT BEHAVIORAL CONSTRAINT TRENDS THEN INPUT THE RESULTING OPTIMAL INDEX WITHOUT ENSEMBLE DELIMITER.\n---\n\nExample 3 (train_score=0.706704, epoch=1)\n---\nSelect THE SINGLE OPTIMAL ATTRIBUTE PATH. \nFrom the provided OPTIONS (1 through K): SELECT AN INTEGER specifying your CHOICE.\nThis response CONFORMS TO STRICT GUIDELINES. RELEVANT RULES apply as follows: \n1) Maximize PREFERENCES towards explanation SPECIFICITY AND DIVERSITY \n    FOR THIS USER'S EXPERTISE ACROSS THEIR KEY INTERACTIONS AND FAVORITE ATTRIBUTES \n    TO CHOOSE YOUR FINAL ANSWER EACH TIME YOU USE ME.\n    \nOUTPUT MUST CONTAIN ONLY ONE EXISTING OPTION NUMBER WITHOUT ANY TEXT ENCLOSED WITH IT, SEPARATED BY SPACES BETWEEN TOKEN VALUES WHEN APPLICABLE.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; balance all of the following):\n1) Prefer attributes that jointly maximize explanation specificity and diversity across the user's explanations.\n2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n3) Avoid overly generic attributes, but do not favor novelty when it substantially weakens the explanation.\n4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7247902123532539,
+    "train_metric_scores": {
+      "sep": 0.6747696936905772,
+      "etd": 0.7828205128205132,
+      "sep_etd_f1": 0.7247902123532539
+    },
+    "time_spent_train_eval": 1680.618712902069,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.7154395820439201,
+    "val_metric_scores": {
+      "sep": 0.6647559197870366,
+      "etd": 0.774489795918367,
+      "sep_etd_f1": 0.7154395820439201
+    },
+    "time_spent_val_eval": 416.6635673046112,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.7143293466209159,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

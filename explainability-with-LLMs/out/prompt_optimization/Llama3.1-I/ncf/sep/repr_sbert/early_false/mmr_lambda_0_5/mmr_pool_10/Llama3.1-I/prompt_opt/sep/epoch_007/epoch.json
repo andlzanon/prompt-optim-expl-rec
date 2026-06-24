@@ -1,0 +1,43 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "prompt_this_epoch": "Choose Exactly One Numerical Path:\n\nFor this explanation-path selection task, \nprefer attributes making the explanation informative, specific, and distinctive, followed by non-generic attributes connecting items, and then clear direct relationships whenever feasible, always prioritizing discernibility within recommendations without hesitation. \n\nThen, provide precisely this singular identification specifying EXACTLY ONE of these pre-determined PATH OPTION choices with numerical sequence indication as an exact number representation alone.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 9.30983281135559,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.705497, epoch=6)\n---\nSELECT SINGLE OPTION: \n\nPreference should be granted TO the PATH whose Attribute exhibits utmost specificity AND discrimination BETWEEN Items, thereby yielding the clearest justification FOR Recommendations. \n\n\nIN CASE OF A TIE, preference should also be extended TO Path Options which provide significantly NON-Generic connections, thus ensuring Clarity in Explanation Paths OVER Generic ones.\n\nCHOOSING AMONG THE PROVIDED NUMERICAL OPTIONS (1...K), OUTPUT EXCLUSIVELY THIS SINGLE INTEGER DESIGNATING THE SELECTED PATH'S POSITION WITHOUT ANY ADDITIONAL TEXT OR INFORMATION WHATSOEVER.\n---\n\nExample 2 (train_score=0.654031, epoch=2)\n---\nChosen Option: Provide solely the numerical ID representing your deliberate selection, considering that paths should ideally comprise highly exclusive, specific details serving as decisive connections between interacting items - favoring clarity over generality if discernible variations arise.\n---\n\nExample 3 (train_score=0.629216, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (priority order):\n1) Prefer attributes that give the most informative, specific, and discriminative explanation.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that make the explanation more informative, specific, and discriminative.\n2) Avoid overly generic attributes when more descriptive ones are available.\n3) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.673023912086107,
+    "train_metric_scores": {
+      "sep": 0.673023912086107,
+      "etd": 0.732621082621083,
+      "sep_etd_f1": 0.7015590834940683
+    },
+    "time_spent_train_eval": 882.1806404590607,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9992307692307693
+  },
+  "val_eval": {
+    "val_metric": 0.6685628899483905,
+    "val_metric_scores": {
+      "sep": 0.6685628899483905,
+      "etd": 0.726530612244898,
+      "sep_etd_f1": 0.6963424386892816
+    },
+    "time_spent_val_eval": 218.39246773719788,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6861978038060617,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}
