@@ -1,49 +1,99 @@
-import time
-import pandas as pd
-import os
-
 from src.utils.args import args_llm
 from src.llm.llm_for_explainability import LLM
-from src.utils.geral import prepare_explainability_inputs, save_file
+from src.utils.geral import (
+    build_metric_fn,
+    explanations_df_to_blocks,
+    load_best_prompt,
+    load_required_selected_paths_csv,
+    prepare_explainability_inputs,
+    save_explanations_csv,
+    save_metadata_json,
+)
 
-if __name__ == '__main__':
+import time
+import pandas as pd
+
+if __name__ == "__main__":
+    """
+    Entry-point script for the LLM-based explainability generation workflow.
+
+    This script parses runtime arguments, prepares the interaction data used to
+    construct prompts, loads the configured LLM wrapper, generates one explanation
+    path selection per recommendation, and persists both the explanations and the
+    run metadata to disk.
+    """
 
     args, info = args_llm()
+
+    # Load the interaction data and the users that will be processed.
+    interactions_df, users = prepare_explainability_inputs(args)
+    selected_paths_input_df = load_required_selected_paths_csv(
+        args.selected_paths_input_path
+    )
     
-    # Load data
-    data = prepare_explainability_inputs(args)
-    user_movies_dict_train = data["user_movies_dict_train"]
-    user_movies_dict_train = dict(list(user_movies_dict_train.items())[:10])
-    df_recommendations = data["df_recommendations"]
-    users = list(user_movies_dict_train.keys())
+    props_df = pd.read_csv(args.kg_path)
+    metric_name, metric_fn = build_metric_fn(
+        metric=args.metric,
+        metric_params=args.metric_params,
+        props_df=props_df,
+    )
 
-    # Create model
-    llm = LLM(llm_method = args.llm_method, seed=args.seed)
+    # Initialize and load the LLM wrapper before generating explanations.
+    llm = LLM(llm_method=args.llm_method, seed=args.seed)
     llm.set_model()
-        
-    # Generate explainability
-    print("Explainability!")
+
+    if args.prompt_source == "best_prompt":
+        best_prompt_payload = load_best_prompt(args.best_prompt_path)
+        llm.system_prompt = best_prompt_payload["best_prompt"]
+        llm.prompt = [{"role": "system", "content": llm.system_prompt}]
+
+        info["prompt_source"] = "best_prompt"
+        info["best_prompt_path"] = args.best_prompt_path
+        info["best_prompt_model"] = best_prompt_payload.get(
+            "model_that_generated_the_prompt"
+        )
+    else:
+        info["prompt_source"] = "default"
+        info["best_prompt_path"] = None
+
+    # Measure the end-to-end time spent generating explanation selections.
     start_time = time.time()
-    user_explanations = llm.generate_explanations(users, df_recommendations, user_movies_dict_train)
+
+    user_explanations = llm.generate_explanations(
+        users=users,
+        interactions_df=interactions_df,
+        explanation_paths_prefix=args.explanation_paths_prefix,
+        selection_strategy=args.selection_strategy,
+        num_recommendations=args.num_recommendations,
+        num_paths_per_recommendation=args.num_paths_per_recommendation,
+        selected_paths_df=selected_paths_input_df,
+        include_user_history=args.include_user_history 
+    )
+
     end_time = time.time()
+    explanation_blocks = explanations_df_to_blocks(user_explanations)
+    metric_value = float(metric_fn(explanation_blocks))
 
-    # Save data
-    info["time_to_explain"] = end_time - start_time
-    info["time_to_explain_avg"] = (end_time - start_time) / len(user_movies_dict_train)
-    # info["system_prompt"] = llm.system_prompt
-    # info["user_prompt"] = llm.user
+    # Record summary metadata about the run for later inspection.
+    info["time_to_explain"] = float(end_time - start_time)
+    info["system_prompt"] = llm.system_prompt
+    info["n_users"] = len(users)
+    info["users_path"] = args.test_users_path
+    info["metric"] = args.metric
+    info["metric_name"] = metric_name
+    info["metric_value"] = metric_value
+    info["metric_params"] = args.metric_params
+    info["kg_path"] = args.kg_path
+    info["selection_strategy"] = args.selection_strategy
+    info["selected_paths_input_path"] = args.selected_paths_input_path
 
-    save_file(args.outfilename + '_time', info)
+    # Persist metadata and generated explanations as separate artifacts.
+    output_json = args.outfilename + "_metadata.json"
+    save_metadata_json(output_json, info)
 
-    output_csv = args.outfilename + '.csv'
-    if not os.path.exists(output_csv):
-        pd.DataFrame(columns=["userId", "explanation"]).to_csv(output_csv, index=False)
+    output_csv = args.outfilename + ".csv"
+    save_explanations_csv(output_csv, user_explanations)
 
-    for user_id, explanation in user_explanations.items():
-        df_temp = pd.DataFrame([{
-            "userId": user_id,
-            "explanation": explanation
-        }])
-        df_temp.to_csv(output_csv, mode="a", header=False, index=False)
-
-    print(f"Explanations saved to {output_csv} and metadata saved to JSON.")
+    print(f"\nExplanations saved to {output_csv}")
+    print(f"{metric_name}={metric_value:.6f}")
+    print(f"Metadata saved to {output_json}")

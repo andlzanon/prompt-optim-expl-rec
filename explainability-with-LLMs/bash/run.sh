@@ -1,20 +1,41 @@
 #!/bin/bash
 
-LLM_DIR="/home/$USER/OTIMIAZAO_RECOMENDACAO/pos_WebMedia/explainability_with_LLMs"
-cd "$LLM_DIR"
+set -euo pipefail
 
-DATA_DIR="resources/data"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_DIR"
 
-for model in Llama3.1-I; do
+PREPARE_SCRIPT="$SCRIPT_DIR/run_prepare_selected_paths.sh"
+OPTIMIZATION_SCRIPT="$SCRIPT_DIR/run_llm_for_optimization.sh"
+EXPLAINABILITY_SCRIPT="$SCRIPT_DIR/run_llm_for_explainability.sh"
 
-    RECOMMENDATIONS_DIR="resources/out/recommendations/${model}/responses.csv"
+echo "========================================"
+echo "Full pipeline"
+echo "Repository: $REPO_DIR"
+echo "========================================"
 
-    OUT_DIR="resources/out/explainability/${model}"
+echo "========================================"
+echo "Step 1/3: Preparing selected paths"
+echo "Script: $PREPARE_SCRIPT"
+echo "========================================"
+bash "$PREPARE_SCRIPT"
 
-    python3.10 run_llm_explainability.py \
-        --datain "$DATA_DIR" \
-        --inputdir_recommendation "$RECOMMENDATIONS_DIR" \
-        --llm_method "$model" \
-        --out "$OUT_DIR"
+echo "========================================"
+echo "Step 2/3: Running prompt optimization"
+echo "Script: $OPTIMIZATION_SCRIPT"
+echo "========================================"
+bash "$OPTIMIZATION_SCRIPT"
 
-done
+echo "========================================"
+echo "Step 3/3: Running explainability evaluation"
+echo "Script: $EXPLAINABILITY_SCRIPT"
+echo "========================================"
+bash "$EXPLAINABILITY_SCRIPT"
+
+echo "========================================"
+echo "Pipeline finished successfully."
+echo "Selected paths root: $REPO_DIR/../datasets/preselected_explanation_paths"
+echo "Optimization output root: $REPO_DIR/out/prompt_optimization"
+echo "Explainability output root: $REPO_DIR/out/test_explainability"
+echo "========================================"
