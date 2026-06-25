@@ -1,46 +1,277 @@
-# Prompt Optimization for Better Explanations in Recommender Systems
+# Prompt Optimization for Explanations in Recommender Systems
 
-This project studies how prompt optimization techniques can improve explanations for recommender systems.
+## Overview
 
-## Reproduction
+This repository contains the code and generated artifacts for an anonymous
+research project on explainability in recommender systems. The central question
+is whether prompt optimization can help Large Language Models select better
+explanation paths for recommendations when explanations must balance two
+competing properties:
 
-Run all commands from the repository root.
+- attribute diversity
+- attribute popularity
 
-### 1. Environment
+The experiments are grounded in the movie domain. The repository combines:
 
-Create and activate a Python environment. For example, with `conda`:
+- recommendation generation
+- knowledge-graph-based explanation path extraction
+- a non-LLM explanation baseline based on LOD properties
+- an LLM-based explanation pipeline with prompt optimization
+- analysis scripts, notebooks, and statistical summaries used to inspect the
+  results
 
-```bash
-conda create -n prompt-optim-expl-rec python=3.10
-conda activate prompt-optim-expl-rec
-```
+## Research motivation
 
-Install the project dependencies:
+Modern recommender systems often behave as black boxes. Users receive item
+suggestions but do not know why those recommendations were produced. This
+project studies explanations that connect a recommended item to items from the
+user's history through shared semantic attributes such as actors, directors,
+genres, and related knowledge-graph properties.
 
-```bash
-python -m pip install -r requirements.txt
-```
+The main experimental setting explored here is:
 
-If `CaseRecommender` is not installed correctly from `requirements.txt`, install it from GitHub:
+1. generate recommendations for a user
+2. build candidate explanation paths linking historical items to recommended
+   items
+3. ask a language model to select one path among the candidates
+4. optimize the system prompt used by the model so that the selected paths
+   better balance diversity and popularity
 
-```bash
-python -m pip install -U git+https://github.com/caserec/CaseRecommender.git
-```
+The repository also includes a non-LLM baseline so the LLM-based approach can
+be compared against a comparable graph/LOD explanation method.
 
-### 2. Generate Recommendations
+## End-to-end pipeline
 
-This step generates recommendation lists, metrics, and parameter files for:
+At a high level, the repository is organized around four stages.
+
+### 1. Recommendation generation
+
+The `recommender/` module generates recommendation lists and recommendation
+metrics for:
 
 - `user_knn`
 - `item_knn`
 - `ncf`
 - `bprmf`
 
-It runs each algorithm for:
+The current batch runner evaluates each algorithm for:
+
+- `K = 1, 5, 10, 20, 50, 100, 200`
+
+Both default and optimized recommender configurations are produced and saved
+under `datasets/recommendation_files/`.
+
+### 2. Knowledge-graph explanation path extraction
+
+The `knowledge-graphs/` module creates candidate explanation paths that connect
+historical items to recommended items through shared attributes from the movie
+knowledge graph.
+
+The current script uses the optimized recommendation lists with `K=20` and
+writes per-user path files under `datasets/explanation_paths/`.
+
+### 3. Explanation generation
+
+The repository contains two explanation pipelines:
+
+- `explainability-LOD/`: a non-LLM baseline that generates ExpLOD-style
+  explanations and computes explanation metrics
+- `explainability-with-LLMs/`: an LLM-based pipeline that can run with the
+  default prompt or with optimized prompts discovered during prompt search
+
+Both pipelines evaluate explanations with graph-based metrics related to
+attribute popularity and diversity.
+
+### 4. Result analysis
+
+The `explainability-with-LLMs/analyse_results/` area contains notebooks,
+statistical summaries, and derived tables that support result inspection and
+article-oriented reporting.
+
+## Repository organization
 
 ```text
-K = 1, 5, 10, 20, 50, 100, 200
+prompt-optim-expl-rec/
+├── datasets/
+├── recommender/
+├── knowledge-graphs/
+├── explainability-LOD/
+├── explainability-with-LLMs/
+├── requirements.txt
+└── README.md
 ```
+
+### `datasets/`
+
+Central storage for both input data and generated outputs. The most relevant
+subdirectories are:
+
+- `ml-latest-small/`: MovieLens source files
+- `knowledge-graphs/`: movie-property knowledge graph extracted from Wikidata
+- `recommender_train_test_oficial/`: train/test split used by the recommender
+  experiments
+- `recommender_train_validation/`: train/validation split used by optimization
+  procedures
+- `recommendation_files/`: recommendation lists, metrics, and saved parameter
+  files for each recommender
+- `explanation_paths/`: candidate KG explanation paths
+- `lod_results/`: outputs from the non-LLM LOD explanation baseline
+- `preselected_explanation_paths/`: cached candidate paths prepared for the LLM
+  pipeline
+- `user_split_train_val_test/`: train/validation/test user partitions used by
+  the explainability-with-LLMs workflow
+
+There is a dataset-focused note in [README_datasets.md](datasets/README_datasets.md).
+
+### `recommender/`
+
+Implements the recommendation stage.
+
+Key files:
+
+- `main_recommendation.py`: top-level batch entry point
+- `engine.py`: dispatches the experiments for all algorithms and all `K` values
+- `algorithms.py`: wrappers around the underlying recommender methods
+- `metrics.py`: recommendation quality metrics
+
+This module writes:
+
+- recommendation lists to `datasets/recommendation_files/recommendation_lists/`
+- recommendation metrics and saved parameters to
+  `datasets/recommendation_files/recommendation_metrics/`
+
+### `knowledge-graphs/`
+
+Generates candidate explanation paths from the knowledge graph.
+
+Key file:
+
+- `find_explanation_paths.py`
+
+This script reads:
+
+- optimized recommendation lists with `K=20`
+- the train interactions
+- the movie metadata
+- the knowledge-graph property file
+
+and writes per-user explanation path files under `datasets/explanation_paths/`.
+
+### `explainability-LOD/`
+
+Implements a non-LLM explanation baseline based on LOD properties.
+
+Key files:
+
+- `run_LOD.py`: main entry point
+- `lod_reordering.py`: semantic-profile construction and explanation logic
+- `path_reordering.py`: path handling utilities
+- `evaluation_utils.py`: metric computation
+
+This module consumes recommendation outputs and writes:
+
+- explanation text files to `datasets/lod_results/output/`
+- per-user metrics to `datasets/lod_results/individual_metrics/`
+- aggregate metrics to `datasets/lod_results/average_metrics/`
+
+There is a module-specific README in [explainability-LOD/README.md](explainability-LOD/README.md).
+
+### `explainability-with-LLMs/`
+
+Implements the LLM-based explanation workflow and the prompt-optimization
+experiments.
+
+Main areas:
+
+- `run_prepare_selected_paths.py`: prepares reusable candidate-path files
+- `run_prompt_optimizer.py`: runs prompt optimization
+- `run_llm_explainability.py`: generates explanations with the default or the
+  optimized prompt
+- `bash/`: batch runners for the end-to-end LLM workflow
+- `src/`: LLM wrappers, metrics, representations, and utilities
+- `out/`: runtime outputs from prompt optimization and explainability runs
+- `analyse_results/`: notebooks, statistical summaries, and generated tables
+
+There is a detailed module README in
+[explainability-with-LLMs/README.md](explainability-with-LLMs/README.md).
+
+## Main outputs
+
+The repository stores both intermediate artifacts and final results. The most
+important output families are:
+
+### Recommendation outputs
+
+- `datasets/recommendation_files/recommendation_lists/<algorithm>/...`
+- `datasets/recommendation_files/recommendation_metrics/<algorithm>/...`
+
+These include:
+
+- default recommendation runs
+- optimized recommendation runs
+- multiple values of `K`
+
+### Knowledge-graph explanation paths
+
+- `datasets/explanation_paths/<algorithm>-opt/...`
+
+These files contain the candidate item-attribute-item paths later used by the
+explanation pipelines.
+
+### LOD explanation baseline results
+
+- `datasets/lod_results/output/`
+- `datasets/lod_results/individual_metrics/`
+- `datasets/lod_results/average_metrics/`
+
+These correspond to the non-LLM baseline used for comparison.
+
+### LLM prompt-optimization outputs
+
+- `explainability-with-LLMs/out/prompt_optimization/`
+
+These runs include:
+
+- `best_prompt.json`
+- `optimization_process_metadata.json`
+- per-epoch explanation and metadata artifacts
+
+### LLM explainability outputs
+
+- `explainability-with-LLMs/out/test_explainability/without_optimization/`
+- `explainability-with-LLMs/out/test_explainability/with_optimization/`
+
+These runs contain:
+
+- `responses.csv`
+- `responses_metadata.json`
+
+### Analysis outputs
+
+- `explainability-with-LLMs/analyse_results/analysis_global/`
+- `explainability-with-LLMs/analyse_results/statistical_analysis/`
+- `explainability-with-LLMs/analyse_results/generated_tables/`
+
+These are the processed artifacts used to inspect optimization behavior,
+compare methods, and prepare compact result tables.
+
+## How to run the project
+
+Run commands from the repository root unless stated otherwise.
+
+### 1. Install the main Python dependencies
+
+Create an environment with Python 3.10 and install:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+The root `requirements.txt` is intended for the main repository workflow,
+including recommendation generation, path extraction, baseline explainability,
+and analysis utilities.
+
+### 2. Generate recommendations
 
 Run:
 
@@ -48,16 +279,10 @@ Run:
 python recommender/main_recommendation.py
 ```
 
-The outputs are saved under:
+This generates default and optimized recommendation outputs for all four
+algorithms and all configured `K` values.
 
-```text
-datasets/recommendation_files/recommendation_lists/
-datasets/recommendation_files/recommendation_metrics/
-```
-
-### 3. Generate Knowledge-Graph Explanation Paths
-
-This step builds item-property explanation paths using the optimized recommendation files with `K=20`.
+### 3. Generate candidate KG explanation paths
 
 Run:
 
@@ -65,15 +290,9 @@ Run:
 python knowledge-graphs/find_explanation_paths.py
 ```
 
-The outputs are saved under:
+This currently uses the optimized recommendation files with `K=20`.
 
-```text
-datasets/explanation_paths/
-```
-
-### 4. Generate LOD Explanations and Metrics
-
-This step generates ExpLOD-style explanations and computes explanation metrics using the optimized recommendation files with `K=20`.
+### 4. Run the non-LLM LOD explanation baseline
 
 Run:
 
@@ -81,90 +300,71 @@ Run:
 python explainability-LOD/run_LOD.py
 ```
 
-The outputs are saved under:
+This generates LOD explanations and explanation metrics from the recommendation
+outputs.
 
-```text
-datasets/lod_results/output/
-datasets/lod_results/individual_metrics/
-datasets/lod_results/average_metrics/
-```
+### 5. Run the LLM-based pipeline
 
-## Project Organization
+The LLM workflow has its own environment helper and more specific requirements.
+See [explainability-with-LLMs/README.md](explainability-with-LLMs/README.md)
+for the full setup and execution details.
 
-```text
-datasets/                  Input data and generated experiment outputs
-recommender/               Recommendation algorithms and evaluation
-knowledge-graphs/          KG-based explanation path extraction
-explainability-LOD/        LOD explanation generation and metrics
-explainability-with-LLMs/  LLM-based explanation experiments
-```
-
-## Notes
-
-- The recommendation step can be expensive because it runs default and optimized versions of all four algorithms.
-- The KG and LOD explanation steps currently consume the optimized recommendation files with `K=20`.
-- Scripts are configured to be executed from the repository root.
-
-## Project's Development Process
-
-We will develop our code on the dev branch, that represents a paper we are developing. Once we finish the code to this paper, we will merge dev with main.
-
-Therefore, to develop a feature use the following steps:
-
-1. Create a branch from develop
-
-Switch to the develop branch and pull the latest changes:
+In short, the main batch entry points are:
 
 ```bash
-git checkout develop
-git pull origin develop
+bash explainability-with-LLMs/bash/run_prepare_selected_paths.sh
+bash explainability-with-LLMs/bash/run_llm_for_optimization.sh
+bash explainability-with-LLMs/bash/run_llm_for_explainability.sh
 ```
 
-Create a new branch from dev for your changes:
+or, to run the full LLM workflow:
 
 ```bash
-git checkout -b <id>_my-new-feature
+bash explainability-with-LLMs/bash/run.sh
 ```
 
-where `<id>` is the id of the GitHub Issue.
+## Metrics used in the explanation experiments
 
-Use a descriptive branch name.
+The project focuses on explanation quality in terms of attribute popularity and
+attribute diversity.
 
-2. Make your changes
+The repository uses:
 
-Edit, add, or remove files as needed. Stage and commit your changes:
+- `SEP`: a measure related to shared-entity popularity
+- `ETD`: explanation type diversity
+- `SEP_ETD_F1`: a combined objective used to balance the two
 
-```bash
-git add .
-git commit -m "Add: short description of your change"
-```
+These metrics are used:
 
-3. Push your branch to your fork
+- in the non-LLM LOD baseline
+- in the LLM explainability evaluation
+- as optimization objectives during prompt search
 
-```bash
-git push origin my-new-feature
-```
+## Prompt optimization in the repository
 
-4. Open a Pull Request
+The LLM pipeline treats explanation generation as a path-selection problem.
+For each recommendation, the model receives candidate explanation paths and
+must select one of them.
 
-- Go to the repo on GitHub.
-- Click Compare & pull request next to your branch.
-- Set the base repository to the original repo's dev branch.
-- Add a clear title and description for your changes.
-- Click Create pull request.
+The repository supports two prompt modes:
 
-5. Review and merge
+- a built-in default system prompt
+- an optimized prompt loaded from `best_prompt.json`
 
-The maintainers will review your PR. Once approved, it will be merged into dev.
+Prompt optimization is performed inside `explainability-with-LLMs/` and writes
+its outputs under `explainability-with-LLMs/out/prompt_optimization/`.
 
-Tips:
+The analysis area under `explainability-with-LLMs/analyse_results/` contains:
 
-- Keep your branch up-to-date with dev:
+- notebooks for inspecting optimization trajectories
+- statistical comparisons between optimized and non-optimized runs
+- compact tables for article reporting
 
-```bash
-git fetch origin
-git merge origin/dev
-```
+## Recommended reading order inside the repository
 
-- Make small, focused commits with clear messages.
-- Follow the project's coding style and conventions.
+If you want to understand the project quickly, the most useful order is:
+
+1. this root README
+2. [explainability-with-LLMs/README.md](explainability-with-LLMs/README.md)
+3. [explainability-LOD/README.md](explainability-LOD/README.md)
+4. [datasets/README_datasets.md](datasets/README_datasets.md)
