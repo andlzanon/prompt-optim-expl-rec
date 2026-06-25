@@ -207,9 +207,3 @@ marimo/_lsp/
 __marimo__/
 
 .vscode/
-
-*bkp*
-*out*
-!explainability-with-LLMs/out/
-!explainability-with-LLMs/out/**
-.codex
