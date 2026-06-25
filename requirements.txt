@@ -1,8 +1,8 @@
 CaseRecommender==1.1.1
 networkx==3.4.2
-numpy==2.4.6
+numpy>=1.26.0,<2.2.0
 optuna==4.5.0
-pandas==3.0.3
+pandas>=2.0.0,<3.0.0
 recommenders==1.2.1
 scikit_learn==1.8.0
 tensorflow_cpu==2.19.1
