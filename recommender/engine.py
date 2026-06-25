@@ -1,7 +1,8 @@
-import pandas as pd
 from pathlib import Path
 
 from algorithms import default_user_knn_recs, optimized_user_knn_recs, default_bprmf_recs, optimized_bprmf_recs, default_item_knn_recs, optimized_item_knn_recs, default_ncf_recs, optimized_ncf_recs
+
+ALGORITHMS = ["user_knn", "item_knn", "ncf", "bprmf"]
 
 current_path = Path.cwd()
 parent_path = current_path.parent
@@ -9,18 +10,13 @@ parent_path = current_path.parent
 FINAL_TRAIN_PATH = parent_path / "datasets" / "recommender_train_test_oficial" / "train.csv"
 FINAL_TEST_PATH = parent_path / "datasets" / "recommender_train_test_oficial" / "test.csv"
 
-# OPT_TRAIN_PATH = parent_path / "datasets" / "recommender_train_validation_test_oficial" / "train.csv"
-# OPT_VALIDATION_PATH = parent_path / "datasets" / "recommender_train_validation_test_oficial" / "validation.csv"
-
 
 def generate_recommendations(algorithm_name, k_vector):
 
-    # -----------------------------
-    # Load Dataset
-    # -----------------------------
-    # train_df = pd.read_csv(TRAIN_PATH, names=["userID", "itemID", "rating"])
-    # test_df = pd.read_csv(TEST_PATH, names=["userID", "itemID", "rating"])
-
+    if algorithm_name == "all":
+        for algorithm in ALGORITHMS:
+            generate_recommendations(algorithm_name=algorithm, k_vector=k_vector)
+        return
 
     for k_value in k_vector:
 
@@ -48,17 +44,10 @@ def generate_recommendations(algorithm_name, k_vector):
             case "bprmf":
                 default_bprmf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, default_recs_output_path, default_metrics_output_path, default_parameters_output_path)
                 optimized_bprmf_recs(k_value, FINAL_TRAIN_PATH, FINAL_TEST_PATH, optimized_recs_output_path, optimized_metrics_output_path, optimized_parameters_output_path)
-            case "teste":
-                # teste(FINAL_TEST_PATH)
-                break
-
-            # case "all":
-
-
 
             case _:
                 print("Algorithm not found!")
-                print("Valid algorithms: userknn, itemknn, ncf, bprmf, all")
+                print("Valid algorithms: user_knn, item_knn, ncf, bprmf, all")
                 return
 
     return

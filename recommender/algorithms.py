@@ -1,13 +1,10 @@
 import pandas as pd
-import numpy as np
-from pathlib import Path
 from recommenders.utils.timer import Timer
 from utils.dir_manipulation import delete_file, reset_dir
 from utils.print_aux import print_params
 import optuna
 from optuna.samplers import TPESampler
 
-from recommenders.utils.timer import Timer
 from recommenders.utils.constants import SEED
 from recommenders.models.ncf.ncf_singlenode import NCF
 from recommenders.models.ncf.dataset import Dataset as NCFDataset
@@ -27,32 +24,7 @@ from caserec.evaluation.item_recommendation import ItemRecommendationEvaluation
 from caserec.recommenders.item_recommendation.bprmf import BprMF
 
 
-current_path = Path.cwd()
-parent_path = current_path.parent
-
-
-# MODELS
-
-#   - User_knn
-#       https://github.com/caserec/CaseRecommender/blob/master/caserec/recommenders/item_recommendation/userknn.py
-
-#   - Item_knn
-#       https://github.com/caserec/CaseRecommender/blob/master/caserec/recommenders/item_recommendation/itemknn.py
-
-#    - BprMF
-#       https://github.com/caserec/CaseRecommender/blob/master/caserec/recommenders/item_recommendation/bprmf.py
-
-#   - NCF
-#       https://github.com/recommenders-team/recommenders/blob/main/examples/02_model_collaborative_filtering/ncf_deep_dive.ipynb
-
-
-
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-
-
+# UserKNN
 def default_user_knn_recs(
     TOP_K,
     FINAL_train_path,
@@ -71,7 +43,7 @@ def default_user_knn_recs(
         names=["userID", "itemID", "rating", "timestamp"]
     )[["userID", "itemID", "rating"]]
 
-    # Define default hyperparameters
+    # CaseRecommender default hyperparameters saved for reproducibility.
     sim_metric = "cosine"
     num_users = train_df["userID"].nunique()
     k_neighbors = int(num_users ** 0.5)
@@ -84,18 +56,12 @@ def default_user_knn_recs(
     print(f"\nGenerating recommendations: USER_KNN | TOP_K={TOP_K}\n")
     print_params(params_dict)
 
-    """
-        Builds a UserKNN model with default settings.
-    """
-
     final_model = UserKNN(
         train_file=FINAL_train_path,
         test_file=FINAL_test_path,
         output_file=FINAL_recs_output_path,
         sep=",",
         output_sep=",",
-        # k_neighbors=k_neighbors,
-        # similarity_metric=sim_metric,
         rank_length=TOP_K
     )
     final_model.compute(verbose=True)
@@ -121,11 +87,6 @@ def default_user_knn_recs(
     params_df.to_csv(FINAL_parameters_output_path, index=False)
 
     return 0
-
-
-
-
-
 
 
 def optimized_user_knn_recs(
@@ -204,13 +165,6 @@ def optimized_user_knn_recs(
 
     print_params(best_params_dict)
 
-    print()
-    print("alaoalladslads")
-    print(best_params_dict["k_neighbors"])
-    print(best_params_dict["similarity_metric"])
-    print("adslwadoaw")
-    print()
-
     # Train the final model with the best hyperparameters
     FINAL_model = UserKNN(
         train_file=FINAL_train_path,
@@ -218,9 +172,7 @@ def optimized_user_knn_recs(
         output_file=FINAL_recs_output_path,
         sep=',',
         output_sep=',',
-        # k_neighbors=83,
         k_neighbors=best_params_dict["k_neighbors"],
-        # similarity_metric="cosine",
         similarity_metric=best_params_dict["similarity_metric"],
         rank_length=TOP_K
     )
@@ -245,14 +197,7 @@ def optimized_user_knn_recs(
     return 0
 
 
-
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-
-
-
+# ItemKNN
 def default_item_knn_recs(
     TOP_K,
     FINAL_train_path,
@@ -275,9 +220,7 @@ def default_item_knn_recs(
 
     train_df = train_df[["userID", "itemID", "rating"]]
 
-    # -----------------------------------------------------------
-    # Default hyperparameters
-    # -----------------------------------------------------------
+    # CaseRecommender default hyperparameters saved for reproducibility.
     sim_metric = "cosine"
     num_unique_items = train_df["itemID"].nunique()
     k_neigh = int(num_unique_items ** 0.5)
@@ -337,14 +280,6 @@ def default_item_knn_recs(
     ).to_csv(FINAL_parameters_output_path, index=False)
 
     return 0
-
-
-
-
-
-
-
-
 
 
 def optimized_item_knn_recs(
@@ -470,18 +405,7 @@ def optimized_item_knn_recs(
     return 0
 
 
-
-
-
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
+# NCF
 def default_ncf_recs(
     TOP_K,
     FINAL_train_path,
@@ -643,20 +567,6 @@ def default_ncf_recs(
     ).to_csv(FINAL_parameters_output_path, index=False)
 
     return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def optimized_ncf_recs(
@@ -924,15 +834,7 @@ def optimized_ncf_recs(
     return
 
 
-
-
-
-
-
-
-
-
-
+# NCF pretraining helpers
 def pretrain_gmf_mlp(data, gmf_dir, mlp_dir, GLOBAL_N_USERS, GLOBAL_N_ITEMS):
 
     reset_dir(gmf_dir)
@@ -963,9 +865,6 @@ def pretrain_gmf_mlp(data, gmf_dir, mlp_dir, GLOBAL_N_USERS, GLOBAL_N_ITEMS):
     gmf_model.save(dir_name=gmf_dir)
 
 
-
-
-
     print("\nPretraining MLP")
 
     mlp_model = NCF(
@@ -991,15 +890,7 @@ def pretrain_gmf_mlp(data, gmf_dir, mlp_dir, GLOBAL_N_USERS, GLOBAL_N_ITEMS):
     mlp_model.save(dir_name=mlp_dir)
 
 
-
-
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------------------------
-
-
-
+# BPR-MF
 def default_bprmf_recs(
     TOP_K,
     FINAL_train_path,
@@ -1075,12 +966,7 @@ def default_bprmf_recs(
     return 0
 
 
-
     
-
-
-
-
 
 
 def optimized_bprmf_recs(

@@ -1,39 +1,6 @@
 from engine import generate_recommendations
-import sys
 
-# algorithm = sys.argv[1]                 # "bprmf"
-# numbers = list(map(int, sys.argv[2:]))  # 1, 5, 20
+k_values = [1, 5, 10, 20, 50, 100, 200]
 
-# if any(num > 200 for num in numbers):
-#     print("Please, the value of k need to be at least 1 and at max 200!")
-#     sys.exit()
+generate_recommendations(algorithm_name="all",  k_vector=k_values)
 
-# if any(num < 1 for num in numbers):
-#     print("Please, the value of k need to be at least 1 and at max 200!")
-#     sys.exit()
-
-# generate_recommendations(algorithm_name=algorithm, k_vector=numbers)
-
-
-
-# k_values = [10]
-# k_values = [1, 5, 10, 20, 50, 100, 200]
-k_values = [1, 5, 10, 50, 100, 200]
-# k_values = [20]
-# k_values = [1]
-
-
-# generate_recommendations(algorithm_name="user_knn", k_vector=k_values)
-# generate_recommendations(algorithm_name="item_knn",  k_vector=k_values)
-generate_recommendations(algorithm_name="ncf",  k_vector=k_values)
-# generate_recommendations(algorithm_name="bprmf", k_vector=k_values)
-# generate_recommendations(algorithm_name="teste",  k_vector=k_values)
-
-# generate_recommendations(algorithm_name="all",  k_vector=k_values)
-
-# userknn itemknn ncf neumf bprmf
-
-
-# generate_recommendations(algorithm_name="user_knn_default", k_vector=k_values)
-# generate_recommendations(algorithm_name="user_knn_opt", k_vector=k_values)
-# generate_recommendations(algorithm_name="item_knn_default",  k_vector=k_values)
