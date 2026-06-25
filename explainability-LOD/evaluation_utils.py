@@ -34,8 +34,10 @@ def evaluate_explanations(file_name: str, m_items: list, m_props: list, total_it
     std_sep = "std SEP metric: " + str(np.array(all_sep).std())
     std_f1 = "std F1 metric: " + str(np.array(all_f1).std())
 
+    file_name_str = str(file_name)
+
     f = open(file_name, mode="w", encoding='utf-8')
-    f.write(file_name + "\n")
+    f.write(file_name_str + "\n")
     f.write(mean_useritem_aggr + "\n")
     f.write(std_useritem_aggr + "\n")
     f.write(mean_userprop_aggr + "\n")
@@ -50,7 +52,7 @@ def evaluate_explanations(file_name: str, m_items: list, m_props: list, total_it
     f.write(std_f1 + "\n")
     f.close()
 
-    print("\n" + file_name)
+    print("\n" + file_name_str)
     print(mean_useritem_aggr)
     print(std_useritem_aggr)
     print(mean_userprop_aggr)

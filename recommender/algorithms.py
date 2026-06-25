@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 from recommenders.utils.timer import Timer
 from utils.dir_manipulation import delete_file, reset_dir
 from utils.print_aux import print_params
@@ -22,6 +23,12 @@ from caserec.recommenders.item_recommendation.itemknn import ItemKNN
 from caserec.recommenders.item_recommendation.userknn import UserKNN
 from caserec.evaluation.item_recommendation import ItemRecommendationEvaluation
 from caserec.recommenders.item_recommendation.bprmf import BprMF
+
+
+RECOMMENDER_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = RECOMMENDER_DIR.parent
+DATASETS_DIR = PROJECT_ROOT / "datasets"
+OPT_DATASETS_DIR = DATASETS_DIR / "recommender_train_validation"
 
 
 # UserKNN
@@ -101,7 +108,7 @@ def optimized_user_knn_recs(
     Optimizes and trains a UserKNN model using Optuna, then evaluates and saves the results.
     """
 
-    OPT_DIR = "../datasets/recommender_train_validation"
+    OPT_DIR = OPT_DATASETS_DIR
     metric_key = f"NDCG@{TOP_K}"
 
     def evaluate_user_knn(k, sim_metric, trial):
@@ -109,9 +116,9 @@ def optimized_user_knn_recs(
         """
         Evaluates the UserKNN model with the given hyperparameters (k_neighbors, similarity_metric).
         """
-        OPT_train_path = f"{OPT_DIR}/opt_train.csv"
-        OPT_validation_path = f"{OPT_DIR}/opt_validation.csv"
-        OPT_recs_output_path = f"utils/user_item_knn/user_knn_trial_{trial.number}.csv"
+        OPT_train_path = str(OPT_DIR / "opt_train.csv")
+        OPT_validation_path = str(OPT_DIR / "opt_validation.csv")
+        OPT_recs_output_path = str(RECOMMENDER_DIR / "utils" / "user_item_knn" / f"user_knn_trial_{trial.number}.csv")
 
         delete_file(OPT_recs_output_path)
 
@@ -295,10 +302,10 @@ def optimized_item_knn_recs(
     on the test set using the best hyperparameters.
     """
 
-    OPT_DIR = "../datasets/recommender_train_validation"
+    OPT_DIR = OPT_DATASETS_DIR
 
     # Temporary file for Optuna trials
-    OPT_recs_output_path = "utils/user_item_knn/item_knn_parcial_recs.csv"
+    OPT_recs_output_path = str(RECOMMENDER_DIR / "utils" / "user_item_knn" / "item_knn_parcial_recs.csv")
     metric_key = f"NDCG@{TOP_K}"
 
     # -----------------------------------------------------------
@@ -306,8 +313,8 @@ def optimized_item_knn_recs(
     # -----------------------------------------------------------
     def evaluate_item_knn(k, sim_metric):
 
-        OPT_train_path = f"{OPT_DIR}/opt_train.csv"
-        OPT_validation_path = f"{OPT_DIR}/opt_validation.csv"
+        OPT_train_path = str(OPT_DIR / "opt_train.csv")
+        OPT_validation_path = str(OPT_DIR / "opt_validation.csv")
 
         delete_file(OPT_recs_output_path)
 
@@ -453,10 +460,10 @@ def default_ncf_recs(
     # -----------------------------------------------------------
     # Temporary datasets for NCF
     # -----------------------------------------------------------
-    temp_path = "utils/ncf/ncf_parcial_datasets"
+    temp_path = RECOMMENDER_DIR / "utils" / "ncf" / "ncf_parcial_datasets"
 
-    train_temp_path = f"{temp_path}/train_ncf.csv"
-    test_temp_path = f"{temp_path}/test_ncf.csv"
+    train_temp_path = str(temp_path / "train_ncf.csv")
+    test_temp_path = str(temp_path / "test_ncf.csv")
 
     ncf_train.to_csv(train_temp_path, index=False)
     ncf_test.to_csv(test_temp_path, index=False)
@@ -588,12 +595,12 @@ def optimized_ncf_recs(
     # -----------------------------------------------------------
     # Paths and configuration
     # -----------------------------------------------------------
-    OPT_DIR = "../datasets/recommender_train_validation"
+    OPT_DIR = OPT_DATASETS_DIR
 
-    OPT_train_path = f"{OPT_DIR}/opt_train.csv"
-    OPT_validation_path = f"{OPT_DIR}/opt_validation.csv"
+    OPT_train_path = str(OPT_DIR / "opt_train.csv")
+    OPT_validation_path = str(OPT_DIR / "opt_validation.csv")
 
-    OPT_recs_output_path = "utils/ncf/ncf_parcial_recs.csv"
+    OPT_recs_output_path = str(RECOMMENDER_DIR / "utils" / "ncf" / "ncf_parcial_recs.csv")
     metric_key = f"NDCG@{TOP_K}"
 
     # -----------------------------------------------------------
@@ -643,13 +650,13 @@ def optimized_ncf_recs(
     # -----------------------------------------------------------
     # Temporary datasets for NCF
     # -----------------------------------------------------------
-    temp_path = "utils/ncf/ncf_parcial_datasets"
+    temp_path = RECOMMENDER_DIR / "utils" / "ncf" / "ncf_parcial_datasets"
 
-    final_train_temp = f"{temp_path}/final_train_ncf.csv"
-    final_test_temp = f"{temp_path}/final_test_ncf.csv"
-    opt_train_temp = f"{temp_path}/opt_train_ncf.csv"
-    opt_validation_temp = f"{temp_path}/opt_validation_ncf.csv"
-    no_header_validation_temp = f"{temp_path}/no_header_opt_validation_ncf.csv"
+    final_train_temp = str(temp_path / "final_train_ncf.csv")
+    final_test_temp = str(temp_path / "final_test_ncf.csv")
+    opt_train_temp = str(temp_path / "opt_train_ncf.csv")
+    opt_validation_temp = str(temp_path / "opt_validation_ncf.csv")
+    no_header_validation_temp = str(temp_path / "no_header_opt_validation_ncf.csv")
 
     # Clear previous files
     for path in [
@@ -987,10 +994,10 @@ def optimized_bprmf_recs(
     """
 
     # Directory containing train/validation split for optimization
-    OPT_DIR = "../datasets/recommender_train_validation"
+    OPT_DIR = OPT_DATASETS_DIR
 
     # Temporary recommendation file used during optimization
-    output_recs_opt_path = "utils/bprmf/bprmf_parcial_recs.csv"
+    output_recs_opt_path = str(RECOMMENDER_DIR / "utils" / "bprmf" / "bprmf_parcial_recs.csv")
 
     # Metric optimized by Optuna
     metric_key = f"NDCG@{TOP_K}"
@@ -1000,8 +1007,8 @@ def optimized_bprmf_recs(
         Trains and evaluates a BPR-MF model on the validation set.
         """
 
-        opt_train_path = f"{OPT_DIR}/opt_train.csv"
-        opt_validation_path = f"{OPT_DIR}/opt_validation.csv"
+        opt_train_path = str(OPT_DIR / "opt_train.csv")
+        opt_validation_path = str(OPT_DIR / "opt_validation.csv")
 
         # Ensure clean output before evaluation
         delete_file(output_recs_opt_path)

@@ -1,5 +1,5 @@
 import _io
-import os
+from pathlib import Path
 from collections import Counter
 
 import pandas as pd
@@ -7,6 +7,10 @@ from pandas.core.indexing import IndexingError
 
 import evaluation_utils as eval
 from lod_reordering import LODPersonalizedReordering
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATASETS_DIR = PROJECT_ROOT / "datasets"
 
 
 class PathReordering(LODPersonalizedReordering):
@@ -31,22 +35,22 @@ class PathReordering(LODPersonalizedReordering):
     
     def prepare_data(self, expl_alg: str, n_explain: int):
 
-        file_to_be_explained = self.recs_file.split("/")[-1]
+        file_to_be_explained = Path(self.recs_file).name
 
-        output_path = f"../datasets/lod_results/output/output_explanations_{file_to_be_explained}"
-        average_metrics_path = f"../datasets/lod_results/average_metrics/avg_metrics_explanations_{file_to_be_explained}"
-        individual_metrics_path = f"../datasets/lod_results/individual_metrics/indiv_metrics_explanations_{file_to_be_explained}"
+        output_path = DATASETS_DIR / "lod_results" / "output" / f"output_explanations_{file_to_be_explained}"
+        average_metrics_path = DATASETS_DIR / "lod_results" / "average_metrics" / f"avg_metrics_explanations_{file_to_be_explained}"
+        individual_metrics_path = DATASETS_DIR / "lod_results" / "individual_metrics" / f"indiv_metrics_explanations_{file_to_be_explained}"
 
-        for output_dir in [
-            os.path.dirname(output_path),
-            os.path.dirname(average_metrics_path),
-            os.path.dirname(individual_metrics_path)
+        for output_path_parent in [
+            output_path.parent,
+            average_metrics_path.parent,
+            individual_metrics_path.parent
         ]:
-            os.makedirs(output_dir, exist_ok=True)
+            output_path_parent.mkdir(parents=True, exist_ok=True)
         
 
         f = open(output_path, mode="w", encoding='utf-8')
-        f.write(output_path + "\n")
+        f.write(str(output_path) + "\n")
         m_items = []
         m_props = []
         total_items = {}

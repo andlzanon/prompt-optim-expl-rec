@@ -1,6 +1,10 @@
 import networkx as nx
 import pandas as pd
-import os
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATASETS_DIR = PROJECT_ROOT / "datasets"
 
 def get_train_set(train_path: str, cols_used: list) -> pd.DataFrame:
     train_set = pd.read_csv(train_path, header=None)
@@ -110,7 +114,7 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
     ------
     CSV file
         A CSV file is saved to:
-        "../datasets/explanation_paths/{algorithm}-opt/{algorithm}_{ID_user}_user_id.csv"
+        "datasets/explanation_paths/{algorithm}-opt/{algorithm}_{ID_user}_user_id.csv"
 
         The file contains the following columns:
         - interacted_item_id
@@ -134,10 +138,10 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
       preprocessed and consistent.
     """
 
-    output_path = f"../datasets/explanation_paths/{algorithm}-opt/{algorithm}_{ID_user}_user_id.csv"
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    output_path = DATASETS_DIR / "explanation_paths" / f"{algorithm}-opt" / f"{algorithm}_{ID_user}_user_id.csv"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Ordenação decrescente por timestamp
+    # Ordenacao decrescente por timestamp
     items_interacted = train_set.loc[ID_user].sort_values(by=cols_used[-1], ascending=False)
 
     try:
@@ -145,7 +149,7 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
     except AttributeError:
         items_interacted = list(train_set.loc[ID_user][cols_used[1]])[:-1]
 
-    # Ordenação pelo score da lista de recomendados!!
+    # Ordenacao pelo score da lista de recomendados
     items_recommended = list(recs_set.loc[ID_user][cols_used[1]])
 
 
@@ -216,9 +220,9 @@ def create_explanation_paths_file(algorithm, graph, prop_set, train_set, recs_se
 
 def main():
 
-    props_wikidata_path = "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv"
-    train_path = "../datasets/recommender_train_test_oficial/train.csv"
-    movies_path = "../datasets/ml-latest-small/movies.csv"
+    props_wikidata_path = DATASETS_DIR / "knowledge-graphs" / "props_wikidata_movielens_small.csv"
+    train_path = DATASETS_DIR / "recommender_train_test_oficial" / "train.csv"
+    movies_path = DATASETS_DIR / "ml-latest-small" / "movies.csv"
     cols_used = ['user_id', 'movie_id', 'interaction', 'timestamp']
     prop_cols = ['movieId', 'title', 'prop', 'obj']
     
@@ -231,7 +235,7 @@ def main():
     
     for algorithm in algs_list:
 
-        recs_path = f"../datasets/recommendation_files/recommendation_lists/{algorithm}/params_optimized/K=20/optimized_{algorithm}_K=20_recs.csv"
+        recs_path = DATASETS_DIR / "recommendation_files" / "recommendation_lists" / algorithm / "params_optimized" / "K=20" / f"optimized_{algorithm}_K=20_recs.csv"
         recs_set = get_output_rec_set(recs_path, cols_used)
 
         create_explanation_paths_file(algorithm, graph, prop_set, train_set, recs_set, movie_set, cols_used)
