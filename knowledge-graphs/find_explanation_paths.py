@@ -1,6 +1,6 @@
 import networkx as nx
 import pandas as pd
-import numpy as np
+import os
 
 def get_train_set(train_path: str, cols_used: list) -> pd.DataFrame:
     train_set = pd.read_csv(train_path, header=None)
@@ -56,31 +56,6 @@ def build_graph(train_set, prop_set) -> nx.Graph:
     G = nx.from_pandas_edgelist(edgelist, 'origin', 'destination')
 
     return G
-
-
-
-def debug_path(graph, hm_node, rm_node):
-    print("hm exists:", hm_node in graph)
-    print("rm exists:", rm_node in graph)
-
-    print("\nNeighbors hm:", list(graph.neighbors(hm_node)))
-    print("Neighbors rm:", list(graph.neighbors(rm_node)))
-
-    shared = set(graph.neighbors(hm_node)) & set(graph.neighbors(rm_node))
-    print("\nShared properties:", shared)
-
-    try:
-        print("\nShortest paths:")
-        for p in nx.all_shortest_paths(graph, hm_node, rm_node):
-            print(p)
-    except nx.NetworkXNoPath:
-        print("No path found")
-
-    print("\n\n\n")
-
-    return
-
-
 
 
 
@@ -160,6 +135,7 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
     """
 
     output_path = f"../datasets/explanation_paths/{algorithm}-opt/{algorithm}_{ID_user}_user_id.csv"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     # Ordenação decrescente por timestamp
     items_interacted = train_set.loc[ID_user].sort_values(by=cols_used[-1], ascending=False)
@@ -178,13 +154,6 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
     interacted_props = list(set(prop_set.loc[prop_set.index.isin(items_interacted)]['obj']))
     subgraph = graph.subgraph(interacted_codes + recommended_codes + interacted_props)
 
-    # print("interagidos")
-    # print(interacted_codes)
-    # print()
-
-    # print("recomendados")
-    # print(recommended_codes)
-
     rows = []
 
 
@@ -193,15 +162,10 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
         for im in items_interacted:
             im_node = 'I' + str(im)
 
-            # debug_path(subgraph, hm_node, rm_node)
-            print(f"interacted_item {im_node}")
-            print(f"recommended_item {rm_node}")
             try:
                 paths = nx.all_simple_paths(subgraph, source=im_node, target=rm_node, cutoff=2)
                 paths_s = [p for p in paths]
                 for p in paths_s:
-                    print(p)
-                    print()
                     rows.append({
                         "interacted_item_id": im,
                         "recommended_item_id": rm,
@@ -209,8 +173,7 @@ def user_interacted_recommended_paths(algorithm: str, graph: nx.Graph, ID_user: 
                     })
 
             except (nx.exception.NetworkXNoPath, ValueError):
-                print("Sem Caminho")
-                print()
+                pass
 
 
 
@@ -241,10 +204,7 @@ def create_explanation_paths_file(algorithm, graph, prop_set, train_set, recs_se
 
     for user_id, _ in train_set.groupby("user_id"):
 
-        print(f"USUÁRIO {user_id}")
         user_interacted_recommended_paths(algorithm, graph, user_id, prop_set, train_set, recs_set, movie_set, cols_used)
-        print()
-        print()
 
     return
 
@@ -268,7 +228,6 @@ def main():
     graph = build_graph(train_set, prop_set)
 
     algs_list = ["bprmf", "item_knn", "ncf", "user_knn"]
-    # algs_list = ["user_knn"]
     
     for algorithm in algs_list:
 

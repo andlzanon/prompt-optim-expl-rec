@@ -1,4 +1,5 @@
 import _io
+import os
 from collections import Counter
 
 import pandas as pd
@@ -11,15 +12,17 @@ from lod_reordering import LODPersonalizedReordering
 class PathReordering(LODPersonalizedReordering):
     def __init__(self, train_file: str, recs_file: str, prop_path: str, prop_cols: list, cols_used: list, user_list: list):
         """
-        Path Reordering class: this algorithm will reorder the output of other recommendation algorithm based on the
-        best path from an historic item and a recommended one. The best paths are extracted based on the value for each
-        object of the LOD with the semantic profile
-        :param train_file: train file in which the recommendations of where computed
-        :param recs_file: output file of the recommendation algorithm
-        :param prop_path: path to the properties on dbpedia or wikidata
+        Generate ExpLOD-style explanations for an existing recommendation file.
+
+        Despite the class name, the current pipeline does not reorder the recommendation list.
+        It explains the top recommended items by finding shared KG properties between
+        historical items and recommended items, scored by the user's semantic profile.
+        :param train_file: training interactions used as user history
+        :param recs_file: recommendation output file to explain
+        :param prop_path: path to the properties from DBpedia or Wikidata
         :param prop_cols: columns of the property set
-        :param cols_used: columns used from the test and train set
-        :param user_list: list to represent which users to run the explod algorithm
+        :param cols_used: columns used from the train set
+        :param user_list: users to keep in the explanation pipeline
         """
 
 
@@ -33,6 +36,13 @@ class PathReordering(LODPersonalizedReordering):
         output_path = f"../datasets/lod_results/output/output_explanations_{file_to_be_explained}"
         average_metrics_path = f"../datasets/lod_results/average_metrics/avg_metrics_explanations_{file_to_be_explained}"
         individual_metrics_path = f"../datasets/lod_results/individual_metrics/indiv_metrics_explanations_{file_to_be_explained}"
+
+        for output_dir in [
+            os.path.dirname(output_path),
+            os.path.dirname(average_metrics_path),
+            os.path.dirname(individual_metrics_path)
+        ]:
+            os.makedirs(output_dir, exist_ok=True)
         
 
         f = open(output_path, mode="w", encoding='utf-8')
@@ -52,7 +62,7 @@ class PathReordering(LODPersonalizedReordering):
         individual_metrics_data = []
         for u in self.recs_set.index.unique():
 
-            # get items that the user interacted and recommended by an algorithm
+            # Get historical items for the current user.
             items_historic = self.train_set.loc[u].sort_values(by=self.cols_used[-1], ascending=False)
 
             
@@ -62,7 +72,6 @@ class PathReordering(LODPersonalizedReordering):
             except AttributeError:
                 items_historic = list(self.train_set.loc[u][self.cols_used[1]])[:-1]
 
-            print("User: " + str(u))
             f.write("\nUser: " + str(u) + "\n")
             f.write("Items interacted by the user\n")
             
@@ -75,7 +84,7 @@ class PathReordering(LODPersonalizedReordering):
                     
                 f.write("Item id: " + str(i) + " Name: " + movie_name + "\n")
 
-            # get semantic profile and extract the best paths from the suggested item to the recommended
+            # Get semantic profile and extract paths from historical items to recommended items.
             user_semantic_profile = self.user_semantic_profile(items_historic)
 
             f.write("\nUsers favorites attributes on the kG\n")
@@ -133,22 +142,20 @@ class PathReordering(LODPersonalizedReordering):
                                    total_sep, total_etd, total_f1)
 
 
-
-
-######## IMPORTANTE ############
     def __explod_ranked_paths(self, ranked_items: list, items_historic: list, semantic_profile: dict,
                               user: int, file: _io.TextIOWrapper, memo_sep: dict):
         """
-        Build explanation to recommendations based on the ExpLOD, method, explained in https://dl.acm.org/doi/abs/10.1145/2959100.2959173
-        :param ranked_items: list of the recommended items
-        :param items_historic: list of historic items
-        :param semantic_profile: dictionary with property as key and score as value
-        :param user: user id of user to show explanations to
+        Build recommendation explanations based on the ExpLOD method:
+        https://dl.acm.org/doi/abs/10.1145/2959100.2959173
+        :param ranked_items: recommended items to explain
+        :param items_historic: historical items from the user profile
+        :param semantic_profile: dictionary with property value as key and score as value
+        :param user: user id whose recommendations are being explained
         :param file: file to write explanations
-        :return: historic items and properties used in explanations
+        :return: historical items, property values, and explanation metrics used in explanations
         """
 
-        # get properties from historic and recommended items
+        # Get properties from historical and recommended items.
         items_historic = list(dict.fromkeys(items_historic))  # remove duplicates, preserve order
         hist_props = self.prop_set.loc[items_historic]
         hist_items = {}
@@ -158,9 +165,9 @@ class PathReordering(LODPersonalizedReordering):
         for r in ranked_items:
             rec_props = self.prop_set.loc[r]
 
-            # check properties on both sets
+            # Find property values shared by historical and recommended items.
             intersection = pd.Series(sorted(set(hist_props['obj']).intersection(set(rec_props['obj']))))
-            # get properties with max value
+            # Keep the shared property values with the highest semantic profile score.
             max = -1
             max_props = []
             for pi in intersection:
@@ -174,7 +181,7 @@ class PathReordering(LODPersonalizedReordering):
 
             max_props = sorted(max_props)
 
-            # build sentence
+            # Build the explanation sentence.
             user_df = self.train_set.loc[user]
             user_item = user_df[
                 user_df[user_df.columns[0]].isin(list(hist_props[hist_props['obj'].isin(max_props)].index.unique()))]
@@ -188,7 +195,7 @@ class PathReordering(LODPersonalizedReordering):
 
             file.write("\nPaths for the Recommended Item: " + str(r) + "\n")
             origin = ""
-            # check for others with same value
+            # Add historical item names linked to the selected property values.
             for i in hist_names:
                 origin = origin + "\"" + i + "\"; "
                 hist_items = self.__add_dict(hist_items, i)
@@ -206,23 +213,16 @@ class PathReordering(LODPersonalizedReordering):
         etd = eval.etd_metric(list(nodes.keys()), len(ranked_items), len(self.prop_set['obj'].unique()))
         f1 = eval.f1_metric(sep, etd)
 
-        print()
-        print()
-        print(len(self.prop_set['obj'].unique()))
-        print((self.prop_set['obj'].unique()))
-        print()
-        print()
-
         return hist_items, nodes, (sep, etd, f1)
 
    
 
     def __add_dict(self, d: dict, key) -> dict:
         """
-        Function to increment one in the key
+        Increment the count for a key in a dictionary.
         :param d: dictionary
-        :param key: key to increment value
-        :return: new dictionary
+        :param key: key whose count will be incremented
+        :return: updated dictionary
         """
         try:
             d[key] = d[key] + 1
