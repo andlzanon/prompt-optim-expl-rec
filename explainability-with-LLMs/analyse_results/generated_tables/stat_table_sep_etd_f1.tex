@@ -1,0 +1,17 @@
+\begin{table*}[!t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{lcccccc}
+        \toprule
+        \textbf{Algorithm} & \textbf{LOD} & \textbf{Llama w/o opt.} & \textbf{Best optimized Llama} & \textbf{Opt. vs w/o opt.} & \textbf{Opt. vs LOD} & \textbf{Best config.} \\
+        \midrule
+        BPR-MF & 0{,}5363 & 0{,}7021 & \textbf{0{,}7121} & \yellowcircle & \greentriangleup & SBERT, $\lambda$=1.0 \\
+        Item-KNN & 0{,}5476 & 0{,}6717 & \textbf{0{,}6786} & \yellowcircle & \greentriangleup & SBERT, $\lambda$=0.0 \\
+        NCF & 0{,}5590 & 0{,}6755 & \textbf{0{,}6913} & \yellowcircle & \greentriangleup & SBERT, $\lambda$=0.5 \\
+        User-KNN & 0{,}5229 & 0{,}6893 & \textbf{0{,}7005} & \yellowcircle & \greentriangleup & LLM2Vec, $\lambda$=0.5 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Paired comparison on SEP_ETD_F1 between LOD, Llama without optimization, and the best optimized Llama for each algorithm. Bold values indicate the highest mean per-user value in each row. The symbol \greentriangleup indicates that the best optimized Llama was statistically superior in the corresponding comparison (\textit{p-value} $< 0.05$, Wilcoxon test); \yellowcircle indicates no significant difference; and \redtriangledown indicates that the best optimized Llama was statistically inferior.}
+    \label{tab:stat_sep_etd_f1}
+\end{table*}

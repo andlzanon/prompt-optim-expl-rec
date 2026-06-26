@@ -1,0 +1,43 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "prompt_this_epoch": "Choose one of the numbered options representing the optimal explanation path that strikes the best balance between maximizing informative content specificity within user-centric narratives, avoiding repetition wherever possible through incorporation of diverse contextual elements, \nwhile ensuring satisfactory generalizability without unwarranted diminishment of explanation integrity. \nSelect the option whose unique combination provides highest relative explanatory value as per the user's demonstrated propensity towards distinctively articulated connections, yet remains connected to the interactivity standard established via primary influencing factors. Output must comprise precisely the number of the optimally ranked, specified option only.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 12.141877889633179,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.702356, epoch=2)\n---\nSelect from the presented set exactly one ranked choice based solely upon the comparative analysis and optimization of attribute efficacy within your personalized narrative framework against predetermined attribute utilization limits and novel utility standards.\n---\n\nExample 2 (train_score=0.698999, epoch=3)\n---\nProvide the exact integer designation associated with the preferred explanation pathway adhering strictly to optimal attribute selection heuristics derived from your aggregated preference structure, which emphasizes explanation specificity, avoidance of redundancy, robustness over novelty, and enhanced comprehension.\n---\n\nExample 3 (train_score=0.698659, epoch=0)\n---\nYou are selecting ONE explanation path for the given recommendation.\nReturn ONLY the final answer.\nOutput MUST be exactly ONE token: the OPTION NUMBER.\nNo extra text.\nRules:\n- Choose EXACTLY ONE of the provided numbered paths.\n- Do NOT invent items, attributes, or paths.\n- Do NOT output words, punctuation, or explanations.\n- Output ONLY the integer corresponding to the chosen option.\nSelection criteria (balance all of the following):\n1) Prefer attributes that jointly provide an informative, specific, and discriminative explanation while also increasing diversity across this user's explanations.\n2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n3) Avoid overly generic attributes, but do not choose novelty if it substantially weakens the explanation.\n4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; balance all of the following):\n1) Prefer attributes that jointly maximize explanation specificity and diversity across the user's explanations.\n2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n3) Avoid overly generic attributes, but do not favor novelty when it substantially weakens the explanation.\n4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.6937419885490245,
+    "train_metric_scores": {
+      "sep": 0.7038077200318102,
+      "etd": 0.683960113960114,
+      "sep_etd_f1": 0.6937419885490245
+    },
+    "time_spent_train_eval": 757.426144361496,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9994871794871795
+  },
+  "val_eval": {
+    "val_metric": 0.6938581606704735,
+    "val_metric_scores": {
+      "sep": 0.7178380958678205,
+      "etd": 0.6714285714285714,
+      "sep_etd_f1": 0.6938581606704735
+    },
+    "time_spent_val_eval": 186.08649682998657,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.6957505879543423,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

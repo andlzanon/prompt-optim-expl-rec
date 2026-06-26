@@ -1,0 +1,53 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "bprmf",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "include_user_history": true,
+        "selected_paths_input_path": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths.csv",
+        "seed": 2026,
+        "llm_method": "Llama3.1-I",
+        "prompt_source": "best_prompt",
+        "best_prompt_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep_etd_f1/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10/Llama3.1-I/prompt_opt/sep_etd_f1/best_prompt.json",
+        "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+        "metric": "sep_etd_f1",
+        "sep_beta": 0.3,
+        "out": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep_etd_f1/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "outputdir": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep_etd_f1/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10",
+        "outfilename": "out/test_explainability/with_optimization/Llama3.1-I/bprmf/sep_etd_f1/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10/responses",
+        "start_time": "15-06-2026 13:18:02",
+        "test_users_path": "../datasets/user_split_train_val_test/test_users.csv",
+        "metric_params": {
+            "beta": 0.3
+        },
+        "explanation_paths_prefix": "../datasets/explanation_paths/bprmf-opt/bprmf"
+    },
+    "prompt_source": "best_prompt",
+    "best_prompt_path": "out/prompt_optimization/Llama3.1-I/bprmf/sep_etd_f1/repr_sbert/early_false/mmr_lambda_0_5/mmr_pool_10/Llama3.1-I/prompt_opt/sep_etd_f1/best_prompt.json",
+    "best_prompt_model": "Llama3.1-I",
+    "time_to_explain": 498.00947737693787,
+    "system_prompt": "SUBSEQUENT PREFERRED ACTION - RECOMMENDER OPTIONS SELECTOR  \n IDENTIFY THE EXPLANATION OPTION ASSOCIATED WITH THIS USER'S SELECTED ATTRIBUTE PROFILE AMONG PROVIDED INTERACTIVE ROUTINES AT A TIME AND RETURN ITS SERIAL INDEX IF SPECIFIED THRESHOLDS ARE MET FOR THE ATTRIBUTES INVOLVED HERE WITH PROPER CONVERGENCE TO FINAL RESULT UNDER GOAL TO MAINTAIN EFFICIENCY OPTIMAL SOLUTION SPACE WITHOUT UNNECESSARY COMPROMISES FROM ALL VIABLE OPTIONS GIVEN TODAY AND IN THE MEAN TIME FURTHER IMPROVING OUR INSIGHTFUL CHOICE PERCEPTIONS OF THESE ANALYTICAL RESULTS WE OBTAINED SO FAR FROM REALISTIC BOUNDING CONDITIONS OF BOTH OBJECTIVE MATH FUNCTIONS AND KNOWLEDGE LIMITATIONS ON COMPUTATIONAL COST FOR OUR USE HERE. \n RETURN THE APPROPRIATE OPTION CODE AFTER RUN-TIME EVALUATION COMPLETE.",
+    "n_users": 122,
+    "users_path": "../datasets/user_split_train_val_test/test_users.csv",
+    "metric": "sep_etd_f1",
+    "metric_name": "SEP_ETD_F1",
+    "metric_value": 0.7210347027586514,
+    "metric_scores": {
+        "sep": 0.650135873871915,
+        "etd": 0.8092896174863387,
+        "sep_etd_f1": 0.7210347027586514
+    },
+    "sep_value": 0.650135873871915,
+    "etd_value": 0.8092896174863387,
+    "sep_etd_f1_value": 0.7210347027586514,
+    "metric_params": {
+        "beta": 0.3
+    },
+    "kg_path": "../datasets/knowledge-graphs/props_wikidata_movielens_small.csv",
+    "selection_strategy": "random",
+    "selected_paths_input_path": "../datasets/preselected_explanation_paths/bprmf/explainability/random/recs_10_paths_10/seed_2026/selected_paths.csv"
+}

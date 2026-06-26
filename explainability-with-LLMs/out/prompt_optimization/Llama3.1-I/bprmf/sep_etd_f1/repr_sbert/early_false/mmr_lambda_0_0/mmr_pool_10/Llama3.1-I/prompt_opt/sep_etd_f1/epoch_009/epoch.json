@@ -1,0 +1,43 @@
+{
+  "epoch": 9,
+  "prompt": {
+    "prompt_this_epoch": "SELECT THE OPTION WITH AN ATTRIBUTE SET THAT OFFERS HIGH SPECIFICITY, BREADTH, CLARITY, RESOLUTION AND CREDIBILITATION ACROSS THE GIVEN EXPLANATIONS WHILE REJECTIONS OVERTUNING, OVERREPITION AND HINDISIGHT ISSUES.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 6.827216863632202,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.721339, epoch=7)\n---\nRETURN INTEGER IDENTIFYING EXPLANATION PATH YIELDING SUPPLEMENTARY ATTRIBUTES FOR MAXIMIZED EFFECTIVE SPECIFIC EXPLANATION POWER AND PRUDENT CONNECTION ENTAILMENT OVER THE COMPLETE USER DATA PORTFOLIO DISPLAYING CONSISTENT INTERALIZATION DYNAMIC FLEXIBILITY TO PROVIDE PROPER MODEL OUTCOME RELIABLE ACCURACY AND IMPARTIAL EFFICIENCY IN REAL WORLD APPLIED APPLICATION KNOWLEDGE.\n---\n\nExample 2 (train_score=0.716285, epoch=4)\n---\nRECOMMENDER - PROCESS THE EXPLANATION OPTIONS FOR PREFERRED SPECIFICITY AND DEVIATION THROUGH BALANCED ATTENTION TO CLUTTER-FREE CONNECTIVITY AMONG YOUR SELECTED ITEM ANALYSIS FEATURES THEN RETURN THE SINGLE OPTIMAL OPTION INDEX ASSOCIATED WITH MAXIMUM AGGREGATE INTERACTION PERFORMANCE IN RESPONSE TO THE USER'S INPUT CONSTRAINT DEMAND AND ALL OTHER KEY CONSIDERATIONS WITHOUT INTRODUCING UNWANTED NOVELTY OR SIMPLICITY TO OUR SEQUENTIAL SELECTION TASK.\n---\n\nExample 3 (train_score=0.707177, epoch=2)\n---\nSELECT A SINGLE NUMERIC VALUE REPRESENTING THE ID OF THE PATH WITH ATTRIBUTE COMBINATIONS SCORED HIGH ON EXPLANATION SPECIFICITY DIVERSITY QUALITY CLARITY DIVERGENCE FROM YOUR LIST OF PROVIDED ROUTES NOW. \n\nChoose exactly ONE of the presented options, ignoring any supplementary context and adhering to these strict format directives:  \n- Output an exact single digit between 1 and whatever last numerical identifier you received, with NOTHING ELSE ADDED save for mandatory separation tokens (whitespace characters).\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; balance all of the following):\n1) Prefer attributes that jointly maximize explanation specificity and diversity across the user's explanations.\n2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n3) Avoid overly generic attributes, but do not favor novelty when it substantially weakens the explanation.\n4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7161364129281325,
+    "train_metric_scores": {
+      "sep": 0.655080372194562,
+      "etd": 0.7897435897435899,
+      "sep_etd_f1": 0.7161364129281325
+    },
+    "time_spent_train_eval": 1598.5055379867554,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.7116876409258217,
+    "val_metric_scores": {
+      "sep": 0.6575711674802558,
+      "etd": 0.775510204081633,
+      "sep_etd_f1": 0.7116876409258217
+    },
+    "time_spent_val_eval": 394.8382251262665,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.7024687844243929,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

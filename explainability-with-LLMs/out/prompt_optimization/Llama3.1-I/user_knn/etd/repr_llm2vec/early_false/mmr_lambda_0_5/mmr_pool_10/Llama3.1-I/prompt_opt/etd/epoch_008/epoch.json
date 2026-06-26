@@ -1,0 +1,43 @@
+{
+  "epoch": 8,
+  "prompt": {
+    "prompt_this_epoch": "WITH RECURRING USER ATTENTION BEARING IN MIND OPTIMIZE OUTPUT CONSONANCE BY DIVISIVE DECISION TAKEN IN REGARD TO COMPARABLY VALID PRIMARY ATTRIBUTE EMPHASIZED COHERENCE WHEREBY RANKED PREFERENCES ARE MADE BASED UPON MINIMIZING OVERLAP AND ENCYCLOPEDIC DIVERGENCE THROUGH SENSIBLE REUSABILITY OF ATTESTABLE ITEM INTERACTIONS. \n\nCHOOSING THE ARGUMENTATIVE NUMERIC DESIGNATOR RESULTING THEREFROM SHALL SPECIFICALLY INDIVIDUALIZE THE PREDETERMINED PATH ALIGNED CLOSELY BETWEEN SELECTED COMPONENTS WITHOUT FURTHER INTERPRETATIONS BUT FOLLOWING DEFINITIVE USER EXPECTANCIES AND NECESSARY ENUMERATIONS THEN DISPLAY ITS APPROPRIATE CODE REFERENCING VALUE NOW INCLUSIVE WITH CLEAR TERMINOLOGY AND UNDERSTANABLE RULE.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 20.721667766571045,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.820256, epoch=3)\n---\nRETURN THE OPTION NUMBER REPRESENTING THE EXPERIENCE-BASED EXPLANATION PATH PREFERRED BY DISCRIMINATIVE SELECTION BASED ON ATTRIBUTE DISTINCTIVENESS FROM GIVEN INTERACTION SET ALTERNATING BETWEEN UNIQUE FEATURES AND KNOWLEDGE HISTORIES\n---\n\nExample 2 (train_score=0.752051, epoch=5)\n---\nChoose the primary numeric value representing the ranked preference based on attribute distinctiveness from interaction sets balancing between unique features and historical knowledge utilization within constrained user behavior scenarios while avoiding redundancy and ambiguity from utilized attributes accordingly to optimize connectedness with minimal repetition.\n---\n\nExample 3 (train_score=0.723333, epoch=1)\n---\nSELECT FROM THE PROVIDED NUMERICAL OPTIONS THE INDICATED CHOICE TO RETURN A SINGLE INTEGER REFERRING TO THAT OPTION FOLLOWING THESE SELECTION GUIDELINES:\n\nPREFER ITEMS WHICH FEATURE NEW UNSELECTED ATTRIBUTES AMONG USER EXPERTISE \nAVOID IF POSSIBLE USING PREVIOUS OPTIONS AS THEY PRODUCE THE FINAL ANSWER \nOUTPUT FOR THIS SELECT PROCESS IS REQUIRED AND IS MANDATORY WITH AN ENTIRE DIGIT ONLY NO PUNCTUATION OR TEXT APART FROM YOUR CODED RESPONSE PLEASE ADHERE TO THESE POINTS TO MEET EXPLANATION PATH CONDITIONS FULLY\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7625641025641025,
+    "train_metric_scores": {
+      "sep": 0.6606815392975566,
+      "etd": 0.7625641025641025,
+      "sep_etd_f1": 0.7079762063224811
+    },
+    "time_spent_train_eval": 1705.812080860138,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.7969387755102035,
+    "val_metric_scores": {
+      "sep": 0.6465786418271489,
+      "etd": 0.7969387755102035,
+      "sep_etd_f1": 0.7139277779401478
+    },
+    "time_spent_val_eval": 420.7387990951538,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.8091836734693877,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

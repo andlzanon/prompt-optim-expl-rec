@@ -1,0 +1,25 @@
+{
+    "args": {
+        "datain": "../datasets",
+        "algorithm": "item_knn",
+        "selection_strategy": "random",
+        "num_recommendations": 10,
+        "num_paths_per_recommendation": 10,
+        "user_scope": "optimization",
+        "seed": 2026,
+        "out": "../datasets/preselected_explanation_paths",
+        "machine": "icarus",
+        "inputdir": "../datasets",
+        "explanation_paths_prefix": "../datasets/explanation_paths/item_knn-opt/item_knn",
+        "outputdir": "../datasets/preselected_explanation_paths/item_knn/optimization/random/recs_10_paths_10/seed_2026",
+        "outfilename": "../datasets/preselected_explanation_paths/item_knn/optimization/random/recs_10_paths_10/seed_2026/selected_paths",
+        "selected_paths_output_path": "../datasets/preselected_explanation_paths/item_knn/optimization/random/recs_10_paths_10/seed_2026/selected_paths.csv",
+        "start_time": "29-05-2026 02:34:28"
+    },
+    "user_scope": "train_val",
+    "split_dir": "../datasets/user_split_train_val_test",
+    "n_users": 488,
+    "selection_strategy": "random",
+    "selected_paths_output_path": "../datasets/preselected_explanation_paths/item_knn/optimization/random/recs_10_paths_10/seed_2026/selected_paths.csv",
+    "time_to_prepare_selected_paths": 19.658087253570557
+}

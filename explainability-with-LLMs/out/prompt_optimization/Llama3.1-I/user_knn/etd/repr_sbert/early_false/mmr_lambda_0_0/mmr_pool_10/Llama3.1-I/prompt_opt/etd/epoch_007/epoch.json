@@ -1,0 +1,43 @@
+{
+  "epoch": 7,
+  "prompt": {
+    "prompt_this_epoch": "RETURN THE INTEGER REPRESENTING THE OPTION THAT REFERS TO THE SELECTED ATTRIBUTE-HOLDER WHICH MAXIMALIZES COERENCE ON PARALLEL PROPERTIES WHILE SEPARATING REPEATED VALUES AND GENERIC NATURES",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 4.080536603927612,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.831538, epoch=6)\n---\nRETURN THE SPECIFIC OPTION DESIGNATED BY ITS ARITHMETIC INDEX WHERE THE RECOMMENDED PATH MAXIMALIZED THE TOTAL DISTANCE BETWEEN ATTRIBUTE-SPECIFIC INFORMATIONAL LANDMARKS SPREAD AMONG ALL ITEMS ASSOCIATED WITH EACH CHOSEN PROPERTY\n---\n\nExample 2 (train_score=0.806923, epoch=5)\n---\nSELECT THE OPTION WITH THE CLARKEST INTERMEDIATE ATTIBUTE THAT ALSO MAINTAINS A HIGH DEGREE OF DI VergENCY ACROSS ALL ITEM PAIR COMBINATION RESULTING IN AN ORDER PREECEDENCE LIST WITH THE MOST PLausible AT ribute COME Eirst\n---\n\nExample 3 (train_score=0.773590, epoch=2)\n---\nCHOOSE THE OPTION THAT CORRESPONDS MOST FREQUENTLY OCCURING ATTRIBUTE WHEN CONSIDERING DIVERSITY OF EXPLANATIONS BETWEEN INTERACTIONS FIRST THEN CHECK REPEATED ATTRIBUTES FROM THE MESSAGE THEN APPLY THE MORE SPECIFIC CONNECTION PATTERN RULE OVER ALL REMAINING VALID OPIONS\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; in priority order):\n1) Prefer attributes that increase diversity across the user's explanations.\n2) When the user message includes previously used attributes, avoid repeating them if a comparably plausible new attribute is available.\n3) Avoid generic attributes when a clearer and still diverse alternative exists.\n4) If tied, prefer the option whose attribute most clearly connects the two items in the path.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.822051282051282,
+    "train_metric_scores": {
+      "sep": 0.6165945718914353,
+      "etd": 0.822051282051282,
+      "sep_etd_f1": 0.7046520266820273
+    },
+    "time_spent_train_eval": 1572.6243715286255,
+    "train_rows": 3900,
+    "train_valid_rate": 1.0
+  },
+  "val_eval": {
+    "val_metric": 0.8397959183673466,
+    "val_metric_scores": {
+      "sep": 0.6082846885686807,
+      "etd": 0.8397959183673466,
+      "sep_etd_f1": 0.7055339270735749
+    },
+    "time_spent_val_eval": 388.6690309047699,
+    "val_rows": 980,
+    "val_valid_rate": 1.0,
+    "prev_val_metric": 0.8214285714285713,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}

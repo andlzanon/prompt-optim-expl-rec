@@ -1,0 +1,43 @@
+{
+  "epoch": 9,
+  "prompt": {
+    "prompt_this_epoch": "Optimise your decision-making process according to maximal discriminatory capabilities amongst alternatives within designated interaction realms, ensuring adherence to both information coherency prerequisites as well as strategic avoidance of overly repetitive explanatory components whenever plausible substitutes arise concurrently throughout the reasoning endeavour, henceforth yielding the singularly preferable numeric indicator exclusively corresponding to the optimum among previously described explanations 1 to K. Specify this preference via integer token only, devoid of accompanying text or secondary operands thereof.",
+    "generated_new_prompt": true,
+    "time_spent_instruction": 9.10507845878601,
+    "meta_prompt_used": "You generate ONE new candidate SYSTEM instruction for an explanation-path selection task in a recommender system.\n\nTASK CONTEXT (what the user message contains):\n- For ONE recommended item, a list of K numbered explanation paths (1..K), each in the form:\n  <Interacted Item> -> <Attribute> -> <Recommended Item>\n\nREFERENCE INSTRUCTIONS (do NOT copy; use only for inspiration):\n- The examples below were selected from previous high-performing instructions and are shown from BEST to WORST by training score.\nExample 1 (train_score=0.705519, epoch=5)\n---\nProvide the selected numeric index from {1,K} adhering strictly to the rule of optimizing between informative and diverse explanation specifics, excluding redundant attribute instances unless an equivalent representation exists alongside enhanced distinctness.\n---\n\nExample 2 (train_score=0.694782, epoch=7)\n---\nUpon receiving explanation pathways 1 through K detailing interactions with interrelated entities, prioritize options based on maximized discrimination between alike attributes while striking an equilibrium between specificity and redundancy within your choice specification. Designate the optimal pathway identification solely using the exact numeral signifying option 1 within your response exclusively.\n---\n\nExample 3 (train_score=0.684782, epoch=8)\n---\nSelect precisely one of the presented options, prioritizing characteristics that harmoniously reconcile specificity, uniqueness, diversity, relevance, consistency, robustness, distinctness, applicability with comprehensive discernment of information coherence avoiding excessive similarity to other existing choices thus reinforcing credibility validity reliability without misinterpretation. \nSpecify your choice with the precise numerical value denoting the most suitable selection out of the options listed ranging from 1 to K inclusive.\n---\n\n\nHARD REQUIREMENTS (must be explicitly stated in the new instruction):\n- Choose EXACTLY ONE of the numbered options provided by the user (1..K).\n- Output MUST be exactly ONE token: the OPTION NUMBER (an integer).\n- Output ONLY the integer number and nothing else.\n- Do NOT output multiple numbers, ranges, or any additional text.\n- Do NOT invent items, attributes, or paths. Only select among the provided options.\n\nSELECTION CRITERIA (must be included; balance all of the following):\n1) Prefer attributes that jointly maximize explanation specificity and diversity across the user's explanations.\n2) Avoid unnecessarily repeated attributes when a similarly informative and plausible alternative is available.\n3) Avoid overly generic attributes, but do not favor novelty when it substantially weakens the explanation.\n4) Prefer the option whose attribute best balances explanation quality, connection clarity, and diversity for this user.\n\nSTYLE REQUIREMENTS:\n- Strict system-prompt style.\n- Use imperative language and explicit constraints.\n- Avoid single-sentence instructions.\n- Different wording/structure than the reference.\n\nReturn ONLY the new SYSTEM instruction text (no quotes, no markdown).\n"
+  },
+  "artifacts": {
+    "epoch_json": "epoch.json",
+    "train_csv": "train_explanations.csv",
+    "val_csv": "val_explanations.csv"
+  },
+  "early_stopping_enabled": false,
+  "early_stopping_actually_stopped": false,
+  "train_eval": {
+    "train_metric": 0.7036743654362049,
+    "train_metric_scores": {
+      "sep": 0.6842399752035918,
+      "etd": 0.7242450142450149,
+      "sep_etd_f1": 0.7036743654362049
+    },
+    "time_spent_train_eval": 1161.5626010894775,
+    "train_rows": 3900,
+    "train_valid_rate": 0.9994871794871795
+  },
+  "val_eval": {
+    "val_metric": 0.6923653626735023,
+    "val_metric_scores": {
+      "sep": 0.6874103864343587,
+      "etd": 0.6973922902494327,
+      "sep_etd_f1": 0.6923653626735023
+    },
+    "time_spent_val_eval": 294.2235827445984,
+    "val_rows": 980,
+    "val_valid_rate": 0.9979591836734694,
+    "prev_val_metric": 0.6751167018645635,
+    "val_improvement_vs_prev": null,
+    "no_improve_streak": null
+  },
+  "val_ran_this_epoch": true,
+  "early_stopping_triggered_here": false
+}
