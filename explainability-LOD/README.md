@@ -111,6 +111,7 @@ The pipeline computes:
 - Total aggregate diversity of KG properties.
 - `ETD`: Explanation Type Diversity.
 - `SEP`: Shared Entity Popularity.
+- `F1`: harmonic mean of `SEP` and `ETD`.
 
 `ETD` measures how many distinct explanation entities are used relative to the number of recommendations being
 explained.
@@ -123,7 +124,7 @@ users to avoid recomputing the same property popularity tables repeatedly.
 Generated files are saved under:
 
 - `../datasets/lod_results/output/`: full textual explanations.
-- `../datasets/lod_results/individual_metrics/`: per-user `sep` and `etd` values.
+- `../datasets/lod_results/individual_metrics/`: per-user `sep`, `etd`, and `f1` values.
 - `../datasets/lod_results/average_metrics/`: aggregate metrics for each recommender output.
 
 For example, explaining BPRMF recommendations creates:
@@ -137,6 +138,6 @@ For example, explaining BPRMF recommendations creates:
 ## Main Files
 
 - `run_LOD.py`: selects recommendation files and starts the explanation pipeline.
-- `lod_explanation_generator.py`: generates ExpLOD-style explanations and stores individual metrics.
+- `path_reordering.py`: generates ExpLOD-style explanations and stores individual and aggregate metrics.
 - `lod_reordering.py`: loads data and builds user semantic profiles from LOD/KG properties.
 - `evaluation_utils.py`: computes aggregate explanation metrics.

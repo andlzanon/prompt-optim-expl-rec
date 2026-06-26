@@ -216,7 +216,9 @@ These include:
 - `datasets/explanation_paths/<algorithm>-opt/...`
 
 These files contain the candidate item-attribute-item paths later used by the
-explanation pipelines.
+LLM path-selection workflow and by `run_prepare_selected_paths.py`. The
+current `explainability-LOD/` baseline does not read
+`datasets/explanation_paths/`.
 
 ### LOD explanation baseline results
 
@@ -323,6 +325,116 @@ or, to run the full LLM workflow:
 bash explainability-with-LLMs/bash/run.sh
 ```
 
+## What each command generates
+
+This section answers the practical question: after running each command, which
+files are created and where do they go?
+
+### `python recommender/main_recommendation.py`
+
+Generates recommendation outputs for `user_knn`, `item_knn`, `ncf`, and
+`bprmf`, for both default and optimized configurations.
+
+Files created:
+
+- recommendation lists:
+  `datasets/recommendation_files/recommendation_lists/<algorithm>/params_<default|optimized>/K=<k>/<default|optimized>_<algorithm>_K=<k>_recs.csv`
+- recommendation metrics:
+  `datasets/recommendation_files/recommendation_metrics/<algorithm>/params_<default|optimized>/K=<k>/<default|optimized>_<algorithm>_K=<k>_metrics.csv`
+- saved parameter summaries:
+  `datasets/recommendation_files/recommendation_metrics/<algorithm>/params_<default|optimized>/K=<k>/<default|optimized>_<algorithm>_K=<k>_params.csv`
+
+### `python knowledge-graphs/find_explanation_paths.py`
+
+Builds the per-user candidate explanation-path files from the optimized
+recommendation lists with `K=20`.
+
+Files created:
+
+- one CSV per user and algorithm:
+  `datasets/explanation_paths/<algorithm>-opt/<algorithm>_<userId>_user_id.csv`
+
+### `python explainability-LOD/run_LOD.py`
+
+Runs the non-LLM explanation baseline over the recommender outputs.
+
+Files created:
+
+- full explanation CSVs:
+  `datasets/lod_results/output/output_explanations_optimized_<algorithm>_K=20_recs.csv`
+- per-user metrics:
+  `datasets/lod_results/individual_metrics/indiv_metrics_explanations_optimized_<algorithm>_K=20_recs.csv`
+- aggregate metrics:
+  `datasets/lod_results/average_metrics/avg_metrics_explanations_optimized_<algorithm>_K=20_recs.csv`
+
+### `bash explainability-with-LLMs/bash/run_prepare_selected_paths.sh`
+
+Precomputes the candidate paths that will later be shown to the LLM during
+optimization and explainability runs.
+
+Files created:
+
+- selected candidate paths:
+  `datasets/preselected_explanation_paths/<algorithm>/<user_scope>/random/recs_10_paths_10/seed_2026/selected_paths.csv`
+- metadata for that preparation run:
+  `datasets/preselected_explanation_paths/<algorithm>/<user_scope>/random/recs_10_paths_10/seed_2026/selected_paths_metadata.json`
+
+### `bash explainability-with-LLMs/bash/run_llm_for_optimization.sh`
+
+Runs prompt optimization for the configured grid of models, algorithms,
+metrics, representations, and MMR settings.
+
+Files created under:
+
+- `explainability-with-LLMs/out/prompt_optimization/<model>/<algorithm>/<metric>/repr_<representation>/early_<flag>/mmr_lambda_<value>/mmr_pool_<value>/<model>/prompt_opt/<metric>/`
+
+Typical artifacts:
+
+- `best_prompt.json`
+- `optimization_process_metadata.json`
+- `epoch_<nnn>/epoch.json`
+- `epoch_<nnn>/train_explanations.csv`
+- `epoch_<nnn>/val_explanations.csv` when validation runs for that epoch
+
+### `bash explainability-with-LLMs/bash/run_llm_for_explainability.sh`
+
+Runs the final explainability evaluation using either the default prompt or an
+optimized prompt.
+
+Files created:
+
+- default-prompt runs:
+  `explainability-with-LLMs/out/test_explainability/without_optimization/<model>/<algorithm>/<metric>/responses.csv`
+- default-prompt metadata:
+  `explainability-with-LLMs/out/test_explainability/without_optimization/<model>/<algorithm>/<metric>/responses_metadata.json`
+- optimized-prompt runs:
+  `explainability-with-LLMs/out/test_explainability/with_optimization/<model>/<algorithm>/<metric>/repr_<representation>/early_<flag>/mmr_lambda_<value>/mmr_pool_<value>/responses.csv`
+- optimized-prompt metadata:
+  `explainability-with-LLMs/out/test_explainability/with_optimization/<model>/<algorithm>/<metric>/repr_<representation>/early_<flag>/mmr_lambda_<value>/mmr_pool_<value>/responses_metadata.json`
+
+### `bash explainability-with-LLMs/bash/run.sh`
+
+Runs the three LLM stages in sequence:
+
+1. selected-path preparation
+2. prompt optimization
+3. explainability evaluation
+
+So it generates the union of the outputs listed in the three commands above.
+
+### `bash explainability-with-LLMs/analyse_results/run_statistical_analysis.sh`
+
+Rebuilds the statistical summaries and reporting artifacts used in the paper.
+
+Files created:
+
+- metric-specific result CSVs under:
+  `explainability-with-LLMs/analyse_results/statistical_analysis/<metric>/results/`
+- cached per-user comparison files under:
+  `explainability-with-LLMs/analyse_results/statistical_analysis/common/per_user_cache/`
+- publication-oriented tables under:
+  `explainability-with-LLMs/analyse_results/generated_tables/`
+
 ## Metrics used in the explanation experiments
 
 The project focuses on explanation quality in terms of attribute popularity and
@@ -351,8 +463,16 @@ The repository supports two prompt modes:
 - a built-in default system prompt
 - an optimized prompt loaded from `best_prompt.json`
 
+In the current `run_prompt_optimizer.py` entry point, `best_prompt.json` is
+written from `best_on_train.best_train_prompt` recorded in
+`optimization_process_metadata.json`.
+
 Prompt optimization is performed inside `explainability-with-LLMs/` and writes
 its outputs under `explainability-with-LLMs/out/prompt_optimization/`.
+
+For a concrete example of prompt input, raw model output, and the final saved
+explanation path, see
+[explainability-with-LLMs/README_prompt_input_output.md](explainability-with-LLMs/README_prompt_input_output.md).
 
 The analysis area under `explainability-with-LLMs/analyse_results/` contains:
 
