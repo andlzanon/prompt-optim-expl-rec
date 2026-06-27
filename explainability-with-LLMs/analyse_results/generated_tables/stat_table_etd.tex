@@ -9,7 +9,7 @@
         BPR-MF & 0{,}5246 & 0{,}7926 & \textbf{0{,}8484} & \greentriangleup & \greentriangleup & SBERT, $\lambda$=0.5 \\
         Item-KNN & 0{,}5803 & 0{,}7787 & \textbf{0{,}8516} & \greentriangleup & \greentriangleup & SBERT, $\lambda$=0.0 \\
         NCF & 0{,}5590 & 0{,}7672 & \textbf{0{,}8418} & \greentriangleup & \greentriangleup & LLM2Vec, $\lambda$=1.0 \\
-        User-KNN & 0{,}5090 & 0{,}7721 & \textbf{0{,}8352} & \greentriangleup & \greentriangleup & SBERT, $\lambda$=0.5 \\
+        User-KNN & 0{,}5090 & 0{,}7721 & \textbf{0{,}8279} & \greentriangleup & \greentriangleup & SBERT, $\lambda$=1.0 \\
         \bottomrule
     \end{tabular}
     \caption{Paired comparison on ETD between LOD, Llama without optimization, and the best optimized Llama for each algorithm. Bold values indicate the highest mean per-user value in each row. The symbol \greentriangleup indicates that the best optimized Llama was statistically superior in the corresponding comparison (\textit{p-value} $< 0.05$, Wilcoxon test); \yellowcircle indicates no significant difference; and \redtriangledown indicates that the best optimized Llama was statistically inferior.}

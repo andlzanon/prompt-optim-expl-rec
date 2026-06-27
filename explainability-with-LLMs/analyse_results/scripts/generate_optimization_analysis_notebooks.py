@@ -1682,7 +1682,7 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
         This notebook consolidates, for model `__LLM_METHOD__`, comparisons between:
         - `lod`;
         - `llama / initial_system_prompt` (`without_optimization` result);
-        - `llama / best_system_prompt` (best `with_optimization` configuration for the analyzed objective).
+        - `llama / best_system_prompt` (the `with_optimization` configuration whose process reached the best training value for the analyzed objective).
 
         The output is organized by optimization objective:
         - `sep`
@@ -1690,9 +1690,9 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
         - `sep_etd_f1`
 
         For each objective, the notebook:
-        1. chooses the best optimized process per algorithm based on that objective's own target metric;
+        1. chooses the best optimized process per algorithm based on the highest `best_train_metric` stored by the optimization process;
         2. shows a summary table of the selected best configuration;
-        3. displays three tables with the `SEP`, `ETD`, and `SEP_ETD_F1` metrics for `lod`, `initial_system_prompt`, and `best_system_prompt`;
+        3. displays three tables with the test-set `SEP`, `ETD`, and `SEP_ETD_F1` metrics for `lod`, `initial_system_prompt`, and `best_system_prompt`;
         4. annotates the `lod` and `initial_system_prompt` values directly with one symbol per cell, always compared to `best_system_prompt`, using a paired Wilcoxon test:
            - `▲` for better and significant,
            - `●` for no significant difference,
@@ -1702,6 +1702,7 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
     )
 
     imports = """
+        import json
         import warnings
         from pathlib import Path
 
@@ -1776,41 +1777,6 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
             return float((2.0 * left * right) / (left + right))
 
 
-        def load_best_wide_df(statistical_analysis_root: Path, objective_metric: str) -> pd.DataFrame:
-            path = (
-                statistical_analysis_root
-                / objective_metric
-                / "results"
-                / f"{objective_metric}_best_method_by_algorithm_per_user_wide.csv"
-            )
-            if not path.exists():
-                return pd.DataFrame()
-
-            df = pd.read_csv(path)
-            score_columns = [
-                "sep_lod",
-                "etd_lod",
-                "sep_etd_f1_lod",
-                "sep_llama_without_optimization",
-                "etd_llama_without_optimization",
-                "sep_etd_f1_llama_without_optimization",
-                "sep_llama_with_optimization",
-                "etd_llama_with_optimization",
-                "sep_etd_f1_llama_with_optimization",
-            ]
-            for column in score_columns:
-                if column in df.columns:
-                    df[column] = pd.to_numeric(df[column], errors="coerce")
-            return df
-
-
-        def build_best_wide_by_objective(statistical_analysis_root: Path) -> dict[str, pd.DataFrame]:
-            return {
-                objective_metric: load_best_wide_df(statistical_analysis_root, objective_metric)
-                for objective_metric in OBJECTIVE_ORDER
-            }
-
-
         def wilcoxon_symbol_from_series(
             best_series: pd.Series,
             reference_series: pd.Series,
@@ -1864,6 +1830,45 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
                 if column in df.columns:
                     df[column] = pd.to_numeric(df[column], errors="coerce")
             return df
+
+
+        def load_process_selection_payload(process_dir: Path) -> dict[str, object]:
+            metadata_path = process_dir / "optimization_process_metadata.json"
+            if not metadata_path.exists():
+                return {
+                    "best_train_metric": pd.NA,
+                    "best_val_metric": pd.NA,
+                    "time_prompt_optimization": pd.NA,
+                    "best_train_epoch": pd.NA,
+                    "best_val_epoch": pd.NA,
+                }
+
+            payload = json.loads(metadata_path.read_text())
+            best_on_train = payload.get("best_on_train", {})
+            best_on_validation = payload.get("best_on_validation", {})
+            return {
+                "best_train_metric": best_on_train.get("best_train_metric", pd.NA),
+                "best_val_metric": best_on_validation.get("best_val_metric", pd.NA),
+                "time_prompt_optimization": payload.get("time_prompt_optimization", pd.NA),
+                "best_train_epoch": best_on_train.get("best_train_epoch", pd.NA),
+                "best_val_epoch": best_on_validation.get("best_val_epoch", pd.NA),
+            }
+
+
+        def resolve_project_relative_path(path_str: str | float | None, project_root: Path) -> Path | None:
+            if path_str is None or pd.isna(path_str):
+                return None
+
+            candidate = Path(str(path_str))
+            if candidate.is_absolute():
+                return candidate
+
+            for base in (project_root, project_root.parent, project_root.parent.parent):
+                resolved = (base / candidate).resolve()
+                if resolved.exists():
+                    return resolved
+
+            return (project_root.parent.parent / candidate).resolve()
 
 
         def load_lod_summary(lod_root: Path) -> pd.DataFrame:
@@ -1927,6 +1932,60 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
             return str(value).replace("mmr_lambda_", "").replace("_", ".")
 
 
+        def build_process_dir_rel(row: pd.Series) -> str:
+            return (
+                "out/prompt_optimization/"
+                + str(row["model"])
+                + "/"
+                + str(row["algorithm"])
+                + "/"
+                + str(row["metric"])
+                + "/"
+                + str(row["representation_model"])
+                + "/"
+                + str(row["early_stopping_tag"])
+                + "/"
+                + str(row["mmr_lambda_tag"])
+                + "/"
+                + str(row["mmr_pool_tag"])
+                + "/"
+                + str(row["model"])
+                + "/prompt_opt/"
+                + str(row["metric"])
+            )
+
+
+        def enrich_optimized_runs_with_process_selection(
+            summary_df: pd.DataFrame,
+            project_root: Path,
+        ) -> pd.DataFrame:
+            frame = summary_df.copy()
+            mask = frame["run_type"] == "with_optimization"
+            if not mask.any():
+                return frame
+
+            frame.loc[mask, "process_dir_rel"] = frame.loc[mask].apply(build_process_dir_rel, axis=1)
+            cache: dict[str, dict[str, object]] = {}
+            for index, row in frame.loc[mask].iterrows():
+                process_dir_rel = str(row["process_dir_rel"])
+                if process_dir_rel not in cache:
+                    cache[process_dir_rel] = load_process_selection_payload(project_root / process_dir_rel)
+                payload = cache[process_dir_rel]
+                for key, value in payload.items():
+                    frame.at[index, key] = value
+
+            for column in [
+                "best_train_metric",
+                "best_val_metric",
+                "time_prompt_optimization",
+                "best_train_epoch",
+                "best_val_epoch",
+            ]:
+                if column in frame.columns:
+                    frame[column] = pd.to_numeric(frame[column], errors="coerce")
+            return frame
+
+
         def pick_initial_rows(summary_df: pd.DataFrame, objective_metric: str) -> pd.DataFrame:
             frame = summary_df[
                 (summary_df["run_type"] == "without_optimization")
@@ -1938,7 +1997,6 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
 
 
         def pick_best_optimized_rows(summary_df: pd.DataFrame, objective_metric: str) -> pd.DataFrame:
-            target_column = TARGET_COLUMN_BY_OBJECTIVE[objective_metric]
             frame = summary_df[
                 (summary_df["run_type"] == "with_optimization")
                 & (summary_df["metric"] == objective_metric)
@@ -1950,19 +2008,127 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
             frame = frame.sort_values(
                 by=[
                     "algorithm",
-                    target_column,
-                    "mean_sep_etd_f1_per_user",
-                    "mean_sep_per_user",
-                    "mean_etd_per_user",
+                    "best_train_metric",
+                    "best_val_metric",
+                    "time_prompt_optimization",
                     "run_label",
                 ],
-                ascending=[True, False, False, False, False, True],
+                ascending=[True, False, False, True, True],
                 na_position="last",
             )
             frame = frame.drop_duplicates(subset=["algorithm"], keep="first")
             frame["source_group"] = "llama"
             frame["source_label"] = "best_system_prompt"
             return frame
+
+
+        def load_per_user_metrics(csv_path: Path, score_columns: dict[str, str]) -> pd.DataFrame:
+            frame = pd.read_csv(csv_path)
+            if "userId" not in frame.columns:
+                raise KeyError(f"`userId` is missing from {csv_path}")
+
+            selected = frame[["userId", *score_columns.keys()]].copy()
+            selected["userId"] = pd.to_numeric(selected["userId"], errors="coerce")
+            for source_name, target_name in score_columns.items():
+                selected[source_name] = pd.to_numeric(selected[source_name], errors="coerce")
+                if source_name != target_name:
+                    selected = selected.rename(columns={source_name: target_name})
+            return selected
+
+
+        def load_lod_per_user_metrics(lod_root: Path, algorithm: str) -> pd.DataFrame:
+            csv_path = lod_root / f"indiv_metrics_explanations_optimized_{algorithm}_K=20_recs.csv"
+            if not csv_path.exists():
+                return pd.DataFrame()
+
+            return load_per_user_metrics(
+                csv_path=csv_path,
+                score_columns={
+                    "sep": "sep_lod",
+                    "etd": "etd_lod",
+                    "f1": "sep_etd_f1_lod",
+                },
+            )
+
+
+        def build_best_wide_df(
+            summary_df: pd.DataFrame,
+            lod_root: Path,
+            objective_metric: str,
+            project_root: Path,
+        ) -> pd.DataFrame:
+            best_df = pick_best_optimized_rows(summary_df, objective_metric)
+            initial_df = pick_initial_rows(summary_df, objective_metric)
+            if best_df.empty or initial_df.empty:
+                return pd.DataFrame()
+
+            paired_frames = []
+            available_algorithms = ordered_algorithms(best_df["algorithm"].dropna().astype(str).unique().tolist())
+            for algorithm in available_algorithms:
+                best_rows = best_df.loc[best_df["algorithm"] == algorithm]
+                initial_rows = initial_df.loc[initial_df["algorithm"] == algorithm]
+                if best_rows.empty or initial_rows.empty:
+                    continue
+
+                best_row = best_rows.iloc[0]
+                initial_row = initial_rows.iloc[0]
+                best_csv = resolve_project_relative_path(best_row.get("per_user_csv"), project_root)
+                initial_csv = resolve_project_relative_path(initial_row.get("per_user_csv"), project_root)
+                if best_csv is None or initial_csv is None or not best_csv.exists() or not initial_csv.exists():
+                    continue
+
+                best_metrics = load_per_user_metrics(
+                    csv_path=best_csv,
+                    score_columns={
+                        "sep": "sep_llama_with_optimization",
+                        "etd": "etd_llama_with_optimization",
+                        "sep_etd_f1": "sep_etd_f1_llama_with_optimization",
+                    },
+                )
+                initial_metrics = load_per_user_metrics(
+                    csv_path=initial_csv,
+                    score_columns={
+                        "sep": "sep_llama_without_optimization",
+                        "etd": "etd_llama_without_optimization",
+                        "sep_etd_f1": "sep_etd_f1_llama_without_optimization",
+                    },
+                )
+                lod_metrics = load_lod_per_user_metrics(lod_root=lod_root, algorithm=str(algorithm))
+                if lod_metrics.empty:
+                    continue
+
+                paired = (
+                    lod_metrics.merge(initial_metrics, on="userId", how="inner")
+                    .merge(best_metrics, on="userId", how="inner")
+                    .sort_values("userId")
+                    .reset_index(drop=True)
+                )
+                if paired.empty:
+                    continue
+
+                paired.insert(0, "algorithm", str(algorithm))
+                paired_frames.append(paired)
+
+            if not paired_frames:
+                return pd.DataFrame()
+
+            return pd.concat(paired_frames, ignore_index=True)
+
+
+        def build_best_wide_by_objective(
+            summary_df: pd.DataFrame,
+            lod_root: Path,
+            project_root: Path,
+        ) -> dict[str, pd.DataFrame]:
+            return {
+                objective_metric: build_best_wide_df(
+                    summary_df=summary_df,
+                    lod_root=lod_root,
+                    objective_metric=objective_metric,
+                    project_root=project_root,
+                )
+                for objective_metric in OBJECTIVE_ORDER
+            }
 
 
         def build_objective_comparison_df(
@@ -2129,16 +2295,19 @@ def build_global_objective_comparison_notebook(llm_method: str) -> dict:
     """
 
     outputs = """
-        summary_df = load_summary(SUMMARY_CSV)
+        summary_df = enrich_optimized_runs_with_process_selection(
+            load_summary(SUMMARY_CSV),
+            PROJECT_ROOT,
+        )
         lod_df = load_lod_summary(LOD_ROOT)
-        best_wide_by_objective = build_best_wide_by_objective(STATISTICAL_ANALYSIS_ROOT)
+        best_wide_by_objective = build_best_wide_by_objective(summary_df, LOD_ROOT, PROJECT_ROOT)
 
         if summary_df.empty:
             warnings.warn("The per-user summary is empty. No table was built.")
         else:
             display(Markdown(
                 "The tables below use, for each objective, the best optimized process by algorithm "
-                "according to that objective's own target metric."
+                "selected by the highest `best_train_metric` reached during optimization."
             ))
             display(Markdown(
                 "The symbols appear next to the `lod` and `initial_system_prompt` values, always compared to `best_system_prompt`. "
@@ -2215,10 +2384,10 @@ def build_global_best_process_curves_notebook(llm_method: str) -> dict:
         This notebook retrieves exactly the `best_system_prompt` values used in the global objective tables
         and shows, for each of them, the progression of the metrics during the optimization process.
 
-        A seleção segue o mesmo critério do notebook `plot_optimization_metric_tables_by_objective.ipynb`:
+        The selection follows the same criterion as `plot_optimization_metric_tables_by_objective.ipynb`:
         - for each objective (`sep`, `etd`, `sep_etd_f1`);
         - and for each algorithm;
-        - the `with_optimization` configuration with the highest average per-user value on the target metric itself is selected.
+        - the `with_optimization` configuration whose optimization process achieved the highest `best_train_metric` is selected.
 
         For each selected process, the notebook displays:
         1. a summary of the winning configuration;
@@ -2230,6 +2399,7 @@ def build_global_best_process_curves_notebook(llm_method: str) -> dict:
 
     imports = join_code_blocks(
         """
+        import json
         import os
         import sys
         import warnings
@@ -2303,6 +2473,29 @@ def build_global_best_process_curves_notebook(llm_method: str) -> dict:
             return df
 
 
+        def load_process_selection_payload(process_dir: Path) -> dict[str, object]:
+            metadata_path = process_dir / "optimization_process_metadata.json"
+            if not metadata_path.exists():
+                return {
+                    "best_train_metric": pd.NA,
+                    "best_val_metric": pd.NA,
+                    "time_prompt_optimization": pd.NA,
+                    "best_train_epoch": pd.NA,
+                    "best_val_epoch": pd.NA,
+                }
+
+            payload = json.loads(metadata_path.read_text())
+            best_on_train = payload.get("best_on_train", {})
+            best_on_validation = payload.get("best_on_validation", {})
+            return {
+                "best_train_metric": best_on_train.get("best_train_metric", pd.NA),
+                "best_val_metric": best_on_validation.get("best_val_metric", pd.NA),
+                "time_prompt_optimization": payload.get("time_prompt_optimization", pd.NA),
+                "best_train_epoch": best_on_train.get("best_train_epoch", pd.NA),
+                "best_val_epoch": best_on_validation.get("best_val_epoch", pd.NA),
+            }
+
+
         def format_repr_model(value: str | float | None) -> str:
             if value is None or pd.isna(value):
                 return "-"
@@ -2338,8 +2531,38 @@ def build_global_best_process_curves_notebook(llm_method: str) -> dict:
             )
 
 
+        def enrich_optimized_runs_with_process_selection(
+            summary_df: pd.DataFrame,
+            project_root: Path,
+        ) -> pd.DataFrame:
+            frame = summary_df.copy()
+            mask = frame["run_type"] == "with_optimization"
+            if not mask.any():
+                return frame
+
+            frame.loc[mask, "process_dir_rel"] = frame.loc[mask].apply(build_process_dir_rel, axis=1)
+            cache: dict[str, dict[str, object]] = {}
+            for index, row in frame.loc[mask].iterrows():
+                process_dir_rel = str(row["process_dir_rel"])
+                if process_dir_rel not in cache:
+                    cache[process_dir_rel] = load_process_selection_payload(project_root / process_dir_rel)
+                payload = cache[process_dir_rel]
+                for key, value in payload.items():
+                    frame.at[index, key] = value
+
+            for column in [
+                "best_train_metric",
+                "best_val_metric",
+                "time_prompt_optimization",
+                "best_train_epoch",
+                "best_val_epoch",
+            ]:
+                if column in frame.columns:
+                    frame[column] = pd.to_numeric(frame[column], errors="coerce")
+            return frame
+
+
         def pick_best_optimized_rows(summary_df: pd.DataFrame, objective_metric: str) -> pd.DataFrame:
-            target_column = TARGET_COLUMN_BY_OBJECTIVE[objective_metric]
             frame = summary_df[
                 (summary_df["run_type"] == "with_optimization")
                 & (summary_df["metric"] == objective_metric)
@@ -2351,13 +2574,12 @@ def build_global_best_process_curves_notebook(llm_method: str) -> dict:
             frame = frame.sort_values(
                 by=[
                     "algorithm",
-                    target_column,
-                    "mean_sep_etd_f1_per_user",
-                    "mean_sep_per_user",
-                    "mean_etd_per_user",
+                    "best_train_metric",
+                    "best_val_metric",
+                    "time_prompt_optimization",
                     "run_label",
                 ],
-                ascending=[True, False, False, False, False, True],
+                ascending=[True, False, False, True, True],
                 na_position="last",
             )
             frame = frame.drop_duplicates(subset=["algorithm"], keep="first").reset_index(drop=True)
@@ -2492,13 +2714,17 @@ def build_global_best_process_curves_notebook(llm_method: str) -> dict:
     """
 
     outputs = """
-        summary_df = load_summary(SUMMARY_CSV)
+        summary_df = enrich_optimized_runs_with_process_selection(
+            load_summary(SUMMARY_CSV),
+            PROJECT_ROOT,
+        )
 
         if summary_df.empty:
             warnings.warn("The per-user summary is empty. No plot was generated.")
         else:
             display(Markdown(
-                "This notebook uses the same `best_system_prompt` values selected in the global objective tables."
+                "This notebook uses the same `best_system_prompt` values selected in the global objective tables, "
+                "where each winning configuration is chosen by the highest `best_train_metric` and displayed with its test-set values."
             ))
 
             for objective_metric in OBJECTIVE_ORDER:
@@ -2617,7 +2843,7 @@ def build_global_objective_comparison_best_prompt_symbols_notebook(llm_method: s
                 "   - `●` for no significant difference,\n"
                 "   - `▼` for worse and significant.",
                 "4. annotates the `best_system_prompt` values directly with two symbols per cell, "
-                "in the order `vs initial` and then `vs lod`, using a paired Wilcoxon test:\n"
+                "in the order `vs lod` and then `vs initial`, using a paired Wilcoxon test:\n"
                 "   - `▲` for better and significant,\n"
                 "   - `●` for no significant difference,\n"
                 "   - `▼` for worse and significant.",
@@ -2629,7 +2855,7 @@ def build_global_objective_comparison_best_prompt_symbols_notebook(llm_method: s
                 "   - `●` for no significant difference,\n"
                 "   - `▼` for worse and significant.",
                 "4. annotates the `best_system_prompt` values directly with two symbols per cell, "
-                "in the order `vs initial` and then `vs lod`, using a paired Wilcoxon test:\n"
+                "in the order `vs lod` and then `vs initial`, using a paired Wilcoxon test:\n"
                 "   - `▲` for better and significant,\n"
                 "   - `●` for no significant difference,\n"
                 "   - `▼` for worse and significant.",
@@ -2798,13 +3024,13 @@ def build_global_objective_comparison_best_prompt_symbols_notebook(llm_method: s
                         str(algorithm),
                         {"best_vs_initial": SYMBOLS["missing"], "best_vs_lod": SYMBOLS["missing"]},
                     )
-                    best_vs_initial = symbol_info["best_vs_initial"]
                     best_vs_lod = symbol_info["best_vs_lod"]
+                    best_vs_initial = symbol_info["best_vs_initial"]
                     if best_vs_initial == SYMBOLS["missing"] and best_vs_lod == SYMBOLS["missing"]:
                         continue
 
                     annotated_df.loc[best_index, algorithm] = (
-                        f"{best_vs_initial}{best_vs_lod} {base_value}"
+                        f"{best_vs_lod}{best_vs_initial} {base_value}"
                     )
 
             annotated_df.columns = pd.MultiIndex.from_product([[top_label], annotated_df.columns])
@@ -2824,11 +3050,11 @@ def build_global_objective_comparison_best_prompt_symbols_notebook(llm_method: s
         [
             (
                 "The symbols appear next to the `lod` and `initial_system_prompt` values, always compared to `best_system_prompt`. ",
-                "The symbols appear on the `best_system_prompt` row, in the order `vs initial` and then `vs lod`. ",
+                "The symbols appear on the `best_system_prompt` row, in the order `vs lod` and then `vs initial`. ",
             ),
             (
                 "Os símbolos aparecem na linha `best_system_prompt`, na ordem `vs initial` e depois `vs lod`. ",
-                "The symbols appear on the `best_system_prompt` row, in the order `vs initial` and then `vs lod`. ",
+                "The symbols appear on the `best_system_prompt` row, in the order `vs lod` and then `vs initial`. ",
             ),
         ],
         "outputs-best-prompt-legend",

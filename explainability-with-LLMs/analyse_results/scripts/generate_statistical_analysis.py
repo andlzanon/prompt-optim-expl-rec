@@ -113,6 +113,62 @@ def resolve_project_relative(path_str: str | None) -> Path | None:
         return path
     return (PROJECT_ROOT / path).resolve()
 
+
+def build_optimization_metadata_path(project_root: Path, descriptor: RunDescriptor) -> Path | None:
+    if descriptor.run_type != "with_optimization":
+        return None
+
+    return (
+        project_root
+        / "out"
+        / "prompt_optimization"
+        / descriptor.model
+        / descriptor.algorithm
+        / descriptor.metric
+        / str(descriptor.representation_model)
+        / str(descriptor.early_stopping_tag)
+        / str(descriptor.mmr_lambda_tag)
+        / str(descriptor.mmr_pool_tag)
+        / descriptor.model
+        / "prompt_opt"
+        / descriptor.metric
+        / "optimization_process_metadata.json"
+    )
+
+
+def load_optimization_selection_summary(
+    project_root: Path,
+    descriptor: RunDescriptor,
+) -> dict[str, Any]:
+    empty_summary = {
+        "optimization_metadata_path": None,
+        "best_train_metric": None,
+        "best_val_metric": None,
+        "time_prompt_optimization": None,
+        "best_train_epoch": None,
+        "best_val_epoch": None,
+    }
+    if descriptor.run_type != "with_optimization":
+        return empty_summary
+
+    metadata_path = build_optimization_metadata_path(project_root, descriptor)
+    if metadata_path is None or not metadata_path.exists():
+        raise FileNotFoundError(
+            f"Optimization metadata not found for {descriptor.run_label}: {metadata_path}"
+        )
+
+    payload = load_json(metadata_path)
+    best_on_train = payload.get("best_on_train", {})
+    best_on_validation = payload.get("best_on_validation", {})
+    return {
+        "optimization_metadata_path": workspace_relative_path(metadata_path),
+        "best_train_metric": best_on_train.get("best_train_metric"),
+        "best_val_metric": best_on_validation.get("best_val_metric"),
+        "time_prompt_optimization": payload.get("time_prompt_optimization"),
+        "best_train_epoch": best_on_train.get("best_train_epoch"),
+        "best_val_epoch": best_on_validation.get("best_val_epoch"),
+    }
+
 def parse_run_descriptor(responses_path: Path, test_root: Path) -> RunDescriptor:
     rel_parts = responses_path.relative_to(test_root).parts
     run_type = rel_parts[0]
@@ -619,6 +675,7 @@ def main() -> None:
         lod_scores_df = lod_scores_df[lod_scores_df["algorithm"].isin(set(args.algorithms))].copy()
 
     per_run_scores: dict[RunDescriptor, pd.DataFrame] = {}
+    optimization_selection_by_run_label: dict[str, dict[str, Any]] = {}
     run_summary_rows: list[dict[str, Any]] = []
 
     for descriptor in descriptors:
@@ -639,6 +696,10 @@ def main() -> None:
             per_user_df.to_csv(cache_path, index=False)
             cache_status = "computed"
 
+        selection_summary = load_optimization_selection_summary(project_root, descriptor)
+        if descriptor.run_type == "with_optimization":
+            optimization_selection_by_run_label[descriptor.run_label] = selection_summary
+
         per_run_scores[descriptor] = per_user_df
         run_summary_rows.append(
             {
@@ -653,6 +714,7 @@ def main() -> None:
                 "cache_status": cache_status,
                 "per_user_csv": workspace_relative_path(cache_path),
                 "run_label": descriptor.run_label,
+                **selection_summary,
                 **run_summary,
             }
         )
@@ -667,6 +729,19 @@ def main() -> None:
         ],
         na_position="last",
     )
+    for column in [
+        "best_train_metric",
+        "best_val_metric",
+        "time_prompt_optimization",
+        "best_train_epoch",
+        "best_val_epoch",
+        "n_users",
+        "mean_sep_per_user",
+        "mean_etd_per_user",
+        "mean_sep_etd_f1_per_user",
+    ]:
+        if column in run_summary_df.columns:
+            run_summary_df[column] = pd.to_numeric(run_summary_df[column], errors="coerce")
     run_summary_output = out_dir / "common" / "per_user_run_summary.csv"
     run_summary_output.parent.mkdir(parents=True, exist_ok=True)
     run_summary_df.to_csv(run_summary_output, index=False)
@@ -747,6 +822,7 @@ def main() -> None:
                     "mmr_pool_tag": descriptor.mmr_pool_tag,
                     "baseline_run_label": baseline_descriptor.run_label,
                     "optimized_run_label": descriptor.run_label,
+                    **optimization_selection_by_run_label.get(descriptor.run_label, {}),
                     "n_users_paired": int(len(paired_df)),
                     "mean_sep_lod": float(paired_df["sep_lod"].mean()),
                     "mean_sep_llama_without_optimization": float(paired_df["sep_llama_without_optimization"].mean()),
@@ -763,12 +839,30 @@ def main() -> None:
         candidate_df = pd.DataFrame(candidate_rows)
         if candidate_df.empty:
             continue
+        for column in [
+            "best_train_metric",
+            "best_val_metric",
+            "time_prompt_optimization",
+            "best_train_epoch",
+            "best_val_epoch",
+        ]:
+            if column in candidate_df.columns:
+                candidate_df[column] = pd.to_numeric(candidate_df[column], errors="coerce")
 
-        sort_cols = [f"mean_{objective_metric}_llama_with_optimization"]
         best_candidate_df = (
-            candidate_df.sort_values(sort_cols, ascending=False)
-            .groupby("algorithm", as_index=False)
-            .first()
+            candidate_df.sort_values(
+                by=[
+                    "algorithm",
+                    "best_train_metric",
+                    "best_val_metric",
+                    "time_prompt_optimization",
+                    "optimized_run_label",
+                ],
+                ascending=[True, False, False, True, True],
+                na_position="last",
+            )
+            .drop_duplicates(subset=["algorithm"], keep="first")
+            .reset_index(drop=True)
         )
 
         best_summary_rows: list[dict[str, Any]] = []
@@ -923,8 +1017,14 @@ def main() -> None:
             metric_dir=metric_dir,
             article_tables_dir=article_tables_dir,
             candidate_df=candidate_df.sort_values(
-                ["algorithm", f"mean_{objective_metric}_llama_with_optimization"],
-                ascending=[True, False],
+                [
+                    "algorithm",
+                    "best_train_metric",
+                    "best_val_metric",
+                    "time_prompt_optimization",
+                    "optimized_run_label",
+                ],
+                ascending=[True, False, False, True, True],
             ).reset_index(drop=True),
             best_summary_df=best_summary_df.sort_values("algorithm").reset_index(drop=True),
             best_wide_df=best_wide_df,
